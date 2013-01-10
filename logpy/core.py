@@ -3,8 +3,9 @@ import itertools as it
 class var(object):
     def __new__(cls, token):
         return (var, token)
-
-isvar = lambda t: isinstance(t, tuple) and t[0] is var
+class wild(object):
+    pass
+isvar = lambda t: isinstance(t, tuple) and len(t) >= 1 and t[0] is var
 
 def transitive_get(key, d):
     while key in d:
@@ -60,9 +61,9 @@ def unique(seq):
 
 # TODO: replace chain with interleave
 
-def conde(*goals):
+def conde(*goalseqs):
     def goal_conde(s):
-        return unique(it.chain(*[goal(s) for goal in goals]))
+        return unique(it.chain(*[bindstar((s,), *goals) for goals in goalseqs]))
     return goal_conde
 
 def bind(stream, goal):
@@ -72,8 +73,16 @@ def bind(stream, goal):
 def bindstar(stream, *goals):
     if not goals:
         return stream
+    a, b, stream = it.tee(stream, 3)
+    if isempty(a):
+        return stream
     else:
-        return bindstar(bind(stream, goals[0]), *goals[1:])
+        return bindstar(bind(stream, evalt(goals[0])), *goals[1:])
+
+def all_(*goals):
+    def all_goal(stream):
+        return bindstar(stream, *goals)
+    return all_goal
 
 def run(n, x, *goals):
     seq = (walk_star(x, s) for s in bindstar(({},), *goals))
@@ -96,5 +105,69 @@ def eq(u, v):
     return goal_eq
 
 def membero(x, coll):
-    return conde(*[eq(x, item) for item in coll])
+    return conde(*[[eq(x, item)] for item in coll])
 
+def heado(x, coll):
+    def head_goal(s):
+        x2 = walk(x, s)
+        coll2 = walk(coll, s)
+        if coll2:
+            return eq(x2, coll2[0])(s)
+        else:
+            return fail(s)
+    return head_goal
+
+def tailo(x, coll):
+    def tail_goal(s):
+        x2 = walk(x, s)
+        coll2 = walk(coll, s)
+        if coll2:
+            return eq(x2, coll2[1:])(s)
+        else:
+            return fail(s)
+    return tail_goal
+
+#def appendo(l, s, out):
+#    """ Byrd thesis pg. 267 """
+#    print l, s, out
+#    a, d, res = [var(wild()) for i in range(3)]
+#    return conde((eq(l, ()), eq(s, out)),
+#                 ((heado, a, l),   (tailo, d, l),
+#                  (heado, a, out), (tailo, res, out),
+#                  (appendo, d, s, res)))
+#    return conde( all_(eq(l, ()), eq(s, out)),
+#                  all_(heado(a, l),   tailo(d, l),
+#                       heado(a, out), tailo(res, out),
+#                       appendo(d, s, res)))
+
+def evalt(t):
+    """ Evaluate tuple if unevaluated
+
+    >>> add = lambda x, y: x + y
+    >>> evalt((add, 2, 3))
+    5
+    >>> evalt(add(2, 3))
+    5
+    """
+
+    if isinstance(t, tuple) and len(t) >= 1 and callable(t[0]):
+        return t[0](*t[1:])
+    else:
+        return t
+
+def isempty(it):
+    """ Is an iterable empty
+
+    destructive.  Use with tee
+
+    >>> from itertools import tee
+    >>> it = range(3)
+    >>> tmp, it = tee(it, 2)
+    >>> isempty(tmp)
+    False
+    """
+    try:
+        next(iter(it))
+        return False
+    except StopIteration:
+        return True

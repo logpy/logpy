@@ -1,5 +1,7 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
-        bindstar, run, membero)
+        bindstar, run, membero, evalt, isempty, fail, success,
+        heado, tailo)
+import itertools
 
 w, x, y, z = 'wxyz'
 
@@ -40,7 +42,8 @@ def test_eq():
 
 def test_conde():
     x = var('x')
-    assert tuple(conde(eq(x, 2), eq(x, 3))({})) == ({x: 2}, {x: 3})
+    assert tuple(conde([eq(x, 2)], [eq(x, 3)])({})) == ({x: 2}, {x: 3})
+    assert tuple(conde([eq(x, 2), eq(x, 3)])({})) == ()
 
 def test_bind():
     x = var('x')
@@ -58,6 +61,13 @@ def test_bindstar():
     assert tuple(bindstar(stream, success, eq(x, 3))) == ({x: 3},)
     assert tuple(bindstar(stream, eq(x, 2), eq(x, 3))) == ()
 
+def test_short_circuit():
+    def badgoal(s):
+        raise NotImplementedError()
+
+    x = var('x')
+    tuple(run(5, x, fail, badgoal)) # Does not raise exception
+
 def test_run():
     x,y,z = map(var, 'xyz')
     assert run(1, x,  eq(x, 1)) == (1,)
@@ -65,10 +75,47 @@ def test_run():
     assert run(1, x,  eq(x, (y, z)),
                        eq(y, 3),
                        eq(z, 4)) == ((3, 4),)
-    assert set(run(2, x, conde(eq(x, 1), eq(x, 2)))) == set((1, 2))
+    assert set(run(2, x, conde([eq(x, 1)], [eq(x, 2)]))) == set((1, 2))
 
 def test_membero():
     x = var('x')
     assert set(run(5, x, membero(x, (1,2,3)),
-                          membero(x, (2,3,4)))) == set((2,3))
+                         membero(x, (2,3,4)))) == set((2,3))
     assert run(5, x, membero(2, (1, x, 3))) == (2,)
+
+"""
+def dont_test_appendo():
+    x = var('x')
+    assert tuple(appendo((), (1,2), (1,2))({})) == ({},)
+    assert tuple(appendo((), (1,2), (1))({})) == ()
+    assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
+    assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
+"""
+
+def test_evalt():
+    add = lambda x, y: x + y
+    assert evalt((add, 2, 3)) == 5
+    assert evalt(add(2, 3)) == 5
+    assert evalt((1,2)) == (1,2)
+
+def test_bindstar_evalt():
+    x = var('x')
+    stream = bindstar(({},), success, (eq, x, 1))
+    assert tuple(stream) == ({x: 1},)
+
+def test_isempty():
+    assert isempty(())
+    assert not isempty((1,2))
+    it = (x for x in (1,2))
+    a, it = itertools.tee(it, 2)
+    assert not isempty(a)
+    assert next(it) == 1
+
+def test_heado():
+    x = var('x')
+    assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
+    assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
+
+def test_tailo():
+    x = var('x')
+    assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
