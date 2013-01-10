@@ -22,5 +22,8 @@ def test_unify():
     assert unify(1, 1, {}) == {}
     assert unify(1, 2, {}) == False
     assert unify(var(1), 2, {}) == {var(1): 2}
+    assert unify(2, var(1), {}) == {var(1): 2}
     assert unify((1, 2), (1, 2), {}) == {}
+    assert unify((1, 2), (1, 2, 3), {}) == False
     assert unify((1, var(1)), (1, 2), {}) == {var(1): 2}
+    assert unify((1, var(1)), (1, 2), {var(1): 3}) == False
