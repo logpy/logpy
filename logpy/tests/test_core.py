@@ -121,18 +121,20 @@ def test_tailo():
     assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
 
 def test_relation():
-    father = Relation("parent", "child")
-    father.add_fact("Homer", "Bart")
-    father.add_fact("Homer", "Lisa")
+    parent = Relation()
+    parent.add_fact("Homer", "Bart")
+    parent.add_fact("Homer", "Lisa")
+    parent.add_fact("Marge", "Bart")
+    parent.add_fact("Marge", "Lisa")
+    parent.add_fact("Abe", "Homer")
+    parent.add_fact("Jackie", "Marge")
 
     x = var('x')
-    assert set(run(5, x, father("Homer", x))) == set(("Bart", "Lisa"))
-    assert set(run(5, x, father(x, "Bart")))  == set(("Homer",))
+    assert set(run(5, x, parent("Homer", x))) == set(("Bart", "Lisa"))
+    assert set(run(5, x, parent(x, "Bart")))  == set(("Homer", "Marge"))
 
-    father.add_fact("Abe", "Homer")
-
-    def grandfather(x, y):
+    def grandparent(x, y):
         z = var('z')
-        return conde((father(x, z), father(z, y)))
+        return conde((parent(x, z), parent(z, y)))
 
-    assert set(run(5, x, grandfather(x, "Bart") )) == set(("Abe",))
+    assert set(run(5, x, grandparent(x, "Bart") )) == set(("Abe", "Jackie"))
