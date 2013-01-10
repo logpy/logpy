@@ -75,7 +75,7 @@ def bindstar(stream, *goals):
     else:
         return bindstar(bind(stream, goals[0]), *goals[1:])
 
-def rrun(n, x, *goals):
+def run(n, x, *goals):
     seq = (walk_star(x, s) for s in bindstar(({},), *goals))
     if isinstance(n, int) and n > 0:
         return tuple(it.islice(seq, 0, n))

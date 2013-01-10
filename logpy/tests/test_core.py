@@ -1,5 +1,5 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
-        bindstar, rrun, membero)
+        bindstar, run, membero)
 
 w, x, y, z = 'wxyz'
 
@@ -60,15 +60,15 @@ def test_bindstar():
 
 def test_run():
     x,y,z = map(var, 'xyz')
-    assert rrun(1, x,  eq(x, 1)) == (1,)
-    assert rrun(2, x,  eq(x, 1)) == (1,)
-    assert rrun(1, x,  eq(x, (y, z)),
+    assert run(1, x,  eq(x, 1)) == (1,)
+    assert run(2, x,  eq(x, 1)) == (1,)
+    assert run(1, x,  eq(x, (y, z)),
                        eq(y, 3),
                        eq(z, 4)) == ((3, 4),)
-    assert set(rrun(2, x, conde(eq(x, 1), eq(x, 2)))) == set((1, 2))
+    assert set(run(2, x, conde(eq(x, 1), eq(x, 2)))) == set((1, 2))
 
 def test_membero():
     x = var('x')
-    assert set(rrun(5, x, membero(x, (1,2,3)),
+    assert set(run(5, x, membero(x, (1,2,3)),
                           membero(x, (2,3,4)))) == set((2,3))
-    assert rrun(5, x, membero(2, (1, x, 3))) == (2,)
+    assert run(5, x, membero(2, (1, x, 3))) == (2,)
