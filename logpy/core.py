@@ -1,3 +1,5 @@
+import itertools as it
+
 class var(object):
     def __new__(cls, token):
         return (var, token)
@@ -45,3 +47,44 @@ def unify(u, v, s):  # no check at the moment
                 return False
         return s
     return False
+
+def eq(u, v):
+    def goal_eq(s):
+        result = unify(u, v, s)
+        if result is not False:
+            yield result
+    return goal_eq
+
+def unique(seq):
+    seen = set()
+    for item in seq:
+        try:  # TODO, deal with dicts and hashability
+            if item not in seen:
+                seen.add(item)
+                yield item
+        except TypeError:
+            yield item
+
+# TODO: replace chain with interleave
+
+def conde(*goals):
+    def goal_conde(s):
+        return unique(it.chain(*[goal(s) for goal in goals]))
+    return goal_conde
+
+def bind(stream, goal):
+    """ Filter a stream by a goal """
+    return unique(it.chain(*it.imap(goal, stream))) # TODO: interleave
+
+def bindstar(stream, *goals):
+    if not goals:
+        return stream
+    else:
+        return bindstar(bind(stream, goals[0]), *goals[1:])
+
+def rrun(n, x, *goals):
+    seq = (walk_star(x, s) for s in bindstar(({},), *goals))
+    if isinstance(n, int) and n > 0:
+        return tuple(it.islice(seq, 0, n))
+    if n is None:
+        return seq
