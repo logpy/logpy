@@ -1,6 +1,6 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        heado, tailo)
+        heado, tailo, Relation)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -119,3 +119,20 @@ def test_heado():
 def test_tailo():
     x = var('x')
     assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
+
+def test_relation():
+    father = Relation("parent", "child")
+    father.add_fact("Homer", "Bart")
+    father.add_fact("Homer", "Lisa")
+
+    x = var('x')
+    assert set(run(5, x, father("Homer", x))) == set(("Bart", "Lisa"))
+    assert set(run(5, x, father(x, "Bart")))  == set(("Homer",))
+
+    father.add_fact("Abe", "Homer")
+
+    def grandfather(x, y):
+        z = var('z')
+        return conde((father(x, z), father(z, y)))
+
+    assert set(run(5, x, grandfather(x, "Bart") )) == set(("Abe",))

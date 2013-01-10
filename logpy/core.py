@@ -162,3 +162,17 @@ def isempty(it):
         return False
     except StopIteration:
         return True
+
+class Relation(object):
+    def __init__(self, *args):
+        self.args = args
+        self.facts = set()
+
+    def add_fact(self, *inputs):
+        if not len(inputs) == len(self.args):
+            raise ValueError("Expected %d attributes"%len(self.args))
+        self.facts.add(tuple(inputs))
+
+    def __call__(self, *args):
+        return conde(*[[eq(a, b) for a, b in zip(args, fact)]
+                                 for fact in self.facts])
