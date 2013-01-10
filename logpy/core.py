@@ -79,11 +79,6 @@ def bindstar(stream, *goals):
     else:
         return bindstar(bind(stream, evalt(goals[0])), *goals[1:])
 
-def all_(*goals):
-    def all_goal(stream):
-        return bindstar(stream, *goals)
-    return all_goal
-
 def run(n, x, *goals):
     seq = (walk_star(x, s) for s in bindstar(({},), *goals))
     if isinstance(n, int) and n > 0:
@@ -135,10 +130,6 @@ def tailo(x, coll):
 #                 ((heado, a, l),   (tailo, d, l),
 #                  (heado, a, out), (tailo, res, out),
 #                  (appendo, d, s, res)))
-#    return conde( all_(eq(l, ()), eq(s, out)),
-#                  all_(heado(a, l),   tailo(d, l),
-#                       heado(a, out), tailo(res, out),
-#                       appendo(d, s, res)))
 
 def evalt(t):
     """ Evaluate tuple if unevaluated
