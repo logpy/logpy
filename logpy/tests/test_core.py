@@ -1,5 +1,5 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
-        bindstar, rrun)
+        bindstar, rrun, membero)
 
 w, x, y, z = 'wxyz'
 
@@ -66,3 +66,9 @@ def test_run():
                        eq(y, 3),
                        eq(z, 4)) == ((3, 4),)
     assert set(rrun(2, x, conde(eq(x, 1), eq(x, 2)))) == set((1, 2))
+
+def test_membero():
+    x = var('x')
+    assert set(rrun(5, x, membero(x, (1,2,3)),
+                          membero(x, (2,3,4)))) == set((2,3))
+    assert rrun(5, x, membero(2, (1, x, 3))) == (2,)

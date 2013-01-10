@@ -48,13 +48,6 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
-def eq(u, v):
-    def goal_eq(s):
-        result = unify(u, v, s)
-        if result is not False:
-            yield result
-    return goal_eq
-
 def unique(seq):
     seen = set()
     for item in seq:
@@ -88,3 +81,20 @@ def rrun(n, x, *goals):
         return tuple(it.islice(seq, 0, n))
     if n is None:
         return seq
+
+# Goals
+def fail(s):
+    return ()
+def success(s):
+    return (s,)
+
+def eq(u, v):
+    def goal_eq(s):
+        result = unify(u, v, s)
+        if result is not False:
+            yield result
+    return goal_eq
+
+def membero(x, coll):
+    return conde(*[eq(x, item) for item in coll])
+
