@@ -17,9 +17,9 @@ The following code asks for a number, x, such that `x == 1`
 ~~~~~~~~~~~
 
 [Unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29)
-enables the query complex expressions.
+enables the query of complex expressions.
 The following code asks for a number, x, such that 
-`(1, (2, 3)) == (1, (x, 3))` is true.
+`(1, (2, 3)) == (1, (x, 3))` holds.
 
 ~~~~~~~~~~~Python
 >>> run(1, x, eq((1, (2, 3)), (1, (x, 3))))
@@ -47,7 +47,6 @@ Simple goals can be combined into complex ones using goal constructors like
 
 The following example uses `conde` and `eq` to ask for two numbers such that
 `x == 1` *or* `x == 2`.
-for up to three x's such that either `x == 1` or `x == 2`
 
 ~~~~~~~~~~~Python
 >>> run(2, x, conde([eq(x, 1)], [eq(x, 2)]))
@@ -56,7 +55,7 @@ for up to three x's such that either `x == 1` or `x == 2`
 
 LogPy supports relations and facts.  This is best demonstrated by example. 
 
-The following code creates a parent relationship and uses it to state some
+The following code creates a parent relationship and uses it to state 
 facts about who is a parent of whom.
 
 ~~~~~~~~~~~Python
