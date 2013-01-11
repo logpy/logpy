@@ -86,3 +86,15 @@ License
 -------
 
 New BSD license. See LICENSE.txt
+
+References
+----------
+
+This closely follows the designs of
+[miniKanren](http://kanren.sourceforge.net/), a Scheme library for relational
+programming.  
+More information can be found in the 
+[thesis of William
+Byrd](https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf).
+miniKanren came to our attention through the Clojure implementation in the 
+[core.logic](https://github.com/clojure/core.logic) library.
