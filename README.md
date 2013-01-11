@@ -76,3 +76,13 @@ We can define compound goals from smaller ones.
 >>> run(2, x, grandparent(x, "Bart"))
 ('Abe,')
 ~~~~~~~~~~~
+
+Author
+------
+
+[Matthew Rocklin](http://matthewrocklin.com)
+
+License
+-------
+
+New BSD license. See LICENSE.txt
