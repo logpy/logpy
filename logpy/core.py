@@ -181,3 +181,6 @@ class Relation(object):
 
 def fact(rel, *args):
     rel.add_fact(*args)
+def facts(rel, *lists):
+    for l in lists:
+        fact(rel, *l)

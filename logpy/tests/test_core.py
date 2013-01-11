@@ -1,6 +1,6 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        heado, tailo, Relation, fact)
+        heado, tailo, Relation, fact, facts)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -142,3 +142,13 @@ def test_relation():
 def test_var_inputs():
     assert var(1) == var(1)
     assert var() != var()
+
+def test_fact():
+    rel = Relation()
+    fact(rel, 1, 2)
+    assert (1, 2) in rel.facts
+    assert (10, 10) not in rel.facts
+
+    facts(rel, (2, 3), (3, 4))
+    assert (2, 3) in rel.facts
+    assert (3, 4) in rel.facts
