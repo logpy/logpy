@@ -284,43 +284,30 @@ def facts(rel, *lists):
     for l in lists:
         fact(rel, *l)
 
-'''
-This is an attempt to create appendo.  It does not currently work.
-As written in miniKanren, appendo uses LISP machinery not present in Python
-such as quoted expressions and macros for short circuiting.  I have gotten
-around some of these issues but not all.  appendo is a stress test for this
-implementation
-
-quoting:
-    By convention we replace fn(arg1, arg2) with (fn, arg1, arg2) as the
-    unevaluated form.  The function evalt evaluates such tuples.
+"""
+-This is an attempt to create appendo.  It does not currently work.
+-As written in miniKanren, appendo uses LISP machinery not present in Python
+-such as quoted expressions and macros for short circuiting.  I have gotten
+-around some of these issues but not all.  appendo is a stress test for this
+-implementation
+"""
 
 def heado(x, coll):
-    def head_goal(s):
-        x2 = walk(x, s)
-        coll2 = walk(coll, s)
-        if coll2:
-            return eq(x2, coll2[0])(s)
-        else:
-            return fail(s)
-    return head_goal
+    if coll:
+        return eq(x, coll[0])
+    else:
+        return fail
 
 def tailo(x, coll):
-    def tail_goal(s):
-        x2 = walk(x, s)
-        coll2 = walk(coll, s)
-        if coll2:
-            return eq(x2, coll2[1:])(s)
-        else:
-            return fail(s)
-    return tail_goal
+    if coll:
+        return eq(x, coll[1:])
+    else:
+        return fail
 
 def appendo(l, s, out):
-    """ Byrd thesis pg. 267 """
-    print l, s, out
+    """ Byrd thesis pg. 247 """
     a, d, res = [var(wild()) for i in range(3)]
     return conde((eq(l, ()), eq(s, out)),
                  ((heado, a, l),   (tailo, d, l),
                   (heado, a, out), (tailo, res, out),
                   (appendo, d, s, res)))
-'''

@@ -1,7 +1,9 @@
 from core import (walk, walkstar, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        Relation, fact, facts, take, reify, goal_tuple_eval)
+        Relation, fact, facts, take, reify, goal_tuple_eval, tailo, heado,
+        appendo)
 import itertools
+from unittest import expectedFailure as FAIL
 
 w, x, y, z = 'wxyz'
 
@@ -99,15 +101,6 @@ def test_membero():
                          membero(x, (2,3,4)))) == set((2,3))
     assert run(5, x, membero(2, (1, x, 3))) == (2,)
 
-"""
-def dont_test_appendo():
-    x = var('x')
-    assert tuple(appendo((), (1,2), (1,2))({})) == ({},)
-    assert tuple(appendo((), (1,2), (1))({})) == ()
-    assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
-    assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
-"""
-
 def test_evalt():
     add = lambda x, y: x + y
     assert evalt((add, 2, 3)) == 5
@@ -171,7 +164,6 @@ def test_goal_tuple_eval():
     results = tuple(goal_tuple_eval((membero, x, y))(s))
     assert all(res[x] in (1, 2) for res in results)
 
-"""
 def test_heado():
     x = var('x')
     assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
@@ -180,4 +172,15 @@ def test_heado():
 def test_tailo():
     x = var('x')
     assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
-"""
+
+def test_appendo():
+    x = var('x')
+    assert tuple(appendo((), (1,2), (1,2))({})) == ({},)
+    assert tuple(appendo((), (1,2), (1))({})) == ()
+    assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
+    assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
+
+def failing_test_appendo():
+    pass
+    #assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
+    #assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
