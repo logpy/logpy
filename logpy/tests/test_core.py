@@ -1,4 +1,4 @@
-from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
+from core import (walk, walkstar, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
         Relation, fact, facts, take)
 import itertools
@@ -15,7 +15,7 @@ def test_deep_walk():
     """ Page 30 of Byrd thesis """
     s = {z: 6, y: 5, x: (y, z)}
     assert walk(x, s) == (y, z)
-    assert walk_star(x, s) == (5, 6)
+    assert walkstar(x, s) == (5, 6)
 
 def test_isvar():
     assert not isvar(3)

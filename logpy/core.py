@@ -46,7 +46,7 @@ def deep_transitive_get(key, d):
     return key
 
 walk = transitive_get
-walk_star = deep_transitive_get
+walkstar = deep_transitive_get
 
 def assoc(dict, key, value):
     d = dict.copy()
@@ -137,7 +137,7 @@ def run(n, x, *goals):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, (walk_star(x, s) for s in bindstar(({},), *goals)))
+    return take(n, (walkstar(x, s) for s in bindstar(({},), *goals)))
 
 def take(n, seq):
     if n is None:
