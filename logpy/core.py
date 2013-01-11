@@ -105,7 +105,11 @@ def eq(u, v):
     return goal_eq
 
 def membero(x, coll):
-    return conde(*[[eq(x, item)] for item in coll])
+    def member_goal(s):
+        x2 = walk(x, s)
+        coll2 = walk(coll, s)
+        return conde(*[[eq(x2, item)] for item in coll2])(s)
+    return member_goal
 
 def evalt(t):
     """ Evaluate tuple if unevaluated

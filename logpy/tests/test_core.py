@@ -144,6 +144,11 @@ def test_fact():
     assert (2, 3) in rel.facts
     assert (3, 4) in rel.facts
 
+def test_uneval_membero():
+    x, y = var('x'), var('y')
+    print set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y)))
+    assert set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
+            set((1,2,3,4,5,6))
 
 """
 def test_heado():
