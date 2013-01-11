@@ -48,6 +48,13 @@ def deep_transitive_get(key, d):
 walk = transitive_get
 walkstar = deep_transitive_get
 
+def reify(e, s):
+    if isvar(e):
+        return walkstar(e, s)
+    if isinstance(e, tuple):
+        return tuple(reify(arg, s) for arg in e)
+    return e
+
 def assoc(dict, key, value):
     d = dict.copy()
     d[key] = value

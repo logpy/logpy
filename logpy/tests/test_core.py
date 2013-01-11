@@ -1,6 +1,6 @@
 from core import (walk, walkstar, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        Relation, fact, facts, take)
+        Relation, fact, facts, take, reify)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -16,6 +16,16 @@ def test_deep_walk():
     s = {z: 6, y: 5, x: (y, z)}
     assert walk(x, s) == (y, z)
     assert walkstar(x, s) == (5, 6)
+
+def test_reify():
+    x, y, z = var(), var(), var()
+    s = {x: 1, y: 2, z: (x, y)}
+    assert reify(x, s) == 1
+    assert reify(10, s) == 10
+    assert reify((1, y), s) == (1, 2)
+    assert reify((1, (x, (y, 2))), s) == (1, (1, (2, 2)))
+    assert reify(z, s) == (1, 2)
+
 
 def test_isvar():
     assert not isvar(3)
