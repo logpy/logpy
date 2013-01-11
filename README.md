@@ -16,7 +16,7 @@ following we ask for a number x, such that `x == 1`
 ~~~~~~~~~~~
 
 This uses
-[Unification](http://en.wikipedia.org/wiki/Unification_(computer_science)) to
+[Unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29) to
 dive within expressions.  For example, for which x is the expression 
 `(1, (2, 3)) == (1, (x, 3))` true?
 
