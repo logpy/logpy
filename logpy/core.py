@@ -1,8 +1,13 @@
 import itertools as it
 
 class var(object):
-    def __new__(cls, token):
+    def __new__(cls, *token):
+        if len(token) == 0:
+            token = wild()
+        elif len(token) == 1:
+            token = token[0]
         return (var, token)
+
 class wild(object):
     pass
 isvar = lambda t: isinstance(t, tuple) and len(t) >= 1 and t[0] is var
@@ -176,4 +181,3 @@ class Relation(object):
 
 def fact(rel, *args):
     rel.add_fact(*args)
-

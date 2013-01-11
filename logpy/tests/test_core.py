@@ -134,7 +134,11 @@ def test_relation():
     assert set(run(5, x, parent(x, "Bart")))  == set(("Homer", "Marge"))
 
     def grandparent(x, z):
-        y = var('y')
+        y = var()
         return conde((parent(x, y), parent(y, z)))
 
     assert set(run(5, x, grandparent(x, "Bart") )) == set(("Abe", "Jackie"))
+
+def test_var_inputs():
+    assert var(1) == var(1)
+    assert var() != var()
