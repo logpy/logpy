@@ -1,6 +1,6 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        heado, tailo, Relation, fact, facts)
+        Relation, fact, facts)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -111,15 +111,6 @@ def test_isempty():
     assert not isempty(a)
     assert next(it) == 1
 
-def test_heado():
-    x = var('x')
-    assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
-    assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
-
-def test_tailo():
-    x = var('x')
-    assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
-
 def test_relation():
     parent = Relation()
     fact(parent, "Homer", "Bart")
@@ -152,3 +143,15 @@ def test_fact():
     facts(rel, (2, 3), (3, 4))
     assert (2, 3) in rel.facts
     assert (3, 4) in rel.facts
+
+
+"""
+def test_heado():
+    x = var('x')
+    assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
+    assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
+
+def test_tailo():
+    x = var('x')
+    assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
+"""
