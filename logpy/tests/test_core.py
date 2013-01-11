@@ -1,6 +1,6 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        Relation, fact, facts)
+        Relation, fact, facts, take)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -72,10 +72,16 @@ def test_run():
     x,y,z = map(var, 'xyz')
     assert run(1, x,  eq(x, 1)) == (1,)
     assert run(2, x,  eq(x, 1)) == (1,)
+    assert run(0, x,  eq(x, 1)) == (1,)
     assert run(1, x,  eq(x, (y, z)),
                        eq(y, 3),
                        eq(z, 4)) == ((3, 4),)
     assert set(run(2, x, conde([eq(x, 1)], [eq(x, 2)]))) == set((1, 2))
+
+def test_take():
+    assert take(2, range(5)) == (0, 1)
+    assert take(0, range(5)) == (0, 1, 2, 3, 4)
+    assert take(None, range(5)) == range(5)
 
 def test_membero():
     x = var('x')
@@ -146,9 +152,8 @@ def test_fact():
 
 def test_uneval_membero():
     x, y = var('x'), var('y')
-    print set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y)))
     assert set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
-            set((1,2,3,4,5,6))
+           set((1,2,3,4,5,6))
 
 """
 def test_heado():

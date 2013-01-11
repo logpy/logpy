@@ -85,11 +85,15 @@ def bindstar(stream, *goals):
         return bindstar(bind(stream, evalt(goals[0])), *goals[1:])
 
 def run(n, x, *goals):
-    seq = (walk_star(x, s) for s in bindstar(({},), *goals))
-    if isinstance(n, int) and n > 0:
-        return tuple(it.islice(seq, 0, n))
+    return take(n, (walk_star(x, s) for s in bindstar(({},), *goals)))
+
+def take(n, seq):
     if n is None:
         return seq
+    if n == 0:
+        return tuple(seq)
+    return tuple(it.islice(seq, 0, n))
+
 
 # Goals
 def fail(s):
