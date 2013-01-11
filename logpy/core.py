@@ -164,15 +164,16 @@ def isempty(it):
         return True
 
 class Relation(object):
-    def __init__(self, *args):
-        self.args  = args
+    def __init__(self):
         self.facts = set()
 
     def add_fact(self, *inputs):
-        if self.args and not len(inputs) == len(self.args):
-            raise ValueError("Expected %d attributes"%len(self.args))
         self.facts.add(tuple(inputs))
 
     def __call__(self, *args):
         return conde(*[[eq(a, b) for a, b in zip(args, fact)]
                                  for fact in self.facts])
+
+def fact(rel, *args):
+    rel.add_fact(*args)
+

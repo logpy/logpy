@@ -1,6 +1,6 @@
 from core import (walk, walk_star, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        heado, tailo, Relation)
+        heado, tailo, Relation, fact)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -122,19 +122,19 @@ def test_tailo():
 
 def test_relation():
     parent = Relation()
-    parent.add_fact("Homer", "Bart")
-    parent.add_fact("Homer", "Lisa")
-    parent.add_fact("Marge", "Bart")
-    parent.add_fact("Marge", "Lisa")
-    parent.add_fact("Abe", "Homer")
-    parent.add_fact("Jackie", "Marge")
+    fact(parent, "Homer", "Bart")
+    fact(parent, "Homer", "Lisa")
+    fact(parent, "Marge", "Bart")
+    fact(parent, "Marge", "Lisa")
+    fact(parent, "Abe", "Homer")
+    fact(parent, "Jackie", "Marge")
 
     x = var('x')
     assert set(run(5, x, parent("Homer", x))) == set(("Bart", "Lisa"))
     assert set(run(5, x, parent(x, "Bart")))  == set(("Homer", "Marge"))
 
-    def grandparent(x, y):
-        z = var('z')
-        return conde((parent(x, z), parent(z, y)))
+    def grandparent(x, z):
+        y = var('y')
+        return conde((parent(x, y), parent(y, z)))
 
     assert set(run(5, x, grandparent(x, "Bart") )) == set(("Abe", "Jackie"))
