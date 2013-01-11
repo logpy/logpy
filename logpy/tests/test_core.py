@@ -1,6 +1,6 @@
 from core import (walk, walkstar, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
-        Relation, fact, facts, take, reify)
+        Relation, fact, facts, take, reify, goal_tuple_eval)
 import itertools
 
 w, x, y, z = 'wxyz'
@@ -164,6 +164,12 @@ def test_uneval_membero():
     x, y = var('x'), var('y')
     assert set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
            set((1,2,3,4,5,6))
+
+def test_goal_tuple_eval():
+    x, y = var(), var()
+    s = {y: (1, 2)}
+    results = tuple(goal_tuple_eval((membero, x, y))(s))
+    assert all(res[x] in (1, 2) for res in results)
 
 """
 def test_heado():

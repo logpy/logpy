@@ -129,7 +129,7 @@ def bindstar(stream, *goals):
     if isempty(a):
         return stream
     else:
-        return bindstar(bind(stream, evalt(goals[0])), *goals[1:])
+        return bindstar(bind(stream, goaleval(goals[0])), *goals[1:])
 
 def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
@@ -174,11 +174,40 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    def member_goal(s):
-        x2 = walk(x, s)
-        coll2 = walk(coll, s)
-        return conde(*[[eq(x2, item)] for item in coll2])(s)
-    return member_goal
+    return conde(*[[eq(x, item)] for item in coll])
+
+def goaleval(goal):
+    """ Evaluate an possibly unevaluated goal
+
+    See also:
+        goal_tuple_eval
+    """
+    if callable(goal):          # goal is already a function like eq(x, 1)
+        return goal
+    if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
+        return goal_tuple_eval(goal)
+    raise TypeError("Expected either function or tuple")
+
+def goal_tuple_eval(goalt):
+    """ Evaluate an unevaluated goal tuple
+
+    Converts a goal-tuple like (eq, x, 1) into a goal like eq(x, 1) so that the
+    tuple first reifies against the input substitution.  This enables the use
+    of unevaluated goals.
+
+    >>> x, y = var(), var()
+    >>> g = goal_tuple_eval((membero, x, y))
+
+    This would fail if done as ``membero(x, y)`` because y is a var, not a
+    collection.  goal_tuple_eval wait to evaluate membero until the last
+    moment.  It uses the substitution given to the goal to first reify the
+    goal tuple, replacing all variables with the current values in the
+    substitution.
+
+    See also:
+        goaleval - safe to use on eq(x, 1) or (eq, x, 1)
+    """
+    return lambda s: evalt(reify(goalt, s))(s)
 
 def evalt(t):
     """ Evaluate tuple if unevaluated
