@@ -1,7 +1,7 @@
 from os.path import exists
 from setuptools import setup
 
-setup(name='logpy',
+setup(name='logic',
       version='0.1',
       description='Logic Programming in python',
       url='http://github.com/logpy/logpy',

@@ -86,6 +86,18 @@ relations.
 ('Abe,')
 ~~~~~~~~~~~
 
+Install
+-------
+
+With `pip` or `easy_install`
+
+    pip install logic
+
+From source
+
+    git clone git@github.com:logpy/logpy.git
+    cd logpy
+
 Author
 ------
 
