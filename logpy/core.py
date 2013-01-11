@@ -1,6 +1,8 @@
 import itertools as it
 
 class var(object):
+    """ Logic Variable """
+
     def __new__(cls, *token):
         if len(token) == 0:
             token = wild()
@@ -8,16 +10,34 @@ class var(object):
             token = token[0]
         return (var, token)
 
-class wild(object):
-    pass
 isvar = lambda t: isinstance(t, tuple) and len(t) >= 1 and t[0] is var
 
+class wild(object):
+    pass
+
 def transitive_get(key, d):
+    """ Transitive dict.get
+
+    >>> d = {1: 2, 2: 3, 3: 4}
+    >>> d.get(1)
+    2
+    >>> transitive_get(1, d)
+    4
+    """
     while key in d:
         key = d[key]
     return key
 
 def deep_transitive_get(key, d):
+    """ Transitive get that propagates within tuples
+
+    >>> d = {1: (2, 3), 2: 12, 3: 13}
+    >>> transitive_get(1, d)
+    (2, 3)
+    >>> deep_transitive_get(1, d)
+    (12, 13)
+    """
+
     key = transitive_get(key, d)
     if isvar(key):
         return key
@@ -25,10 +45,8 @@ def deep_transitive_get(key, d):
         return tuple(map(lambda k: deep_transitive_get(k, d), key))
     return key
 
-
 walk = transitive_get
 walk_star = deep_transitive_get
-""" Get the transitive value of v in s """
 
 def assoc(dict, key, value):
     d = dict.copy()
@@ -36,6 +54,11 @@ def assoc(dict, key, value):
     return d
 
 def unify(u, v, s):  # no check at the moment
+    """ Find substitution so that u == v while satisfying s
+
+    >>> unify((1, x), (1, 2), {})
+    {x: 2}
+    """
     u = walk(u, s)
     v = walk(v, s)
     if u is v:
@@ -67,15 +90,32 @@ def unique(seq):
 # TODO: replace chain with interleave
 
 def conde(*goalseqs):
+    """ Logical cond
+
+    Goal constructor to provides logical AND and OR
+
+    conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
+    """
     def goal_conde(s):
         return unique(it.chain(*[bindstar((s,), *goals) for goals in goalseqs]))
     return goal_conde
 
 def bind(stream, goal):
-    """ Filter a stream by a goal """
+    """ Bind a goal to a stream
+
+    inputs:
+        stream - sequence of substitutions (dicts)
+        goal   - function :: substitution -> stream
+
+    """
     return unique(it.chain(*it.imap(goal, stream))) # TODO: interleave
 
 def bindstar(stream, *goals):
+    """ Bind many goals to a stream
+
+    See Also:
+        bind
+    """
     if not goals:
         return stream
     a, b, stream = it.tee(stream, 3)
@@ -85,6 +125,18 @@ def bindstar(stream, *goals):
         return bindstar(bind(stream, evalt(goals[0])), *goals[1:])
 
 def run(n, x, *goals):
+    """ Run a logic program.  Obtain n solutions to satisfy goals.
+
+    n     - number of desired solutions.  See ``take``
+            0 for all
+            None for a lazy sequence
+    x     - Output variable
+    goals - a sequence of goals.  All must be true
+
+    >>> from logpy import run, var, eq
+    >>> run(1, x, eq(x, 1))
+    (1,)
+    """
     return take(n, (walk_star(x, s) for s in bindstar(({},), *goals)))
 
 def take(n, seq):
@@ -102,6 +154,11 @@ def success(s):
     return (s,)
 
 def eq(u, v):
+    """ Goal such that u == v
+
+    See also:
+        unify
+    """
     def goal_eq(s):
         result = unify(u, v, s)
         if result is not False:
@@ -109,6 +166,7 @@ def eq(u, v):
     return goal_eq
 
 def membero(x, coll):
+    """ Goal such that x is an item of coll """
     def member_goal(s):
         x2 = walk(x, s)
         coll2 = walk(coll, s)
@@ -152,6 +210,12 @@ class Relation(object):
         self.facts = set()
 
     def add_fact(self, *inputs):
+        """ Add a fact to the knowledgebase.
+
+        See Also:
+            fact
+            facts
+        """
         self.facts.add(tuple(inputs))
 
     def __call__(self, *args):
@@ -159,8 +223,28 @@ class Relation(object):
                                  for fact in self.facts])
 
 def fact(rel, *args):
+    """ Declare a fact
+
+    >>> from logpy import fact, Relation, var
+    >>> parent = Relation()
+    >>> fact(parent, "Homer", "Bart")
+    >>> fact(parent, "Homer", "Lisa")
+    >>> x = var()
+    >>> run(1, x, parent(x, "Bart"))
+    ('Homer',)
+    """
     rel.add_fact(*args)
 def facts(rel, *lists):
+    """ Declare several facts
+
+    >>> from logpy import fact, Relation, var
+    >>> parent = Relation()
+    >>> facts(parent,  ("Homer", "Bart"),
+    ...                ("Homer", "Lisa"))
+    >>> x = var()
+    >>> run(1, x, parent(x, "Bart"))
+    ('Homer',)
+    """
     for l in lists:
         fact(rel, *l)
 
