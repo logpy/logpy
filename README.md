@@ -25,9 +25,10 @@ dive within expressions.  For example, for which x is the expression
 (2,)
 ~~~~~~~~~~~
 
-The above examples use `eq`, a *goal*.  We use goals to state relations we want
-to be true.  Here we use `membero(item, coll)` which states that `item` is a
-member of `coll`
+The above examples use `eq`, a *goal*.  We use goals to state relations that 
+we want to be true.  Here we use `membero(item, coll)` which states that `item`
+is a member of `coll`.  We use it twice and ask for all values x such that x is
+a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
 
 ~~~~~~~~~~~Python
 >>> run(3, x, membero(x, (1, 2, 3)),  # x is a member of (1, 2, 3)
@@ -63,6 +64,8 @@ state some known facts about who is a parent of whom.
 ('Lisa', 'Bart')
 ~~~~~~~~~~~~
 
+Note that we can use the variable x in either position.  
+
 We can define compound goals from smaller ones.
 
 ~~~~~~~~~~~Python
@@ -73,4 +76,3 @@ We can define compound goals from smaller ones.
 >>> run(2, x, grandparent(x, "Bart"))
 ('Abe,')
 ~~~~~~~~~~~
-
