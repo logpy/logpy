@@ -111,11 +111,13 @@ New BSD license. See LICENSE.txt
 References
 ----------
 
-This closely follows the designs of
-[miniKanren](http://kanren.sourceforge.net/), a Scheme library for relational
-programming.  
+[Logic Programming](http://en.wikipedia.org/wiki/Logic_programming) 
+was first popularized through the 
+[Prolog language](http://en.wikipedia.org/wiki/Prolog). 
 
-More information can be found in the 
+This implementation closely follows the design of
+[miniKanren](http://kanren.sourceforge.net/), a Scheme library for relational
+programming.  More information can be found in the 
 [thesis of William
 Byrd](https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf).
 
