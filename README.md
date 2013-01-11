@@ -9,7 +9,7 @@ Examples
 In LogPy we ask for the values which satisfy a set of relations.  In the
 following we ask for a number x, such that `x == 1`
 ~~~~~~~~~~~Python
->>> from logpy import run, eq, membero, var
+>>> from logpy import run, eq, membero, var, conde
 >>> x = var()
 >>> run(1, x, eq(1, x))
 (1,)
@@ -35,7 +35,7 @@ a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
               membero(x, (2, 3, 4)))  # x is a member of (2, 3, 4)
 (2, 3)
 
->>> run(1, x, membero(2, (2, x, 4)))  # What should x be to make this true?
+>>> run(1, x, membero(3, (2, x, 4)))  # What should x be so that 3 is in coll?
 (3,)
 ~~~~~~~~~~~
 
@@ -51,13 +51,13 @@ LogPy supports relations and facts.  Here we create a parent relationship and
 state some known facts about who is a parent of whom.
 
 ~~~~~~~~~~~Python
->>> from logpy import Relation, facts, conde
+>>> from logpy import Relation, facts
 >>> parent = Relation()
 >>> facts(parent, ("Homer", "Bart"),
-                  ("Homer", "Lisa"),
-                  ("Abe",  "Homer"))
+...               ("Homer", "Lisa"),
+...               ("Abe",  "Homer"))
 
->>> run(2, x, parent(x, "Bart"))
+>>> run(1, x, parent(x, "Bart"))
 ('Homer',)
 
 >>> run(2, x, parent("Homer", x))
