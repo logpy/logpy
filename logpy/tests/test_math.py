@@ -4,5 +4,5 @@ from logpy.math import primo
 
 def test_primo():
     x = var()
-    assert tuple(run(0, x, membero(x, (1,2,3,4,5,6,7,8,9,10,11)),
-                           (primo, x))) == (2, 3, 5, 7, 11)
+    assert set(run(0, x, membero(x, (1,2,3,4,5,6,7,8,9,10,11)),
+                           (primo, x))) == set((2, 3, 5, 7, 11))
