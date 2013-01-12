@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, unique, eq, conde,
         bind, bindstar, run, membero, evalt, isempty, fail, success,
         Relation, fact, facts, take, reify, goal_tuple_eval, tailo, heado,
-        appendo, unique_dict)
+        appendo, unique_dict, interleave)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -166,6 +166,10 @@ def test_goal_tuple_eval():
     s = {y: (1, 2)}
     results = tuple(goal_tuple_eval((membero, x, y))(s))
     assert all(res[x] in (1, 2) for res in results)
+
+def test_interleave():
+    assert ''.join(interleave(('ABC', '123'))) == 'A1B2C3'
+    assert ''.join(interleave(('ABC', '1'))) == 'A1BC'
 
 def test_heado():
     x = var('x')

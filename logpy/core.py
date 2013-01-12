@@ -41,9 +41,10 @@ def deep_transitive_get(key, d):
     key = transitive_get(key, d)
     if isvar(key):
         return key
-    if isinstance(key, tuple):
+    elif isinstance(key, tuple):
         return tuple(map(lambda k: deep_transitive_get(k, d), key))
-    return key
+    else:
+        return key
 
 walk = transitive_get
 walkstar = deep_transitive_get
@@ -51,9 +52,10 @@ walkstar = deep_transitive_get
 def reify(e, s):
     if isvar(e):
         return walkstar(e, s)
-    if isinstance(e, tuple):
+    elif isinstance(e, tuple):
         return tuple(reify(arg, s) for arg in e)
-    return e
+    else:
+        return e
 
 def assoc(dict, key, value):
     d = dict.copy()
@@ -109,8 +111,21 @@ def conde(*goalseqs):
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
     def goal_conde(s):
-        return unique_dict(it.chain(*[bindstar((s,), *goals) for goals in goalseqs]))
+        return unique_dict(interleave(bindstar((s,), *goals)
+                                     for goals in goalseqs))
     return goal_conde
+
+def interleave(seqs):
+    finished = False
+    iters = map(iter, seqs)
+    while not finished:
+        finished = True
+        for itr in iters:
+            try:
+                yield next(itr)
+                finished = False
+            except StopIteration:
+                pass
 
 def bind(stream, goal):
     """ Bind a goal to a stream
@@ -120,7 +135,9 @@ def bind(stream, goal):
         goal   - function :: substitution -> stream
 
     """
-    return unique_dict(it.chain(*it.imap(goal, stream))) # TODO: interleave
+    tmp, stream = it.tee(stream)
+    tmp = tuple(tmp)
+    return unique_dict(interleave(it.imap(goaleval(goal), stream)))
 
 def bindstar(stream, *goals):
     """ Bind many goals to a stream
@@ -134,7 +151,7 @@ def bindstar(stream, *goals):
     if isempty(a):
         return stream
     else:
-        return bindstar(bind(stream, goaleval(goals[0])), *goals[1:])
+        return bindstar(bind(stream, goals[0]), *goals[1:])
 
 def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
