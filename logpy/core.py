@@ -116,16 +116,13 @@ def conde(*goalseqs):
     return goal_conde
 
 def interleave(seqs):
-    finished = False
     iters = map(iter, seqs)
-    while not finished:
-        finished = True
+    while iters:
         for itr in iters:
             try:
                 yield next(itr)
-                finished = False
             except StopIteration:
-                pass
+                iters.remove(itr)
 
 def bind(stream, goal):
     """ Bind a goal to a stream
