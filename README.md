@@ -8,12 +8,12 @@ Examples
 
 LogPy enables the expression of relations and the search for values which
 satisfy them.  
-The following code asks for a number, x, such that `x == 1`
+The following code asks for one number, x, such that `x == 5`
 ~~~~~~~~~~~Python
 >>> from logpy import run, eq, membero, var, conde
 >>> x = var()
->>> run(1, x, eq(1, x))
-(1,)
+>>> run(1, x, eq(x, 5))
+(5,)
 ~~~~~~~~~~~
 
 [Unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29)
