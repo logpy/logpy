@@ -289,6 +289,7 @@ def facts(rel, *lists):
     for l in lists:
         fact(rel, *l)
 
+
 """
 -This is an attempt to create appendo.  It does not currently work.
 -As written in miniKanren, appendo uses LISP machinery not present in Python

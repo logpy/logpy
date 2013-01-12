@@ -1,5 +1,5 @@
-from core import (walk, walkstar, isvar, var, unify, unique, eq, conde, bind,
-        bindstar, run, membero, evalt, isempty, fail, success,
+from logpy.core import (walk, walkstar, isvar, var, unify, unique, eq, conde,
+        bind, bindstar, run, membero, evalt, isempty, fail, success,
         Relation, fact, facts, take, reify, goal_tuple_eval, tailo, heado,
         appendo, unique_dict)
 import itertools
