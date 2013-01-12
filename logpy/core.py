@@ -84,14 +84,19 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
+def unique_dict(seq):
+    seen = set()
+    for d in seq:
+        h = hash(frozenset(d.items()))
+        if h not in seen:
+            seen.add(h)
+            yield d
+
 def unique(seq):
     seen = set()
     for item in seq:
-        try:  # TODO, deal with dicts and hashability
-            if item not in seen:
-                seen.add(item)
-                yield item
-        except TypeError:
+        if item not in seen:
+            seen.add(item)
             yield item
 
 # TODO: replace chain with interleave
@@ -104,7 +109,7 @@ def conde(*goalseqs):
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
     def goal_conde(s):
-        return unique(it.chain(*[bindstar((s,), *goals) for goals in goalseqs]))
+        return unique_dict(it.chain(*[bindstar((s,), *goals) for goals in goalseqs]))
     return goal_conde
 
 def bind(stream, goal):
@@ -115,7 +120,7 @@ def bind(stream, goal):
         goal   - function :: substitution -> stream
 
     """
-    return unique(it.chain(*it.imap(goal, stream))) # TODO: interleave
+    return unique_dict(it.chain(*it.imap(goal, stream))) # TODO: interleave
 
 def bindstar(stream, *goals):
     """ Bind many goals to a stream
@@ -144,7 +149,7 @@ def run(n, x, *goals):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, (walkstar(x, s) for s in bindstar(({},), *goals)))
+    return take(n, unique(walkstar(x, s) for s in bindstar(({},), *goals)))
 
 def take(n, seq):
     if n is None:

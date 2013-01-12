@@ -1,7 +1,7 @@
 from core import (walk, walkstar, isvar, var, unify, unique, eq, conde, bind,
         bindstar, run, membero, evalt, isempty, fail, success,
         Relation, fact, facts, take, reify, goal_tuple_eval, tailo, heado,
-        appendo)
+        appendo, unique_dict)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -28,7 +28,6 @@ def test_reify():
     assert reify((1, (x, (y, 2))), s) == (1, (1, (2, 2)))
     assert reify(z, s) == (1, 2)
 
-
 def test_isvar():
     assert not isvar(3)
     assert isvar((var, 3))
@@ -46,6 +45,10 @@ def test_unify():
 def test_unique():
     assert tuple(unique((1,2,3))) == (1,2,3)
     assert tuple(unique((1,2,1,3))) == (1,2,3)
+
+def test_unique_dict():
+    assert tuple(unique_dict(({1: 2}, {2: 3}))) == ({1: 2}, {2: 3})
+    assert tuple(unique_dict(({1: 2}, {1: 2}))) == ({1: 2},)
 
 def test_eq():
     x = var('x')
