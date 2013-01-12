@@ -97,6 +97,13 @@ From source
 
     git clone git@github.com:logpy/logpy.git
     cd logpy
+    python setup.py install
+
+Run tests with nose
+    
+    nosetests
+
+LogPy is pure Python
 
 Author
 ------
