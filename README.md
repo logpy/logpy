@@ -26,9 +26,9 @@ The following code asks for a number, x, such that
 (2,)
 ~~~~~~~~~~~
 
-The above examples use `eq`, a *goal* to state that two expressions are equal.  
-Other goals exist such as `membero(item, coll)` which states that `item`
-is a member of `coll`, a collection.  
+The above examples use `eq`, a *goal constructor* to state that two expressions 
+are equal.  Other goal constructors exist such as `membero(item, coll)` which 
+states that `item` is a member of `coll`, a collection.  
 
 The following example uses `membero` twice to ask for 2 values of x, 
 such that x is a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
