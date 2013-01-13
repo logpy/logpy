@@ -142,13 +142,14 @@ def bindstar(stream, *goals):
     See Also:
         bind
     """
-    if not goals:
-        return stream
-    a, b, stream = it.tee(stream, 3)
-    if isempty(a):
-        return stream
-    else:
-        return bindstar(bind(stream, goals[0]), *goals[1:])
+    for goal in goals:
+        # Short circuit in case of empty stream
+        a, stream = it.tee(stream, 2)
+        if isempty(a):
+            return stream
+        # Bind stream to new goal
+        stream = bind(stream, goal)
+    return stream
 
 def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
