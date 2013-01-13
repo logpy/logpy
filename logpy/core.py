@@ -132,8 +132,6 @@ def bind(stream, goal):
         goal   - function :: substitution -> stream
 
     """
-    tmp, stream = it.tee(stream)
-    tmp = tuple(tmp)
     return unique_dict(interleave(it.imap(goaleval(goal), stream)))
 
 def bindstar(stream, *goals):
