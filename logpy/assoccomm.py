@@ -6,9 +6,9 @@ def unify_assoccomm(u, v, s, ordering=None):
     v = walk(v, s)
     if u == v:
         yield s
-    if isvar(u):
+    if isvar(u):                # TODO: yield all possibilities
         yield assoc(s, u, v)
-    if isvar(v):
+    if isvar(v):                # TODO: yield all possibilities
         yield assoc(s, v, u)
 
     if isinstance(u, tuple) and isinstance(v, tuple):
