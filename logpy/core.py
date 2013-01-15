@@ -259,9 +259,20 @@ def isempty(it):
     except StopIteration:
         return True
 
+def intersection(*seqs):
+    for item in seqs[0]:
+        found = True
+        for seq in seqs[1:]:
+            if item not in seq:
+                found = False
+                break
+        if found:
+            yield item
+
 class Relation(object):
     def __init__(self):
         self.facts = set()
+        self.index = dict()
 
     def add_fact(self, *inputs):
         """ Add a fact to the knowledgebase.
@@ -270,11 +281,24 @@ class Relation(object):
             fact
             facts
         """
-        self.facts.add(tuple(inputs))
+        fact = tuple(inputs)
+
+        self.facts.add(fact)
+
+        for key in enumerate(inputs):
+            if key not in self.index:
+                self.index[key] = set()
+            self.index[key].add(fact)
 
     def __call__(self, *args):
+        subsets = [self.index[key] for key in enumerate(args)
+                                   if  key in self.index]
+        if subsets:     # we are able to reduce the pool early
+            facts = intersection(*sorted(subsets, key=len))
+        else:
+            facts = self.facts
         return conde(*[[eq(a, b) for a, b in zip(args, fact)]
-                                 for fact in self.facts])
+                                 for fact in facts])
 
 def fact(rel, *args):
     """ Declare a fact

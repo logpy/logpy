@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, unique, eq, conde,
         bind, bindstar, run, membero, evalt, isempty, fail, success,
         Relation, fact, facts, take, reify, goal_tuple_eval, tailo, heado,
-        appendo, unique_dict, interleave)
+        appendo, unique_dict, interleave, intersection)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -49,6 +49,12 @@ def test_unique():
 def test_unique_dict():
     assert tuple(unique_dict(({1: 2}, {2: 3}))) == ({1: 2}, {2: 3})
     assert tuple(unique_dict(({1: 2}, {1: 2}))) == ({1: 2},)
+
+def test_intersection():
+    a,b,c = (1,2,3,4), (2,3,4,5), (3,4,5,6)
+
+    print tuple(intersection(a,b,c))
+    assert tuple(intersection(a,b,c)) == (3,4)
 
 def test_eq():
     x = var('x')
