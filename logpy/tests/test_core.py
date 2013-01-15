@@ -30,7 +30,10 @@ def test_reify():
 
 def test_isvar():
     assert not isvar(3)
-    assert isvar((var, 3))
+    assert isvar(var(3))
+
+def test_var():
+    assert var(1) == var(1)
 
 def test_unify():
     assert unify(1, 1, {}) == {}

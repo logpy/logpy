@@ -1,6 +1,6 @@
 import itertools as it
 
-class var(object):
+class Var(object):
     """ Logic Variable """
 
     def __new__(cls, *token):
@@ -8,9 +8,25 @@ class var(object):
             token = wild()
         elif len(token) == 1:
             token = token[0]
-        return (var, token)
+        # return (Var, token)
 
-isvar = lambda t: isinstance(t, tuple) and len(t) >= 1 and t[0] is var
+        obj = object.__new__(cls)
+        obj.token = token
+        return obj
+
+    def __str__(self):
+        return str(self.token)
+    __repr__ = __str__
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.token == other.token
+
+    def __hash__(self):
+        return hash((type(self), self.token))
+
+var = lambda *args: Var(*args)
+isvar = lambda t: isinstance(t, Var)
+# isvar = lambda t: isinstance(t, tuple) and len(t) >= 1 and t[0] is Var
 
 class wild(object):
     pass
