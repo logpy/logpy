@@ -19,3 +19,15 @@ def test_comm():
     assert tuple(unify_comm((add, 1,2,3), (add, 1, x), {})) == \
                             ({x: (add, 2, 3)}, {x: (add, 3, 2)})
     assert tuple(unify_comm((add, (add, 3, 1), 2), (add, 1, 2, 3), {}))
+
+"""
+Failing Test
+def test_deep_associativity():
+    add = 'add'
+    x = var()
+    expr1 = (add, 1, 2, (add, x, 5, 6))
+    expr2 = (add, (add, 1, 2), 3, 4, 5, 6)
+    result = ({x: (add, 3, 4)})
+    print tuple(unify_assoc(expr1, expr2, {}))
+    assert tuple(unify_assoc(expr1, expr2, {})) == result
+"""
