@@ -44,6 +44,23 @@ def unify_comm(u, v, s):
 
 # Goals
 def eq_assoc(u, v):
+    """ Goal for associative equality
+
+    >>> from logpy import run, var
+    >>> from logpy.assoccomm import eq_assoc as eq
+    >>> x = var()
+    >>> run(0, eq((add, 1, 2, 3), ('add', 1, x)))
+    (('add', 2, 3),)
+    """
     return lambda s: unify_assoc(u, v, s)
+
 def eq_comm(u, v):
+    """ Goal for commutative equality
+
+    >>> from logpy import run, var
+    >>> from logpy.assoccomm import eq_comm as eq
+    >>> x = var()
+    >>> run(0, eq((add, 1, 2, 3), ('add', x, 1)))
+    (('add', 2, 3), ('add', 3, 2))
+    """
     return lambda s: unify_comm(u, v, s)
