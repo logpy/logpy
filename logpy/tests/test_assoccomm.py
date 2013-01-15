@@ -1,9 +1,10 @@
-from logpy.core import var
-from logpy.assoccomm import unify_assoc, unify_comm
+from logpy.core import var, run
+from logpy.assoccomm import unify_assoc, unify_comm, eq_assoc, eq_comm
+
+add = 'add'
+x = var()
 
 def test_assoc():
-    add = 'add'
-    x = var()
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1, 2, 3), {}))
     assert tuple(unify_assoc((add, 1, 2, 3), (add, (add, 1, 2), 3), {}))
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1,x,3), {})) == ({x: 2},)
@@ -15,13 +16,19 @@ def test_assoc():
                                  ({x: (add, 1, 2)},)
 
 def test_comm():
-    add = 'add'
-    x = var()
     assert tuple(unify_comm((add, 1, 2, 3), (add, 1, 2, 3), {}))
     assert tuple(unify_comm((add, 3, 2, 1), (add, 1, 2, 3), {}))
-    assert set(unify_comm((add, 1, 2, 3), (add, 1, x), {})) == \
-                        set(({x: (add, 2, 3)}, {x: (add, 3, 2)}))
+    assert tuple(unify_comm((add, 1, 2, 3), (add, 1, x), {})) == \
+                        tuple(({x: (add, 2, 3)}, {x: (add, 3, 2)}))
     assert tuple(unify_comm((add, (add, 3, 1), 2), (add, 1, 2, 3), {}))
+
+def test_eq_assoc():
+    assert run(0, x, eq_assoc((add, 1, 2, 3), (add, x, 3))) == ((add, 1, 2),)
+
+def test_eq_comm():
+    assert set(run(0, x, eq_comm((add, 1, 2, 3), (add, x, 3)))) == \
+            set(((add, 1, 2), (add, 2, 1)))
+
 
 """
 Failing Test

@@ -27,11 +27,6 @@ def unify_assoccomm(u, v, s, ordering=None):
             if result is not False:
                 yield result
 
-def unify_assoc(u, v, s):
-    return unify_assoccomm(u, v, s, None)
-def unify_comm(u, v, s):
-    return unify_assoccomm(u, v, s, 11)
-
 def makeops(op, lists):
     return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
 
@@ -40,3 +35,15 @@ def partition(tup, part):
 
 def index(tup, ind):
     return tuple(tup[i] for i in ind)
+
+
+def unify_assoc(u, v, s):
+    return unify_assoccomm(u, v, s, None)
+def unify_comm(u, v, s):
+    return unify_assoccomm(u, v, s, 11)
+
+# Goals
+def eq_assoc(u, v):
+    return lambda s: unify_assoc(u, v, s)
+def eq_comm(u, v):
+    return lambda s: unify_comm(u, v, s)
