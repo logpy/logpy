@@ -2,6 +2,8 @@ from logpy.core import isvar, success, fail, assoc, goaleval
 from sympy.ntheory.generate import prime, isprime
 import itertools as it
 
+
+
 def primo(x):
     return goaleval((_primo, x))
 def _primo(x):
