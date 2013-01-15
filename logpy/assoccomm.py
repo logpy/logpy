@@ -1,8 +1,7 @@
-from logpy.core import (isvar, success, fail, assoc, goaleval, EarlyGoalError,
-        walk, unify, isvar)
+from logpy.core import isvar, assoc, walk, unify
 from sympy.utilities.iterables import kbins
 
-def assoc_unify(u, v, s):
+def unify_assoccomm(u, v, s, ordering=None):
     u = walk(u, s)
     v = walk(v, s)
     if u == v:
@@ -23,13 +22,18 @@ def assoc_unify(u, v, s):
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
         print sm, lg
-        for part in kbins(range(len(lg)), len(sm)):
+        for part in kbins(range(len(lg)), len(sm), ordering):
             print "    ", part
             lg2 = makeops(uop, partition(lg, part))
             print "    ", sm, lg2
             result = unify(sm, lg2, s)
             if result is not False:
                 yield result
+
+def unify_assoc(u, v, s):
+    return unify_assoccomm(u, v, s, None)
+def unify_comm(u, v, s):
+    return unify_assoccomm(u, v, s, 11)
 
 def makeops(op, lists):
     return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
