@@ -21,11 +21,8 @@ def unify_assoccomm(u, v, s, ordering=None):
             raise StopIteration()
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
-        print sm, lg
         for part in kbins(range(len(lg)), len(sm), ordering):
-            print "    ", part
             lg2 = makeops(uop, partition(lg, part))
-            print "    ", sm, lg2
             result = unify(sm, lg2, s)
             if result is not False:
                 yield result
