@@ -19,11 +19,11 @@ def unify_assoccomm(u, v, s, ordering=None):
         if s is False:
             raise StopIteration()
 
-        uop = walk(uop, s)
+        op = walk(uop, s)
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
         for part in kbins(range(len(lg)), len(sm), ordering):
-            lg2 = makeops(uop, partition(lg, part))
+            lg2 = makeops(op, partition(lg, part))
             result = unify(sm, lg2, s)
             if result is not False:
                 yield result
