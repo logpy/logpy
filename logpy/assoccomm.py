@@ -16,9 +16,10 @@ def unify_assoccomm(u, v, s, ordering=None):
         vop, v = v[0], v[1:]
 
         s = unify(uop, vop, s)
-        uop = walk(uop, s)
         if s is False:
             raise StopIteration()
+
+        uop = walk(uop, s)
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
         for part in kbins(range(len(lg)), len(sm), ordering):

@@ -2,10 +2,12 @@ from logpy.core import var, run
 from logpy.assoccomm import unify_assoc, unify_comm, eq_assoc, eq_comm
 
 add = 'add'
+mul = 'mul'
 x = var()
 
 def test_assoc():
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1, 2, 3), {}))
+    print tuple(unify_assoc((add, 1, 2, 3), (mul, 1, 2, 3), {}))
     assert tuple(unify_assoc((add, 1, 2, 3), (add, (add, 1, 2), 3), {}))
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1,x,3), {})) == ({x: 2},)
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1, x), {})) == \
