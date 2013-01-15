@@ -1,15 +1,12 @@
-from logpy.core import isvar, assoc, walk, unify
+from logpy.core import isvar, assoc, walk, unify, unique_dict, bindstar
 from sympy.utilities.iterables import kbins
 
 def unify_assoccomm(u, v, s, ordering=None):
     u = walk(u, s)
     v = walk(v, s)
-    if u == v:
-        yield s
-    if isvar(u):                # TODO: yield all possibilities
-        yield assoc(s, u, v)
-    if isvar(v):                # TODO: yield all possibilities
-        yield assoc(s, v, u)
+    res = unify(u, v, s)
+    if res is not False:
+        yield res
 
     if isinstance(u, tuple) and isinstance(v, tuple):
         uop, u = u[0], u[1:]
@@ -24,9 +21,12 @@ def unify_assoccomm(u, v, s, ordering=None):
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
         for part in kbins(range(len(lg)), len(sm), ordering):
             lg2 = makeops(op, partition(lg, part))
-            result = unify(sm, lg2, s)
-            if result is not False:
-                yield result
+            # TODO: the use of bindstar here should be replaced.  This uses
+            # logpy within python code within logpy.  There must be a more
+            # elegant way
+            goals = [eq_assoccomm(a, b, ordering) for a, b in zip(sm, lg2)]
+            for res in bindstar((s,), *goals):
+                yield res
 
 def makeops(op, lists):
     return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
@@ -39,11 +39,14 @@ def index(tup, ind):
 
 
 def unify_assoc(u, v, s):
-    return unify_assoccomm(u, v, s, None)
+    return unique_dict(unify_assoccomm(u, v, s, None))
 def unify_comm(u, v, s):
-    return unify_assoccomm(u, v, s, 11)
+    return unique_dict(unify_assoccomm(u, v, s, 11))
 
 # Goals
+def eq_assoccomm(u, v, ordering):
+    return lambda s: unify_assoccomm(u, v, s, ordering)
+
 def eq_assoc(u, v):
     """ Goal for associative equality
 

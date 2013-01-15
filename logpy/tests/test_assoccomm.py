@@ -7,7 +7,6 @@ x = var()
 
 def test_assoc():
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1, 2, 3), {}))
-    print tuple(unify_assoc((add, 1, 2, 3), (mul, 1, 2, 3), {}))
     assert tuple(unify_assoc((add, 1, 2, 3), (add, (add, 1, 2), 3), {}))
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1,x,3), {})) == ({x: 2},)
     assert tuple(unify_assoc((add, 1, 2, 3), (add, 1, x), {})) == \
@@ -30,6 +29,13 @@ def test_eq_assoc():
 def test_eq_comm():
     assert set(run(0, x, eq_comm((add, 1, 2, 3), (add, x, 3)))) == \
             set(((add, 1, 2), (add, 2, 1)))
+
+def test_deep_commutativity():
+    x, y = var('x'), var('y')
+
+    e1 = (mul, (add, 1, x), y)
+    e2 = (mul, 2, (add, 3, 1))
+    assert run(0, (x,y), eq_comm(e1, e2)) == ((3, 2),)
 
 
 """
