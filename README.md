@@ -6,9 +6,8 @@ Logic Programming in Python
 Examples
 --------
 
-LogPy enables the expression of relations and the search for values which
-satisfy them.  
-The following code asks for one number, x, such that `x == 5`
+LogPy enables the expression of relations and the search for values which satisfy them.  The following code is the "Hello, world!" of logic programming.  It asks for `1` number, `x`, such that `x == 5`
+
 ~~~~~~~~~~~Python
 >>> from logpy import run, eq, membero, var, conde
 >>> x = var()
@@ -16,13 +15,21 @@ The following code asks for one number, x, such that `x == 5`
 (5,)
 ~~~~~~~~~~~
 
-[Unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29)
-enables the query of complex expressions.
-The following code asks for a number, x, such that 
-`(1, (2, 3)) == (1, (x, 3))` holds.
+Multiple variables and multiple goals can be used simultaneously.  The
+following code asks for a number x such that `x == z` and `z == 3`
 
 ~~~~~~~~~~~Python
->>> run(1, x, eq((1, (2, 3)), (1, (x, 3))))
+>>> z = var()
+>>> run(1, x, eq(x, z),
+              eq(z, 5))
+(3,)
+~~~~~~~~~~~
+
+LogPy uses [unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29), an advanced form of pattern matching, to match within expression trees.
+The following code asks for a number, x, such that `(1, 2) == (1, x)` holds.
+
+~~~~~~~~~~~Python
+>>> run(1, x, eq((1, 2), (1, x)))
 (2,)
 ~~~~~~~~~~~
 
@@ -34,23 +41,9 @@ The following example uses `membero` twice to ask for 2 values of x,
 such that x is a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
 
 ~~~~~~~~~~~Python
->>> run(3, x, membero(x, (1, 2, 3)),  # x is a member of (1, 2, 3)
+>>> run(2, x, membero(x, (1, 2, 3)),  # x is a member of (1, 2, 3)
               membero(x, (2, 3, 4)))  # x is a member of (2, 3, 4)
 (2, 3)
-
->>> run(1, x, membero(3, (2, x, 4)))  # What should x be so that 3 is in coll?
-(3,)
-~~~~~~~~~~~
-
-Simple goals can be combined into complex ones using goal constructors like
-`conde`, a constructor for logical *and* and *or*.
-
-The following example uses `conde` and `eq` to ask for two numbers such that
-`x == 1` *or* `x == 2`.
-
-~~~~~~~~~~~Python
->>> run(2, x, conde([eq(x, 1)], [eq(x, 2)]))
-(1, 2)
 ~~~~~~~~~~~
 
 LogPy supports relations and facts.  This is best demonstrated by example. 
@@ -72,19 +65,25 @@ facts about who is a parent of whom.
 ('Lisa', 'Bart')
 ~~~~~~~~~~~~
 
-Note that x may be used in either position.  
+We can use intermediate variables for more complex queries.  Who is Bart's grandfather?
 
-Complex goals may be formed from simpler ones.  The following code uses
-`parent` to define `grandparent`.  It demonstrates the programming of
-relations.
+~~~~~~~~~~~Python
+>>> y = var()
+>>> run(1, x, parent(x, y), 
+              parent(y, 'Bart'))  
+('Abe',)
+~~~~~~~~~~~~
+
+We can express the grandfather relationship separately.  In this example we use `conde`, a goal constructor for logical *and* and *or*. 
+
 ~~~~~~~~~~~Python
 >>> def grandparent(x, z):
 ...     y = var()
 ...     return conde((parent(x, y), parent(y, z)))
 
->>> run(2, x, grandparent(x, "Bart"))
+>>> run(1, x, grandparent(x, 'Bart'))
 ('Abe,')
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 Install
 -------
