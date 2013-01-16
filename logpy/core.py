@@ -15,7 +15,7 @@ class Var(object):
         return obj
 
     def __str__(self):
-        return str(self.token)
+        return "~" + str(self.token)
     __repr__ = __str__
 
     def __eq__(self, other):
@@ -352,13 +352,13 @@ def facts(rel, *lists):
 """
 
 def heado(x, coll):
-    if coll:
+    if isinstance(coll, tuple) and len(coll) >= 1:
         return eq(x, coll[0])
     else:
         return fail
 
 def tailo(x, coll):
-    if coll:
+    if isinstance(coll, tuple) and len(coll) >= 1:
         return eq(x, coll[1:])
     else:
         return fail
