@@ -2,6 +2,8 @@ from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
         Relation, heado, conde, var, eq, fail)
 from sympy.utilities.iterables import kbins
 
+__all__ = ['associative', 'commutative', 'eq_assoccomm', 'opo']
+
 associative = Relation()
 commutative = Relation()
 
