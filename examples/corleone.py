@@ -1,6 +1,6 @@
 # Family relationships from The Godfather
 # Translated from the core.logic example found in
-# "The Magical Island of Kanren – core.logic Intro Part 1"
+# "The Magical Island of Kanren - core.logic Intro Part 1"
 # http://objectcommando.com/blog/2011/11/04/the-magical-island-of-kanren-core-logic-intro-part-1/
 
 from logpy import Relation, facts, run, conde, var, eq
@@ -31,26 +31,26 @@ facts(mother, ('Carmela', 'Michael'),
 
 q = var()
 # Vito is the father of who?
-run(0, q, father('Vito', q))
+run(0, q, father('Vito', q))            # prints ('Sonny', 'Michael', 'Fredo')
 
 # Who is the father of Michael?
-run(0, q, father(q, 'Michael'))
+run(0, q, father(q, 'Michael'))         # prints ('Vito',)
 
 def parent(p, child):
     return conde([father(p, child)], [mother(p, child)])
 
 # Who is a parent of Michael
-run(0, q, parent(q, 'Michael'))
+run(0, q, parent(q, 'Michael'))         # prints ('Vito', 'Carmela')
 
 def grandparent(gparent, child):
     p = var()
     return conde((parent(gparent, p), parent(p, child)))
 
 # Who is a grandparent of Anthony
-run(0, q, grandparent(q, 'Anthony'))
+run(0, q, grandparent(q, 'Anthony'))    # prints ('Vito', 'Carmela')
 
 # Vito is a grandparent of whom?
-run(0, q, grandparent('Vito', q))
+run(0, q, grandparent('Vito', q))       # prints ('Vicent', 'Anthony', 'Kathryn', 'Mary', 'Frank', 'Santino', 'Francesca')
 
 def sibling(a, b):
     p = var()
@@ -59,3 +59,4 @@ def sibling(a, b):
 # All spouses
 x, y, z = var(), var(), var()
 run(0, (x, y), (father, x, z), (mother, y, z))
+# prints (('Vito', 'Carmela'), ('Sonny', 'Sandra'), ('Michael', 'Kay'))
