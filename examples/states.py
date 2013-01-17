@@ -45,4 +45,7 @@ print run(5, x, coastal(y),           # five states that border a coastal state
                 adjacent(x, y))
 # ('VT', 'AL', 'WV', 'DE', 'WA')
 
+print run(0, x, adjacent('TN', x),    # all states adjacent to Tennessee
+                adjacent('FL', x))    #        and adjacent to Florida
+# ('GA', 'AL')
 
