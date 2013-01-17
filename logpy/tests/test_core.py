@@ -1,7 +1,6 @@
-from logpy.core import (walk, walkstar, isvar, var, unify, unique, eq, conde,
-        bind, bindstar, run, membero, evalt, isempty, fail, success,
-        Relation, fact, facts, take, reify, goal_tuple_eval, tailo, heado,
-        appendo, unique_dict, interleave, intersection)
+from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
+        bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
+        reify, goal_tuple_eval, tailo, heado, appendo)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -44,20 +43,6 @@ def test_unify():
     assert unify((1, 2), (1, 2, 3), {}) == False
     assert unify((1, var(1)), (1, 2), {}) == {var(1): 2}
     assert unify((1, var(1)), (1, 2), {var(1): 3}) == False
-
-def test_unique():
-    assert tuple(unique((1,2,3))) == (1,2,3)
-    assert tuple(unique((1,2,1,3))) == (1,2,3)
-
-def test_unique_dict():
-    assert tuple(unique_dict(({1: 2}, {2: 3}))) == ({1: 2}, {2: 3})
-    assert tuple(unique_dict(({1: 2}, {1: 2}))) == ({1: 2},)
-
-def test_intersection():
-    a,b,c = (1,2,3,4), (2,3,4,5), (3,4,5,6)
-
-    print tuple(intersection(a,b,c))
-    assert tuple(intersection(a,b,c)) == (3,4)
 
 def test_eq():
     x = var('x')
@@ -102,11 +87,6 @@ def test_run():
                        eq(z, 4)) == ((3, 4),)
     assert set(run(2, x, conde([eq(x, 1)], [eq(x, 2)]))) == set((1, 2))
 
-def test_take():
-    assert take(2, range(5)) == (0, 1)
-    assert take(0, range(5)) == (0, 1, 2, 3, 4)
-    assert take(None, range(5)) == range(5)
-
 def test_membero():
     x = var('x')
     assert set(run(5, x, membero(x, (1,2,3)),
@@ -123,14 +103,6 @@ def test_bindstar_evalt():
     x = var('x')
     stream = bindstar(({},), success, (eq, x, 1))
     assert tuple(stream) == ({x: 1},)
-
-def test_isempty():
-    assert isempty(())
-    assert not isempty((1,2))
-    it = (x for x in (1,2))
-    a, it = itertools.tee(it, 2)
-    assert not isempty(a)
-    assert next(it) == 1
 
 def test_relation():
     parent = Relation()
@@ -175,10 +147,6 @@ def test_goal_tuple_eval():
     s = {y: (1, 2)}
     results = tuple(goal_tuple_eval((membero, x, y))(s))
     assert all(res[x] in (1, 2) for res in results)
-
-def test_interleave():
-    assert ''.join(interleave(('ABC', '123'))) == 'A1B2C3'
-    assert ''.join(interleave(('ABC', '1'))) == 'A1BC'
 
 def test_heado():
     x = var('x')
