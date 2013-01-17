@@ -252,10 +252,10 @@ def tailo(x, coll):
     else:
         return fail
 
-def appendo(l, s, out):
+def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var(wild()) for i in range(3)]
-    return conde((eq(l, ()), eq(s, out)),
+    return conde((eq(l, ()), eq(s, ls)),
                  ((heado, a, l),   (tailo, d, l),
-                  (heado, a, out), (tailo, res, out),
+                  (heado, a, ls), (tailo, res, ls),
                   (appendo, d, s, res)))
