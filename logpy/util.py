@@ -107,3 +107,17 @@ def intersection(*seqs):
                 break
         if found:
             yield item
+
+def groups(lenA, lenB):
+    """ Groups of length lenB that add up to lenA
+
+    >>> from logpy.util import groups
+    >>> tuple(groups(4, 2))
+    ((1, 3), (2, 2), (3, 1))
+    """
+    if lenB == 1:
+        yield (lenA,)
+    else:
+        for i in xrange(1, lenA - lenB + 1 + 1):
+            for perm in groups(lenA - i, lenB - 1):
+                yield (i,) + perm
