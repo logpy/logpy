@@ -49,7 +49,7 @@ def unify(u, v, s):  # no check at the moment
     """
     u = walk(u, s)
     v = walk(v, s)
-    if u is v:
+    if u == v:
         return s
     if isvar(u):
         return assoc(s, u, v)
