@@ -1,5 +1,5 @@
 from logpy.util import (isempty, take, unique, unique_dict, interleave,
-        intersection, groups)
+        intersection, groupsizes)
 import itertools
 
 def test_unique():
@@ -33,8 +33,8 @@ def test_interleave():
     assert ''.join(interleave(('ABC', '123'))) == 'A1B2C3'
     assert ''.join(interleave(('ABC', '1'))) == 'A1BC'
 
-def test_groups():
-    assert set(groups(4, 2)) == set(((1, 3), (2, 2), (3, 1)))
-    assert set(groups(5, 2)) == set(((1, 4), (2, 3), (3, 2), (4, 1)))
-    assert set(groups(4, 1)) == set([(4,)])
-    assert set(groups(4, 4)) == set([(1, 1, 1, 1)])
+def test_groupsizes():
+    assert set(groupsizes(4, 2)) == set(((1, 3), (2, 2), (3, 1)))
+    assert set(groupsizes(5, 2)) == set(((1, 4), (2, 3), (3, 2), (4, 1)))
+    assert set(groupsizes(4, 1)) == set([(4,)])
+    assert set(groupsizes(4, 4)) == set([(1, 1, 1, 1)])
