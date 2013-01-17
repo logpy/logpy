@@ -12,11 +12,11 @@ adjacent = Relation()
 coastal  = Relation()
 
 
-coastal_states = 'WA,OR,CA,TX,LA,MI,AL,GA,FL,SC,NC,VI,MD,DW,NJ,NY,CT,RI,MA,MN,NH,AK,HI'.split(',')
+coastal_states = 'WA,OR,CA,TX,LA,MS,AL,GA,FL,SC,NC,VA,MD,DE,NJ,NY,CT,RI,MA,
+ME,NH,AK,HI'.split(',')
 
 for state in coastal_states:        # ['NY', 'NJ', 'CT', ...]
     fact(coastal, state)            # e.g. 'NY' is coastal
-
 
 with open('examples/data/adjacent-states.txt') as f: # lines like 'CA,OR,NV,AZ'
     adjlist = [line.strip().split(',') for line in f
@@ -43,9 +43,8 @@ print run(0, x, adjacent('TX', x),    # all coastal states next to Texas
 
 print run(5, x, coastal(y),           # five states that border a coastal state
                 adjacent(x, y))
-# ('VT', 'AL', 'WV', 'DE', 'WA')
+# ('VT', 'AL', 'WV', 'DE', 'MA')
 
 print run(0, x, adjacent('TN', x),    # all states adjacent to Tennessee
                 adjacent('FL', x))    #        and adjacent to Florida
 # ('GA', 'AL')
-
