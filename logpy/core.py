@@ -119,6 +119,9 @@ def run(n, x, *goals):
 
 
 # Goals
+
+class EarlyGoalError():  pass
+
 def fail(s):
     return ()
 def success(s):
@@ -139,6 +142,37 @@ def eq(u, v):
 def membero(x, coll):
     """ Goal such that x is an item of coll """
     return conde(*[[eq(x, item)] for item in coll])
+
+def seteq(a, b):
+    """ Set Equality
+
+    For example (1, 2, 3) set equates to (2, 1, 3)
+
+    >>> from logpy import var, run, seteq
+    >>> x = var()
+    >>> run(0, x, seteq(x, (1, 2)))
+    ((1, 2), (2, 1))
+    """
+    if isinstance(a, tuple) and isinstance(b, tuple):
+        if set(a) == set(b):
+            return success
+        else:
+            return fail
+
+    if isvar(a) and isvar(b):
+        raise EarlyGoalError()
+
+    if isvar(a) and isinstance(b, tuple):
+        c, d = a, b
+    if isvar(b) and isinstance(a, tuple):
+        c, d = b, a
+
+    def seteq_goal(s):
+        for perm in it.permutations(d, len(d)):
+            result = unify(c, perm, s)
+            if result is not False:
+                yield result
+    return seteq_goal
 
 def goaleval(goal):
     """ Evaluate an possibly unevaluated goal

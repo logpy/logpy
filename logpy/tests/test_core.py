@@ -1,6 +1,6 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo)
+        reify, goal_tuple_eval, tailo, heado, appendo, seteq)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -48,6 +48,15 @@ def test_eq():
     x = var('x')
     assert tuple(eq(x, 2)({})) == ({x: 2},)
     assert tuple(eq(x, 2)({x: 3})) == ()
+
+def test_seteq():
+    x = var('x')
+    abc = tuple('abc')
+    bca = tuple('bca')
+    assert tuple(seteq(abc, bca)({}))
+    assert len(tuple(seteq(abc, x)({}))) == 6
+    assert len(tuple(seteq(x, abc)({}))) == 6
+    assert bca in run(0, x, seteq(abc, x))
 
 def test_conde():
     x = var('x')
