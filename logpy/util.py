@@ -34,10 +34,13 @@ def assoc(dict, key, value):
     d[key] = value
     return d
 
+def dicthash(d):
+    return hash(frozenset(d.items()))
+
 def unique_dict(seq):
     seen = set()
     for d in seq:
-        h = hash(frozenset(d.items()))
+        h = dicthash(d)
         if h not in seen:
             seen.add(h)
             yield d

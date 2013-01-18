@@ -7,6 +7,12 @@ from unittest import expectedFailure as FAIL
 
 w, x, y, z = 'wxyz'
 
+def test_early():
+    x = var()
+    y = var()
+    assert run(0, x, (eq, y, (1, 2)), (membero, x, y))
+    assert run(0, x, (membero, x, y), (eq, y, (1, 2)))
+
 def test_walk():
     s = {1: 2, 2: 3}
     assert walk(2, s) == 3
@@ -201,7 +207,7 @@ def test_appendo():
     assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
     assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
 
-def failing_test_appendo():
-    pass
-    #assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
-    #assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
+def test_appendo2():
+    print run(5, x, appendo((1,2,3), (4,5), x))
+    assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
+    assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)

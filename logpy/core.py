@@ -77,7 +77,7 @@ def conde(*goalseqs):
 def condeseq(goalseqs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
     def goal_conde(s):
-        return unique_dict(interleave(bindstar((s,), *goals)
+        return unique_dict(interleave(bindearly((s,), *goals)
                                      for goals in goalseqs))
     return goal_conde
 
@@ -106,6 +106,23 @@ def bindstar(stream, *goals):
         stream = bind(stream, goal)
     return stream
 
+def bindearly(stream, *goals):
+    if not goals:
+        for s in stream:
+            yield s
+    else:
+        backup, stream = it.tee(stream, 2)
+        for s in stream:
+            goal = goaleval(goals[0])
+            try:
+                for ss in goal(s):
+                    for sss in bindearly((ss,), *goals[1:]):
+                        yield sss
+            except EarlyGoalError:
+                regoals = goals[1:] + (goals[0],)
+                for sss in bindearly(backup, *regoals):
+                    yield sss
+
 def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
@@ -119,12 +136,12 @@ def run(n, x, *goals):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, unique(walkstar(x, s) for s in bindstar(({},), *goals)))
+    return take(n, unique(walkstar(x, s) for s in bindearly(({},), *goals)))
 
 
 # Goals
 
-class EarlyGoalError():  pass
+class EarlyGoalError(Exception):  pass
 
 def fail(s):
     return ()
@@ -145,7 +162,10 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    return condeseq([[(eq, x, item)] for item in coll])
+    try:
+        return condeseq([[(eq, x, item)] for item in coll])
+    except TypeError:
+        raise EarlyGoalError()
     # return condeseq(([(eq, x, item)] for item in coll))
 
 def seteq(a, b, eq=eq):
@@ -296,7 +316,8 @@ def conso(h, t, l):
             return conde([(eq, h, l[0]), (eq, t, l[1:])])
     if isinstance(t, tuple):
         return eq((h,) + t, l)
-    return eq(pair(h, t), l)
+    print "Early"
+    raise EarlyGoalError()
 
 """
 -This is an attempt to create appendo.  It does not currently work.
@@ -320,6 +341,6 @@ def tailo(x, coll):
 
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
-    a, d, res = [var(wild()) for i in range(3)]
+    a, d, res = [var() for i in range(3)]
     return conde((eq(l, ()), eq(s, ls)),
                  ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
