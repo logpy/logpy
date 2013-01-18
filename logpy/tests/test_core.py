@@ -169,6 +169,7 @@ def test_goal_tuple_eval():
 def test_conso():
     x = var()
     y = var()
+    assert not tuple(conso(x, y, ())({}))
     assert tuple(conso(1, (2, 3), (1, 2, 3))({}))
     assert tuple(conso(x, (2, 3), (1, 2, 3))({})) == ({x: 1},)
     assert tuple(conso(1, (2, 3), x)({})) == ({x: (1, 2, 3)},)

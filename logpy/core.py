@@ -289,8 +289,11 @@ class pair(tuple):
 
 
 def conso(h, t, l):
-    if isinstance(l, tuple) and len(l) >= 1:
-        return conde([(eq, h, l[0]), (eq, t, l[1:])])
+    if isinstance(l, tuple):
+        if len(l) == 0:
+            return fail
+        else:
+            return conde([(eq, h, l[0]), (eq, t, l[1:])])
     if isinstance(t, tuple):
         return eq((h,) + t, l)
     return eq(pair(h, t), l)
@@ -319,6 +322,4 @@ def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var(wild()) for i in range(3)]
     return conde((eq(l, ()), eq(s, ls)),
-                 ((heado, a, l),   (tailo, d, l),
-                  (heado, a, ls), (tailo, res, ls),
-                  (appendo, d, s, res)))
+                 ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
