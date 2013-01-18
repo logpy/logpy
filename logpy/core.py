@@ -108,20 +108,16 @@ def bindstar(stream, *goals):
 
 def bindearly(stream, *goals):
     if not goals:
-        for s in stream:
-            yield s
+        for s in stream: yield s
     else:
-        backup, stream = it.tee(stream, 2)
         for s in stream:
             goal = goaleval(goals[0])
             try:
-                for ss in goal(s):
-                    for sss in bindearly((ss,), *goals[1:]):
-                        yield sss
+                substream = goal(s)
+                for ss in bindearly(substream, *goals[1:]): yield ss
             except EarlyGoalError:
                 regoals = goals[1:] + (goals[0],)
-                for sss in bindearly(backup, *regoals):
-                    yield sss
+                for ss in bindearly(stream, *regoals): yield ss
 
 def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
