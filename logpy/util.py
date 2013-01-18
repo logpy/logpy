@@ -52,11 +52,11 @@ def unique(seq):
 def interleave(seqs):
     iters = it.imap(iter, seqs)
     while iters:
-        newiters = set()
+        newiters = []
         for itr in iters:
             try:
                 yield next(itr)
-                newiters.add(itr)
+                newiters.append(itr)
             except StopIteration:
                 pass
         iters = newiters
