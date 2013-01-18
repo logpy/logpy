@@ -266,6 +266,12 @@ def facts(rel, *lists):
         fact(rel, *l)
 
 
+def conso(h, t, l):
+    if isinstance(l, tuple) and len(l) >= 1:
+        return conde([(eq, h, l[0]), (eq, t, l[1:])])
+    if isinstance(t, tuple):
+        return eq((h,) + t, l)
+
 """
 -This is an attempt to create appendo.  It does not currently work.
 -As written in miniKanren, appendo uses LISP machinery not present in Python
