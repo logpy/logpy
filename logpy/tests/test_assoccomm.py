@@ -68,6 +68,10 @@ def test_assocunify():
     assert tuple(assocunify((a, 1, 1), (a, 1, 1), {}))
     assert tuple(assocunify((a, 1, 2, 3), (a, 1, (a, 2, 3)), {}))
     assert tuple(assocunify((a, 1, (a, 2, 3)), (a, 1, 2, 3), {}))
+    assert tuple(assocunify((a, 1, (a, 2, 3), 4), (a, 1, 2, 3, 4), {}))
+    assert tuple(assocunify((a, 1, x, 4), (a, 1, 2, 3, 4), {})) == \
+                ({x: (a, 2, 3)},)
+
 
 """
 Failing test.  This would work if we flattened first
