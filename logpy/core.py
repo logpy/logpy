@@ -72,6 +72,10 @@ def conde(*goalseqs):
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
+    return condeseq(goalseqs)
+
+def condeseq(goalseqs):
+    """ Like conde but supports generic (possibly infinite) iterator of goals"""
     def goal_conde(s):
         return unique_dict(interleave(bindstar((s,), *goals)
                                      for goals in goalseqs))
@@ -143,7 +147,7 @@ def membero(x, coll):
     """ Goal such that x is an item of coll """
     return conde(*[[eq(x, item)] for item in coll])
 
-def seteq(a, b):
+def seteq(a, b, eq=eq):
     """ Set Equality
 
     For example (1, 2, 3) set equates to (2, 1, 3)
@@ -167,12 +171,7 @@ def seteq(a, b):
     if isvar(b) and isinstance(a, tuple):
         c, d = b, a
 
-    def seteq_goal(s):
-        for perm in it.permutations(d, len(d)):
-            result = unify(c, perm, s)
-            if result is not False:
-                yield result
-    return seteq_goal
+    return condeseq([eq(c, perm)] for perm in it.permutations(d, len(d)))
 
 def goaleval(goal):
     """ Evaluate an possibly unevaluated goal

@@ -1,6 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, pair)
+        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
+        pair)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -62,6 +63,14 @@ def test_conde():
     x = var('x')
     assert tuple(conde([eq(x, 2)], [eq(x, 3)])({})) == ({x: 2}, {x: 3})
     assert tuple(conde([eq(x, 2), eq(x, 3)])({})) == ()
+
+def test_condeseq():
+    x = var('x')
+    assert tuple(condeseq(([eq(x, 2)], [eq(x, 3)]))({})) == ({x: 2}, {x: 3})
+    assert tuple(condeseq([[eq(x, 2), eq(x, 3)]])({})) == ()
+
+    goals = ([eq(x, i)] for i in itertools.count()) # infinite number of goals
+    assert next(condeseq(goals)({})) == {x: 0}
 
 def test_bind():
     x = var('x')
