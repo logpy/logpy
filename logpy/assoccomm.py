@@ -1,11 +1,35 @@
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
-        Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError)
+        Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
+        condeseq)
 from sympy.utilities.iterables import kbins
+from logpy import core
+from logpy.util import groupsizes
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm', 'opo']
 
 associative = Relation()
 commutative = Relation()
+
+def assocunify(u, v, s, eq=core.eq):
+    res = unify(u, v, s)
+    if res is not False:
+        return (res,)
+
+    if isinstance(u, tuple) and isinstance(v, tuple):
+        uop, u = u[0], u[1:]
+        vop, v = v[0], v[1:]
+        s = unify(uop, vop, s)
+        if s is False:
+            raise StopIteration()
+
+        op = walk(uop, s)
+
+        sm, lg = (u, v) if len(u) <= len(v) else (v, u)
+
+        return condeseq([(eq, a, b) for a, b in
+            zip(sm,
+                makeops(op, partition(lg, groupsizes_to_partition(*gsizes))))]
+                for gsizes in groupsizes(len(lg), len(sm)))(s)
 
 def unify_assoccomm(u, v, s, ordering=None):
     u = walk(u, s)
@@ -32,6 +56,7 @@ def unify_assoccomm(u, v, s, ordering=None):
             g = goaleval(conde((eq_assoccomm, a, b) for a, b in zip(sm,lg2)))
             for res in g(s):
                 yield res
+
 
 def makeops(op, lists):
     return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
