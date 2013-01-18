@@ -145,7 +145,8 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    return conde(*[[eq(x, item)] for item in coll])
+    return condeseq([[(eq, x, item)] for item in coll])
+    # return condeseq(([(eq, x, item)] for item in coll))
 
 def seteq(a, b, eq=eq):
     """ Set Equality

@@ -174,7 +174,7 @@ def test_conso():
     assert tuple(conso(1, (2, 3), x)({})) == ({x: (1, 2, 3)},)
     assert tuple(conso(x, y, (1, 2, 3))({})) == ({x: 1, y: (2, 3)},)
     assert tuple(conso(x, (2, 3), y)({})) == ({y: (x, 2, 3)},)
-    # assert tuple(conso(x, y, z), (membero, x, z))
+    # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
 
 def test_pair():
     x = var()
