@@ -1,6 +1,7 @@
 from logpy.core import var, run, fact, eq, goaleval, EarlyGoalError
 from logpy.assoccomm import (unify_assoc, unify_comm, eq_assoc, eq_comm,
-        operation, associative, commutative, eq_assoccomm, conde, opo)
+        operation, associative, commutative, eq_assoccomm, conde, opo,
+        groupsizes_to_partition)
 from logpy.util import raises
 
 a = 'assoc_op'
@@ -59,6 +60,8 @@ def test_opo_early():
     x, y = var('x'), var('y')
     raises(EarlyGoalError, lambda: goaleval((opo, x, y)))
 
+def test_groupsizes_to_parition():
+    assert groupsizes_to_partition(2, 3) == [[0, 1], [2, 3, 4]]
 
 """
 Failing test.  This would work if we flattened first

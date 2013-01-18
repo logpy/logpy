@@ -42,6 +42,20 @@ def partition(tup, part):
 def index(tup, ind):
     return tuple(tup[i] for i in ind)
 
+def groupsizes_to_partition(*gsizes):
+    """
+    >>> groupsizes_to_partition(2, 3)
+    [[0, 1], [2, 3, 4]]
+    """
+    idx = 0
+    part = []
+    for gs in gsizes:
+        l = []
+        for i in range(gs):
+            l.append(idx)
+            idx += 1
+        part.append(l)
+    return part
 
 def unify_assoc(u, v, s):
     return unique_dict(unify_assoccomm(u, v, s, None))
