@@ -265,12 +265,35 @@ def facts(rel, *lists):
     for l in lists:
         fact(rel, *l)
 
+class pair(tuple):
+    def __new__(cls, head, tail):
+        obj = tuple.__new__(cls)
+        obj.head = head
+        obj.tail = tail
+        return obj
+
+    def __getitem__(self, key):
+        if key == 0:
+            return self.head
+        raise NotImplementedError()
+
+    def __getslice__(self, a, b):
+        if a == 1 and b > 100:
+            return self.tail
+        raise NotImplementedError()
+
+    def __iter__(self):
+        yield self.head
+        for i in self.tail:
+            yield i
+
 
 def conso(h, t, l):
     if isinstance(l, tuple) and len(l) >= 1:
         return conde([(eq, h, l[0]), (eq, t, l[1:])])
     if isinstance(t, tuple):
         return eq((h,) + t, l)
+    return eq(pair(h, t), l)
 
 """
 -This is an attempt to create appendo.  It does not currently work.

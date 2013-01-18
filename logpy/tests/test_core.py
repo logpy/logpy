@@ -1,6 +1,6 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso)
+        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, pair)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -165,6 +165,15 @@ def test_conso():
     assert tuple(conso(1, (2, 3), x)({})) == ({x: (1, 2, 3)},)
     assert tuple(conso(x, y, (1, 2, 3))({})) == ({x: 1, y: (2, 3)},)
     assert tuple(conso(x, (2, 3), y)({})) == ({y: (x, 2, 3)},)
+    # assert tuple(conso(x, y, z), (membero, x, z))
+
+def test_pair():
+    x = var()
+    y = var()
+    c = pair(x, y)
+    assert c[0] == x
+    assert c[1:] == y
+    assert next(iter(c)) == x
 
 def test_heado():
     x = var('x')
