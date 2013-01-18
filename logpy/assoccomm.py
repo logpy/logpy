@@ -1,6 +1,6 @@
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
         Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq)
+        condeseq, tailo, seteq)
 from sympy.utilities.iterables import kbins
 from logpy import core
 from logpy.util import groupsizes
@@ -13,7 +13,7 @@ commutative = Relation()
 def assocunify(u, v, s, eq=core.eq):
     res = unify(u, v, s)
     if res is not False:
-        return (res,)
+        return (res,)  # TODO: iterate through all possibilities
 
     if isinstance(u, tuple) and isinstance(v, tuple):
         uop, u = u[0], u[1:]
@@ -21,7 +21,6 @@ def assocunify(u, v, s, eq=core.eq):
         s = unify(uop, vop, s)
         if s is False:
             raise StopIteration()
-
         op = walk(uop, s)
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
@@ -151,3 +150,34 @@ def eq_comm(u, v):
     (('add', 2, 3), ('add', 3, 2))
     """
     return lambda s: unify_comm(u, v, s)
+
+def eq_assoc2(u, v, eq=core.eq):
+    """ Goal for associative equality
+
+    >>> from logpy import run, var
+    >>> from logpy.assoccomm import eq_assoc as eq
+    >>> x = var()
+    >>> run(0, eq((add, 1, 2, 3), ('add', 1, x)))
+    (('add', 2, 3),)
+    """
+    op = var()
+    return conde([(core.eq, u, v)],
+                 [(opo, u, op), (opo, v, op),
+                  lambda s: assocunify(u, v, s, eq)])
+
+def eq_comm2(u, v, eq=core.eq):
+    """ Goal for commutative equality
+
+    >>> from logpy import run, var
+    >>> from logpy.assoccomm import eq_comm as eq
+    >>> x = var()
+    >>> run(0, eq((add, 1, 2, 3), ('add', x, 1)))
+    (('add', 2, 3), ('add', 3, 2))
+    """
+    op = var()
+    utail = var()
+    vtail = var()
+    if not isvar(u) and not isvar(v):
+        return conde([(opo, u, op), (opo, v, op),
+                      (tailo, utail, u), (tailo, vtail, v),
+                      (seteq, utail, vtail, eq)])
