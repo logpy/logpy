@@ -50,13 +50,16 @@ def unique(seq):
             yield item
 
 def interleave(seqs):
-    iters = map(iter, seqs)
+    iters = it.imap(iter, seqs)
     while iters:
+        newiters = set()
         for itr in iters:
             try:
                 yield next(itr)
+                newiters.add(itr)
             except StopIteration:
-                iters.remove(itr)
+                pass
+        iters = newiters
 
 def take(n, seq):
     if n is None:
