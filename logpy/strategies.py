@@ -1,5 +1,5 @@
 from logpy.util import interleave
-from logpy.core import goaleval, EarlyGoalError
+from logpy.core import goaleval, EarlyGoalError, fail
 
 
 def bindearly(stream, *goals):
@@ -30,3 +30,12 @@ def earlysafe(s, goals):
     except EarlyGoalError:
         regoals = goals[1:] + (goals[0],)
         return earlysafe(s, regoals)
+
+def anyfail(s, goals):
+    """ Short circuit if any of the goals fail """
+    if any(goaleval(goal) is fail for goal in goals):
+        return (fail,)
+    if any(goaleval(goal)(s) is () for goal in goals):
+        return (fail,)
+    else:
+        return goals
