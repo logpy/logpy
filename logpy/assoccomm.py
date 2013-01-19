@@ -57,8 +57,7 @@ def opo(x, op):
 
     op((add, 1, 2), x) --> {x: add}
     """
-    h = var()
-    return conde(((heado, h, x), (operation, h), (eq, h, op)))
+    return conde(((heado, op, x), (operation, op)))
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
