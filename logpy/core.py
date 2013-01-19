@@ -65,19 +65,20 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
-def conde(*goalseqs):
+def conde(*goalseqs, **kwargs):
     """ Logical cond
 
     Goal constructor to provides logical AND and OR
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
-    return condeseq(goalseqs)
+    return condeseq(goalseqs, **kwargs)
 
-def condeseq(goalseqs):
+def condeseq(goalseqs, **kwargs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
+    binder = kwargs.get('binder', binddefault)
     def goal_conde(s):
-        return unique_dict(interleave(bindearly((s,), *goals)
+        return unique_dict(interleave(binder((s,), *goals)
                                      for goals in goalseqs))
     return goal_conde
 
@@ -105,6 +106,7 @@ def bindstar(stream, *goals):
         # Bind stream to new goal
         stream = bind(stream, goal)
     return stream
+binddefault = bindstar
 
 def bindearly(stream, *goals):
     return interleave(earlysafe(s, goals) for s in stream)
@@ -120,7 +122,7 @@ def earlysafe(s, goals):
         regoals = goals[1:] + (goals[0],)
         return earlysafe(s, regoals)
 
-def run(n, x, *goals):
+def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
     n     - number of desired solutions.  See ``take``
@@ -133,7 +135,8 @@ def run(n, x, *goals):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, unique(walkstar(x, s) for s in bindearly(({},), *goals)))
+    binder = kwargs.get('binder', binddefault)
+    return take(n, unique(walkstar(x, s) for s in binder(({},), *goals)))
 
 
 # Goals
