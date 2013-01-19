@@ -1,6 +1,6 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo, seteq)
+        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -62,6 +62,14 @@ def test_conde():
     x = var('x')
     assert tuple(conde([eq(x, 2)], [eq(x, 3)])({})) == ({x: 2}, {x: 3})
     assert tuple(conde([eq(x, 2), eq(x, 3)])({})) == ()
+
+def test_condeseq():
+    x = var('x')
+    assert tuple(condeseq(([eq(x, 2)], [eq(x, 3)]))({})) == ({x: 2}, {x: 3})
+    assert tuple(condeseq([[eq(x, 2), eq(x, 3)]])({})) == ()
+
+    goals = ([eq(x, i)] for i in itertools.count()) # infinite number of goals
+    assert next(condeseq(goals)({})) == {x: 0}
 
 def test_bind():
     x = var('x')
@@ -157,6 +165,17 @@ def test_goal_tuple_eval():
     results = tuple(goal_tuple_eval((membero, x, y))(s))
     assert all(res[x] in (1, 2) for res in results)
 
+def test_conso():
+    x = var()
+    y = var()
+    assert not tuple(conso(x, y, ())({}))
+    assert tuple(conso(1, (2, 3), (1, 2, 3))({}))
+    assert tuple(conso(x, (2, 3), (1, 2, 3))({})) == ({x: 1},)
+    assert tuple(conso(1, (2, 3), x)({})) == ({x: (1, 2, 3)},)
+    assert tuple(conso(x, y, (1, 2, 3))({})) == ({x: 1, y: (2, 3)},)
+    assert tuple(conso(x, (2, 3), y)({})) == ({y: (x, 2, 3)},)
+    # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
+
 def test_heado():
     x = var('x')
     assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
@@ -173,7 +192,10 @@ def test_appendo():
     assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
     assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
 
-def failing_test_appendo():
-    pass
-    #assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
-    #assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
+"""
+Failing test
+def test_appendo2():
+    print run(5, x, appendo((1,2,3), (4,5), x))
+    assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
+    assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
+"""
