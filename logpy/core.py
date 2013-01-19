@@ -76,9 +76,9 @@ def conde(*goalseqs, **kwargs):
 
 def condeseq(goalseqs, **kwargs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
-    binder = kwargs.get('binder', binddefault)
+    bindfn = kwargs.get('bindfn', binddefault)
     def goal_conde(s):
-        return unique_dict(interleave(binder((s,), *goals)
+        return unique_dict(interleave(bindfn((s,), *goals)
                                      for goals in goalseqs))
     return goal_conde
 
@@ -121,8 +121,8 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    binder = kwargs.get('binder', binddefault)
-    return take(n, unique(walkstar(x, s) for s in binder(({},), *goals)))
+    bindfn = kwargs.get('bindfn', binddefault)
+    return take(n, unique(walkstar(x, s) for s in bindfn(({},), *goals)))
 
 
 # Goals
