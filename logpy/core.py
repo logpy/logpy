@@ -277,10 +277,10 @@ def conso(h, t, l):
             return fail
         else:
             return conde([(eq, h, l[0]), (eq, t, l[1:])])
-    if isinstance(t, tuple):
+    elif isinstance(t, tuple):
         return eq((h,) + t, l)
-    print "Early"
-    raise EarlyGoalError()
+    else:
+        raise EarlyGoalError()
 
 """
 -This is an attempt to create appendo.  It does not currently work.
