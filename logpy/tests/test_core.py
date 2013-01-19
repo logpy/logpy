@@ -7,12 +7,6 @@ from unittest import expectedFailure as FAIL
 
 w, x, y, z = 'wxyz'
 
-def test_early():
-    x = var()
-    y = var()
-    assert run(0, x, (eq, y, (1, 2)), (membero, x, y))
-    assert run(0, x, (membero, x, y), (eq, y, (1, 2)))
-
 def test_walk():
     s = {1: 2, 2: 3}
     assert walk(2, s) == 3

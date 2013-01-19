@@ -108,20 +108,6 @@ def bindstar(stream, *goals):
     return stream
 binddefault = bindstar
 
-def bindearly(stream, *goals):
-    return interleave(earlysafe(s, goals) for s in stream)
-
-def earlysafe(s, goals):
-    if not goals:
-        return (s,)
-    goal = goaleval(goals[0])
-    try:
-        substream = goal(s)
-        return bindearly(substream, *goals[1:])
-    except EarlyGoalError:
-        regoals = goals[1:] + (goals[0],)
-        return earlysafe(s, regoals)
-
 def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
