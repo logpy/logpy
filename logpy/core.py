@@ -65,15 +65,20 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
-def conde(*goalseqs):
+def conde(*goalseqs, **kwargs):
     """ Logical cond
 
     Goal constructor to provides logical AND and OR
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
+    return condeseq(goalseqs, **kwargs)
+
+def condeseq(goalseqs, **kwargs):
+    """ Like conde but supports generic (possibly infinite) iterator of goals"""
+    bindfn = kwargs.get('bindfn', binddefault)
     def goal_conde(s):
-        return unique_dict(interleave(bindstar((s,), *goals)
+        return unique_dict(interleave(bindfn((s,), *goals)
                                      for goals in goalseqs))
     return goal_conde
 
@@ -101,8 +106,9 @@ def bindstar(stream, *goals):
         # Bind stream to new goal
         stream = bind(stream, goal)
     return stream
+binddefault = bindstar
 
-def run(n, x, *goals):
+def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
     n     - number of desired solutions.  See ``take``
@@ -115,12 +121,13 @@ def run(n, x, *goals):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, unique(walkstar(x, s) for s in bindstar(({},), *goals)))
+    bindfn = kwargs.get('bindfn', binddefault)
+    return take(n, unique(walkstar(x, s) for s in bindfn(({},), *goals)))
 
 
 # Goals
 
-class EarlyGoalError():  pass
+class EarlyGoalError(Exception):  pass
 
 def fail(s):
     return ()
@@ -141,9 +148,13 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    return conde(*[[eq(x, item)] for item in coll])
+    try:
+        return condeseq([[(eq, x, item)] for item in coll])
+    except TypeError:
+        raise EarlyGoalError()
+    # return condeseq(([(eq, x, item)] for item in coll))
 
-def seteq(a, b):
+def seteq(a, b, eq=eq):
     """ Set Equality
 
     For example (1, 2, 3) set equates to (2, 1, 3)
@@ -167,12 +178,7 @@ def seteq(a, b):
     if isvar(b) and isinstance(a, tuple):
         c, d = b, a
 
-    def seteq_goal(s):
-        for perm in it.permutations(d, len(d)):
-            result = unify(c, perm, s)
-            if result is not False:
-                yield result
-    return seteq_goal
+    return condeseq([eq(c, perm)] for perm in it.permutations(d, len(d)))
 
 def goaleval(goal):
     """ Evaluate an possibly unevaluated goal
@@ -265,6 +271,16 @@ def facts(rel, *lists):
     for l in lists:
         fact(rel, *l)
 
+def conso(h, t, l):
+    if isinstance(l, tuple):
+        if len(l) == 0:
+            return fail
+        else:
+            return conde([(eq, h, l[0]), (eq, t, l[1:])])
+    elif isinstance(t, tuple):
+        return eq((h,) + t, l)
+    else:
+        raise EarlyGoalError()
 
 """
 -This is an attempt to create appendo.  It does not currently work.
@@ -288,8 +304,6 @@ def tailo(x, coll):
 
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
-    a, d, res = [var(wild()) for i in range(3)]
+    a, d, res = [var() for i in range(3)]
     return conde((eq(l, ()), eq(s, ls)),
-                 ((heado, a, l),   (tailo, d, l),
-                  (heado, a, ls), (tailo, res, ls),
-                  (appendo, d, s, res)))
+                 ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))

@@ -34,10 +34,13 @@ def assoc(dict, key, value):
     d[key] = value
     return d
 
+def dicthash(d):
+    return hash(frozenset(d.items()))
+
 def unique_dict(seq):
     seen = set()
     for d in seq:
-        h = hash(frozenset(d.items()))
+        h = dicthash(d)
         if h not in seen:
             seen.add(h)
             yield d
@@ -50,13 +53,16 @@ def unique(seq):
             yield item
 
 def interleave(seqs):
-    iters = map(iter, seqs)
+    iters = it.imap(iter, seqs)
     while iters:
+        newiters = []
         for itr in iters:
             try:
                 yield next(itr)
+                newiters.append(itr)
             except StopIteration:
-                iters.remove(itr)
+                pass
+        iters = newiters
 
 def take(n, seq):
     if n is None:
