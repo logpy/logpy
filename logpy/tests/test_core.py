@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
         reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
-        goaleval, lany, lall)
+        goaleval, lany, lall, goalexpand)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -171,6 +171,19 @@ def test_uneval_membero():
     x, y = var('x'), var('y')
     assert set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
            set((1,2,3,4,5,6))
+
+def test_goalexpand():
+    def growing_goal(*args):
+        if len(args) < 10:
+            return (growing_goal, 1) + tuple(args)
+        else:
+            return lambda s: (1,)
+
+    g = (growing_goal, 2)
+    assert goalexpand(g) == (growing_goal, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2)
+    t = goalexpand((membero, x, (1,2,3)))
+    assert t == (lany, (eq, x, 1), (eq, x, 2), (eq, x, 3))
+
 
 def test_goal_tuple_eval():
     x, y = var(), var()

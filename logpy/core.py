@@ -184,7 +184,7 @@ def eq(u, v):
 def membero(x, coll):
     """ Goal such that x is an item of coll """
     try:
-        return (condeseq, [[(eq, x, item)] for item in coll])
+        return (lany,) + tuple((eq, x, item) for item in coll)
     except TypeError:
         raise EarlyGoalError()
 
@@ -225,6 +225,16 @@ def goaleval(goal):
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
         return goal_tuple_eval(goal)
     raise TypeError("Expected either function or tuple")
+
+def goalexpand(goalt):
+    """ Expand a goal tuple """
+    tmp = goalt
+    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
+        goalt = tmp
+        tmp = goalt[0](*goalt[1:])
+    return goalt
+
+
 
 def goal_tuple_eval(goalt):
     """ Evaluate an unevaluated goal tuple
