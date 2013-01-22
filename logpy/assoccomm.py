@@ -1,5 +1,5 @@
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
-        Relation, heado, conde, var, eq, fail)
+        Relation, heado, conde, var, eq, fail, goaleval)
 from sympy.utilities.iterables import kbins
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm', 'opo']
@@ -29,7 +29,8 @@ def unify_assoccomm(u, v, s, ordering=None):
             lg2 = makeops(op, partition(lg, part))
             # TODO: we use logpy code within python within logpy
             # There must be a more elegant way
-            for res in conde((eq_assoccomm, a, b) for a, b in zip(sm, lg2))(s):
+            g = goaleval(conde((eq_assoccomm, a, b) for a, b in zip(sm,lg2)))
+            for res in g(s):
                 yield res
 
 def makeops(op, lists):

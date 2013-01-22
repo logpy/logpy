@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
         reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
-        goaleval)
+        goaleval, lany, lall)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -50,6 +50,18 @@ def test_eq():
     assert tuple(eq(x, 2)({})) == ({x: 2},)
     assert tuple(eq(x, 2)({x: 3})) == ()
 
+def test_lany():
+    x = var('x')
+    assert len(tuple(lany(eq(x, 2), eq(x, 3))({}))) == 2
+    assert len(tuple(lany((eq, x, 2), (eq, x, 3))({}))) == 2
+
+def test_lall():
+    x = var('x')
+    print tuple(lall((eq, x, 2))({}))
+    assert tuple(lall((eq, x, 2))({})) == ({x: 2},)
+    assert tuple(lall((eq, x, 2), (eq, x, 3))({})) == ()
+
+
 def test_seteq():
     x = var('x')
     abc = tuple('abc')
@@ -61,8 +73,8 @@ def test_seteq():
 
 def test_conde():
     x = var('x')
-    assert tuple(conde([eq(x, 2)], [eq(x, 3)])({})) == ({x: 2}, {x: 3})
-    assert tuple(conde([eq(x, 2), eq(x, 3)])({})) == ()
+    assert results(conde([eq(x, 2)], [eq(x, 3)])) == ({x: 2}, {x: 3})
+    assert results(conde([eq(x, 2), eq(x, 3)])) == ()
 
 def test_condeseq():
     x = var('x')

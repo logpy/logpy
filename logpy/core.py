@@ -80,6 +80,7 @@ def conde(*goalseqs, **kwargs):
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
+    return (lany, ) + tuple((lall,) + tuple(gs) for gs in goalseqs)
     return condeseq(goalseqs, **kwargs)
 
 def condeseq(goalseqs, **kwargs):
@@ -89,6 +90,32 @@ def condeseq(goalseqs, **kwargs):
         return unique_dict(interleave(bindfn((s,), *goals)
                                      for goals in goalseqs))
     return goal_conde
+
+def lall(*goals):
+    """ Logical all
+
+    >>> from logpy import lall, membero
+    >>> g = lall(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> tuple(g({}))
+    ({x: 2}, {x: 3})
+    """
+    if not goals:
+        return success
+    goal = goaleval(goals[0])
+    if len(goals) == 1:
+        return goal
+    tail = lall(*goals[1:])
+    return lambda s: unique_dict(interleave(it.imap(tail, goal(s))))
+
+def lany(*goals):
+    """ Logical any
+
+    >>> from logpy import lall, membero
+    >>> g = lany(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> tuple(g({}))
+    ({x: 1}, {x: 2}, {x: 3}, {x: 4})
+    """
+    return lambda s: interleave(goal(s) for goal in map(goaleval, goals))
 
 def bind(stream, goal):
     """ Bind a goal to a stream
@@ -220,7 +247,7 @@ def goal_tuple_eval(goalt):
     """
     def g(s):
         tup = reify(goalt, s)
-        while isinstance(tup, tuple):
+        while isinstance(tup, tuple) and len(tup) >= 1 and callable(tup[0]):
             tup = evalt(tup)
         return tup(s)
     return g
