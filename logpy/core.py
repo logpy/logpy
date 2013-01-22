@@ -31,7 +31,15 @@ var = lambda *args: Var(*args)
 isvar = lambda t: isinstance(t, Var)
 
 class wild(object):
-    pass
+    _id = 1
+
+    def __init__(self):
+        self.id = wild._id
+        wild._id += 1
+
+    def __str__(self):
+        return "_%d"%self.id
+    __repr__ = __str__
 
 def reify(e, s):
     if isvar(e):
