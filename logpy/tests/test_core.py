@@ -1,6 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq)
+        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
+        goaleval)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -53,9 +54,9 @@ def test_seteq():
     x = var('x')
     abc = tuple('abc')
     bca = tuple('bca')
-    assert tuple(seteq(abc, bca)({}))
-    assert len(tuple(seteq(abc, x)({}))) == 6
-    assert len(tuple(seteq(x, abc)({}))) == 6
+    assert results(seteq(abc, bca))
+    assert len(results(seteq(abc, x))) == 6
+    assert len(results(seteq(x, abc))) == 6
     assert bca in run(0, x, seteq(abc, x))
 
 def test_conde():
@@ -161,19 +162,21 @@ def test_uneval_membero():
 
 def test_goal_tuple_eval():
     x, y = var(), var()
-    s = {y: (1, 2)}
-    results = tuple(goal_tuple_eval((membero, x, y))(s))
-    assert all(res[x] in (1, 2) for res in results)
+    s = {y: 1}
+    assert tuple(goal_tuple_eval((eq, x, y))(s)) == ({x: 1, y: 1},)
+
+def results(g, s={}):
+    return tuple(goaleval(g)(s))
 
 def test_conso():
     x = var()
     y = var()
-    assert not tuple(conso(x, y, ())({}))
-    assert tuple(conso(1, (2, 3), (1, 2, 3))({}))
-    assert tuple(conso(x, (2, 3), (1, 2, 3))({})) == ({x: 1},)
-    assert tuple(conso(1, (2, 3), x)({})) == ({x: (1, 2, 3)},)
-    assert tuple(conso(x, y, (1, 2, 3))({})) == ({x: 1, y: (2, 3)},)
-    assert tuple(conso(x, (2, 3), y)({})) == ({y: (x, 2, 3)},)
+    assert not results(conso(x, y, ()))
+    assert results(conso(1, (2, 3), (1, 2, 3)))
+    assert results(conso(x, (2, 3), (1, 2, 3))) == ({x: 1},)
+    assert results(conso(1, (2, 3), x)) == ({x: (1, 2, 3)},)
+    assert results(conso(x, y, (1, 2, 3))) == ({x: 1, y: (2, 3)},)
+    assert results(conso(x, (2, 3), y)) == ({y: (x, 2, 3)},)
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
 
 def test_heado():
@@ -187,9 +190,9 @@ def test_tailo():
 
 def test_appendo():
     x = var('x')
-    assert tuple(appendo((), (1,2), (1,2))({})) == ({},)
-    assert tuple(appendo((), (1,2), (1))({})) == ()
-    assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
+    assert results(appendo((), (1,2), (1,2))) == ({},)
+    assert results(appendo((), (1,2), (1))) == ()
+    assert results(appendo((1,2), (3,4), (1,2,3,4)))
     assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
 
 """

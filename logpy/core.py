@@ -157,10 +157,9 @@ def eq(u, v):
 def membero(x, coll):
     """ Goal such that x is an item of coll """
     try:
-        return condeseq([[(eq, x, item)] for item in coll])
+        return (condeseq, [[(eq, x, item)] for item in coll])
     except TypeError:
         raise EarlyGoalError()
-    # return condeseq(([(eq, x, item)] for item in coll))
 
 def seteq(a, b, eq=eq):
     """ Set Equality
@@ -186,7 +185,7 @@ def seteq(a, b, eq=eq):
     if isvar(b) and isinstance(a, tuple):
         c, d = b, a
 
-    return condeseq([eq(c, perm)] for perm in it.permutations(d, len(d)))
+    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
 def goaleval(goal):
     """ Evaluate an possibly unevaluated goal
@@ -219,7 +218,12 @@ def goal_tuple_eval(goalt):
     See also:
         goaleval - safe to use on eq(x, 1) or (eq, x, 1)
     """
-    return lambda s: evalt(reify(goalt, s))(s)
+    def g(s):
+        tup = reify(goalt, s)
+        while isinstance(tup, tuple):
+            tup = evalt(tup)
+        return tup(s)
+    return g
 
 class Relation(object):
     def __init__(self):
@@ -249,7 +253,7 @@ class Relation(object):
             facts = intersection(*sorted(subsets, key=len))
         else:
             facts = self.facts
-        return conde(*[[eq(a, b) for a, b in zip(args, fact)]
+        return (conde,) + tuple([[eq(a, b) for a, b in zip(args, fact)]
                                  for fact in facts])
 
 def fact(rel, *args):
@@ -284,7 +288,7 @@ def conso(h, t, l):
         if len(l) == 0:
             return fail
         else:
-            return conde([(eq, h, l[0]), (eq, t, l[1:])])
+            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
     elif isinstance(t, tuple):
         return eq((h,) + t, l)
     else:
@@ -313,5 +317,5 @@ def tailo(x, coll):
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var() for i in range(3)]
-    return conde((eq(l, ()), eq(s, ls)),
-                 ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
+    return (conde, (eq(l, ()), eq(s, ls)),
+                  ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))

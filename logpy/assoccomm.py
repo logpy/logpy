@@ -57,7 +57,7 @@ def opo(x, op):
 
     op((add, 1, 2), x) --> {x: add}
     """
-    return conde(((heado, op, x), (operation, op)))
+    return (conde, ((heado, op, x), (operation, op)))
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
@@ -82,11 +82,11 @@ def eq_assoccomm(u, v):
     (('add', 2, 3), ('add', 3, 2))
     """
     op = var()
-    return conde(((eq, u, v),),
-                 ((opo, u, op), (opo, v, op),
-                    (conde,
-                        ((commutative, op), (eq_comm, u, v)),
-                        ((associative, op), (eq_assoc, u, v)))))
+    return (conde, ((eq, u, v),),
+                   ((opo, u, op), (opo, v, op),
+                      (conde,
+                          ((commutative, op), (eq_comm, u, v)),
+                          ((associative, op), (eq_assoc, u, v)))))
 
 def eq_assoc(u, v):
     """ Goal for associative equality

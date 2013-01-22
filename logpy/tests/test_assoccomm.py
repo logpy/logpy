@@ -1,4 +1,4 @@
-from logpy.core import var, run, fact, eq
+from logpy.core import var, run, fact, eq, goaleval
 from logpy.assoccomm import (unify_assoc, unify_comm, eq_assoc, eq_comm,
         operation, associative, commutative, eq_assoccomm, conde)
 
@@ -7,6 +7,9 @@ c = 'comm_op'
 x = var()
 fact(associative, a)
 fact(commutative, c)
+
+def results(g, s={}):
+    return tuple(goaleval(g)(s))
 
 def test_assoc():
     assert tuple(unify_assoc((a, 1, 2, 3), (a, 1, 2, 3), {}))
@@ -21,12 +24,12 @@ def test_assoc():
 
 def test_eq_assoccomm():
     A, B = ((a, 1, 2), 3), ((a, 1, 2), 3)
-    assert tuple(eq_assoccomm((a,1,2), (a,1,2))({}))
-    assert tuple(eq_assoccomm(3, 3)({}))
-    assert tuple(eq_assoccomm((1,2), (1,2))({}))
-    assert tuple(conde(((eq_assoccomm, (a,1,2), (a,1,2)),
-                        (eq_assoccomm, 3, 3)))({}))
-    assert tuple(conde((eq_assoccomm, a, b) for a, b in zip(A, B))({}))
+    assert results(eq_assoccomm((a,1,2), (a,1,2)))
+    assert results(eq_assoccomm(3, 3))
+    assert results(eq_assoccomm((1,2), (1,2)))
+    assert results(conde(((eq_assoccomm, (a,1,2), (a,1,2)),
+                          (eq_assoccomm, 3, 3))))
+    assert results(conde((eq_assoccomm, a, b) for a, b in zip(A, B)))
 
 def test_comm():
     assert tuple(unify_comm((c, 1, 2, 3), (c, 1, 2, 3), {}))
