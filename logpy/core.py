@@ -378,12 +378,16 @@ def conso(h, t, l):
 """
 
 def heado(x, coll):
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
     if isinstance(coll, tuple) and len(coll) >= 1:
         return eq(x, coll[0])
     else:
         return fail
 
 def tailo(x, coll):
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
     if isinstance(coll, tuple) and len(coll) >= 1:
         return eq(x, coll[1:])
     else:

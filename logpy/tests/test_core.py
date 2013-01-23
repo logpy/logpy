@@ -4,6 +4,7 @@ from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         goaleval, lany, lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
 import itertools
 from unittest import expectedFailure as FAIL
+from logpy.util import raises
 
 w, x, y, z = 'wxyz'
 
@@ -239,13 +240,15 @@ def test_conso():
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
 
 def test_heado():
-    x = var('x')
+    x, y = var('x'), var('y')
     assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
     assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
+    raises(EarlyGoalError, lambda: heado(x, y))
 
 def test_tailo():
-    x = var('x')
+    x, y = var('x'), var('y')
     assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
+    raises(EarlyGoalError, lambda: tailo(x, y))
 
 def test_appendo():
     x = var('x')
