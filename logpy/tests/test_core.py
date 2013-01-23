@@ -218,6 +218,12 @@ def test_conso_early():
     assert (run(0, x, (conso, x, y, z), (eq, z, (1, 2, 3)))
             == (1,))
 
+def test_lany_is_early_safe():
+    x = var()
+    y = var()
+    print run(0, x, lany((membero, x, y), (eq, x, 2)))
+    assert run(0, x, lany((membero, x, y), (eq, x, 2))) == (2,)
+
 def results(g, s={}):
     return tuple(goaleval(g)(s))
 

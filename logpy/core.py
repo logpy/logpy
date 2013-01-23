@@ -80,7 +80,7 @@ def conde(*goalseqs, **kwargs):
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
-    return (lany, ) + tuple((lall,) + tuple(gs) for gs in goalseqs)
+    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
     return condeseq(goalseqs, **kwargs)
 
 def condeseq(goalseqs, **kwargs):
@@ -120,7 +120,18 @@ def lany(*goals):
     """
     if len(goals) == 1:
         return goals[0]
-    return lambda s: interleave(goaleval(reify(goal, s))(s) for goal in goals)
+
+    def anygoal(s):
+        gs = []
+        for goal in goals:
+            try:
+                gs.append(goaleval(reify(goal, s)))
+            except EarlyGoalError:
+                pass
+        return interleave((g(s) for g in gs), [EarlyGoalError])
+    return anygoal
+    return lambda s: interleave(
+            (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
 
 def lallearly(*goals):
     return (lall,) + tuple(earlyorder(*goals))
