@@ -1,6 +1,6 @@
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
         Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq, tailo, seteq)
+        condeseq, seteq, conso)
 from sympy.utilities.iterables import kbins
 from logpy import core
 from logpy.util import groupsizes
@@ -177,7 +177,8 @@ def eq_comm2(u, v, eq=core.eq):
     op = var()
     utail = var()
     vtail = var()
-    if not isvar(u) and not isvar(v):
-        return conde([(opo, u, op), (opo, v, op),
-                      (tailo, utail, u), (tailo, vtail, v),
-                      (seteq, utail, vtail, eq)])
+    if isvar(u) and isvar(v):
+        raise EarlyGoalException()
+    return (conde, ((conso, op, utail, u),
+                    (conso, op, vtail, v),
+                    (seteq, utail, vtail, eq)))

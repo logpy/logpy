@@ -55,9 +55,7 @@ def test_eq_comm2():
     assert not results(eq_comm2((3, c, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((c, 1, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((a, 1, 2, 3), (c, 1, 2, 3)))
-    # Fails
-    # print len(tuple(eq_comm2((c, 3, 2, 1), x)({})))
-    # assert len(tuple(eq_comm2((c, 3, 2, 1), x)({}))) == 6
+    assert len(results(eq_comm2((c, 3, 2, 1), x))) == 6
 
 def test_deep_commutativity():
     x, y = var('x'), var('y')
