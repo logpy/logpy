@@ -1,3 +1,28 @@
+""" Associative and Commutative unification
+
+>>> from logpy import run, var, fact
+>>> from logpy.assoccomm import eq_assoccomm as eq
+>>> from logpy.assoccomm import commutative, associative
+
+>>> # Define some dummy Ops
+>>> add = 'add'
+>>> mul = 'mul'
+
+>>> # Declare that these ops are commutative using the facts system
+>>> fact(commutative, mul)
+>>> fact(commutative, add)
+
+>>> # Define some wild variables
+>>> x, y = var('x'), var('y')
+
+>>> # Two expressions to match
+>>> pattern = (mul, (add, 1, x), y)                # (1 + x) * y
+>>> expr    = (mul, 2, (add, 3, 1))                # 2 * (3 + 1)
+
+>>> print run(0, (x,y), eq(pattern, expr))
+((3, 2),)
+"""
+
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
         Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, seteq, conso)
