@@ -1,7 +1,7 @@
 from logpy.core import var, run, fact, eq, goaleval, EarlyGoalError
 from logpy.assoccomm import (unify_assoc, unify_comm, eq_assoc, eq_comm,
         operation, associative, commutative, eq_assoccomm, conde, opo,
-        groupsizes_to_partition, assocunify, eq_comm2)
+        groupsizes_to_partition, assocunify, eq_comm2, eq_assoc2)
 from logpy.util import raises
 
 a = 'assoc_op'
@@ -56,6 +56,18 @@ def test_eq_comm2():
     assert not results(eq_comm2((c, 1, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((a, 1, 2, 3), (c, 1, 2, 3)))
     assert len(results(eq_comm2((c, 3, 2, 1), x))) == 6
+
+def test_eq_assoc2():
+    assert results(eq_assoc2((a, 1, 2, 3), (a, 1, 2, 3)))
+    assert not results(eq_assoc2((a, 3, 2, 1), (a, 1, 2, 3)))
+    assert results(eq_assoc2((a, (a, 1, 2), 3), (a, 1, 2, 3)))
+    assert results(eq_assoc2((a, 1, 2, 3), (a, (a, 1, 2), 3)))
+    o = 'op'
+    assert not results(eq_assoc2((o, 1, 2, 3), (o, (o, 1, 2), 3)))
+
+    # See TODO in assocunify
+    # print (results(eq_assoc2((a, 1, 2, 3), x)))
+    # assert len(results(eq_assoc2((a, 1, 2, 3), x))) == 3
 
 def test_deep_commutativity():
     x, y = var('x'), var('y')
