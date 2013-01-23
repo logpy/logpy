@@ -76,7 +76,6 @@ def test_seteq():
     assert len(results(seteq(abc, x))) == 6
     assert len(results(seteq(x, abc))) == 6
     assert bca in run(0, x, seteq(abc, x))
-    print results(seteq((1, 2, 3), (3, x, 1)))
     assert results(seteq((1, 2, 3), (3, x, 1))) == ({x: 2},)
 
 def test_conde():
@@ -224,7 +223,6 @@ def test_conso_early():
 def test_lany_is_early_safe():
     x = var()
     y = var()
-    print run(0, x, lany((membero, x, y), (eq, x, 2)))
     assert run(0, x, lany((membero, x, y), (eq, x, 2))) == (2,)
 
 def results(g, s={}):

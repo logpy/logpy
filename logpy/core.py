@@ -235,7 +235,6 @@ def seteq(a, b, eq=eq):
     >>> run(0, x, seteq(x, (1, 2)))
     ((1, 2), (2, 1))
     """
-    print a, b
     if isinstance(a, tuple) and isinstance(b, tuple):
         if set(a) == set(b):
             return success
