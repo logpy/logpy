@@ -1,5 +1,5 @@
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
-        Relation, heado, conde, var, eq, fail, goaleval, lall)
+        Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError)
 from sympy.utilities.iterables import kbins
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm', 'opo']
@@ -58,6 +58,8 @@ def opo(x, op):
 
     op((add, 1, 2), x) --> {x: add}
     """
+    if not isinstance(x, tuple):
+        raise EarlyGoalError()
     return (lall, (heado, op, x), (operation, op))
 
 def eq_assoccomm(u, v):
