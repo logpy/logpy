@@ -181,4 +181,5 @@ def eq_comm2(u, v, eq=core.eq):
         raise EarlyGoalException()
     return (conde, ((conso, op, utail, u),
                     (conso, op, vtail, v),
+                    (commutative, op),
                     (seteq, utail, vtail, eq)))

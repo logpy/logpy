@@ -52,6 +52,7 @@ def test_eq_comm():
 def test_eq_comm2():
     assert results(eq_comm2((c, 1, 2, 3), (c, 1, 2, 3)))
     assert results(eq_comm2((c, 3, 2, 1), (c, 1, 2, 3)))
+    assert not results(eq_comm2((a, 3, 2, 1), (a, 1, 2, 3)))
     assert not results(eq_comm2((3, c, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((c, 1, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((a, 1, 2, 3), (c, 1, 2, 3)))
