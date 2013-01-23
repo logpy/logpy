@@ -4,12 +4,18 @@ from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
 from logpy import core
 from logpy.util import groupsizes
 
-__all__ = ['associative', 'commutative', 'eq_assoccomm', 'opo']
+__all__ = ['associative', 'commutative', 'eq_assoccomm']
 
 associative = Relation()
 commutative = Relation()
 
 def assocunify(u, v, s, eq=core.eq):
+    """ Associative Unification
+
+    See Also:
+        eq_assoccomm
+    """
+
     res = unify(u, v, s)
     if res is not False:
         return (res,)  # TODO: iterate through all possibilities
@@ -32,12 +38,23 @@ def assocunify(u, v, s, eq=core.eq):
     return ()
 
 def makeops(op, lists):
+    """ Construct operations from an op and parition lists
+
+    >>> makeops('add', [(1, 2), (3, 4, 5)])
+    (('add', 1, 2), ('add', 3, 4, 5))
+    """
     return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
 
 def partition(tup, part):
+    """ Partition a tuple
+
+    >>> partition("abcde", [[0,1], [4,3,2]])
+    [('a', 'b'), ('e', 'd', 'c')]
+    """
     return [index(tup, ind) for ind in part]
 
 def index(tup, ind):
+    """ Fancy indexing with tuples """
     return tuple(tup[i] for i in ind)
 
 def groupsizes_to_partition(*gsizes):
@@ -64,8 +81,12 @@ def eq_assoc(u, v, eq=core.eq):
 
     >>> from logpy import run, var
     >>> from logpy.assoccomm import eq_assoc as eq
+
+    >>> fact(commutative, 'add')    # declare that 'add' is commutative
+    >>> fact(associative, 'add')    # declare that 'add' is associative
+
     >>> x = var()
-    >>> run(0, eq((add, 1, 2, 3), ('add', 1, x)))
+    >>> run(0, eq(('add', 1, 2, 3), ('add', 1, x)))
     (('add', 2, 3),)
     """
     op = var()
@@ -78,9 +99,13 @@ def eq_comm(u, v, eq=None):
 
     >>> from logpy import run, var
     >>> from logpy.assoccomm import eq_comm as eq
+
+    >>> fact(commutative, 'add')    # declare that 'add' is commutative
+    >>> fact(associative, 'add')    # declare that 'add' is associative
+
     >>> x = var()
-    >>> run(0, eq((add, 1, 2, 3), ('add', x, 1)))
-    (('add', 2, 3), ('add', 3, 2))
+    >>> run(0, eq(('add', 1, 2, 3), ('add', 2, x, 1)))
+    (3,)
     """
     eq = eq or eq_comm
     op = var()
@@ -110,8 +135,9 @@ def eq_assoccomm(u, v):
     >>> from logpy import fact, run, var
 
     >>> fact(commutative, 'add')    # declare that 'add' is commutative
+    >>> fact(associative, 'add')    # declare that 'add' is associative
 
-    >>> x = var
+    >>> x = var()
     >>> e1 = ('add', 1, 2, 3)
     >>> e2 = ('add', 1, x)
     >>> run(0, x, eq(e1, e2))
