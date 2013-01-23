@@ -52,7 +52,7 @@ def unique(seq):
             seen.add(item)
             yield item
 
-def interleave(seqs):
+def interleave(seqs, pass_exceptions=()):
     iters = it.imap(iter, seqs)
     while iters:
         newiters = []
@@ -60,7 +60,7 @@ def interleave(seqs):
             try:
                 yield next(itr)
                 newiters.append(itr)
-            except StopIteration:
+            except (StopIteration,) + tuple(pass_exceptions):
                 pass
         iters = newiters
 
