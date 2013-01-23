@@ -76,6 +76,8 @@ def test_seteq():
     assert len(results(seteq(abc, x))) == 6
     assert len(results(seteq(x, abc))) == 6
     assert bca in run(0, x, seteq(abc, x))
+    print results(seteq((1, 2, 3), (3, x, 1)))
+    assert results(seteq((1, 2, 3), (3, x, 1))) == ({x: 2},)
 
 def test_conde():
     x = var('x')
