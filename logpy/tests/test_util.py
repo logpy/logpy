@@ -1,5 +1,5 @@
 from logpy.util import (isempty, take, unique, unique_dict, interleave,
-        intersection, groupsizes)
+        intersection, groupsizes, raises)
 import itertools
 
 def test_unique():
@@ -38,3 +38,6 @@ def test_groupsizes():
     assert set(groupsizes(5, 2)) == set(((1, 4), (2, 3), (3, 2), (4, 1)))
     assert set(groupsizes(4, 1)) == set([(4,)])
     assert set(groupsizes(4, 4)) == set([(1, 1, 1, 1)])
+
+def test_raises():
+    raises(ZeroDivisionError, lambda: 1/0)

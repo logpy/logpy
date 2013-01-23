@@ -1,8 +1,10 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq)
+        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
+        goaleval, lany, lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
 import itertools
 from unittest import expectedFailure as FAIL
+from logpy.util import raises
 
 w, x, y, z = 'wxyz'
 
@@ -49,20 +51,39 @@ def test_eq():
     assert tuple(eq(x, 2)({})) == ({x: 2},)
     assert tuple(eq(x, 2)({x: 3})) == ()
 
+def test_lany():
+    x = var('x')
+    assert len(tuple(lany(eq(x, 2), eq(x, 3))({}))) == 2
+    assert len(tuple(lany((eq, x, 2), (eq, x, 3))({}))) == 2
+
+def test_lall():
+    x = var('x')
+    assert results(lall((eq, x, 2))) == ({x: 2},)
+    assert results(lall((eq, x, 2), (eq, x, 3))) == ()
+
+def test_earlyorder():
+    x, y = var(), var()
+    assert earlyorder((eq, 2, x)) == ((eq, 2, x),)
+    assert earlyorder((eq, 2, x), (eq, 3, x)) == ((eq, 2, x), (eq, 3, x))
+    assert earlyorder((membero, x, y), (eq, y, (1,2,3)))[0] == (eq, y, (1,2,3))
+
+
 def test_seteq():
     x = var('x')
     abc = tuple('abc')
     bca = tuple('bca')
-    assert tuple(seteq(abc, bca)({}))
-    assert len(tuple(seteq(abc, x)({}))) == 6
-    assert len(tuple(seteq(x, abc)({}))) == 6
+    assert results(seteq(abc, bca))
+    assert len(results(seteq(abc, x))) == 6
+    assert len(results(seteq(x, abc))) == 6
     assert bca in run(0, x, seteq(abc, x))
+    assert results(seteq((1, 2, 3), (3, x, 1))) == ({x: 2},)
 
 def test_conde():
     x = var('x')
-    assert tuple(conde([eq(x, 2)], [eq(x, 3)])({})) == ({x: 2}, {x: 3})
-    assert tuple(conde([eq(x, 2), eq(x, 3)])({})) == ()
+    assert results(conde([eq(x, 2)], [eq(x, 3)])) == ({x: 2}, {x: 3})
+    assert results(conde([eq(x, 2), eq(x, 3)])) == ()
 
+"""
 def test_condeseq():
     x = var('x')
     assert tuple(condeseq(([eq(x, 2)], [eq(x, 3)]))({})) == ({x: 2}, {x: 3})
@@ -70,6 +91,7 @@ def test_condeseq():
 
     goals = ([eq(x, i)] for i in itertools.count()) # infinite number of goals
     assert next(condeseq(goals)({})) == {x: 0}
+"""
 
 def test_bind():
     x = var('x')
@@ -156,40 +178,79 @@ def test_fact():
 
 def test_uneval_membero():
     x, y = var('x'), var('y')
-    assert set(run(100, x, membero(y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
+    assert set(run(100, x, (membero, y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
            set((1,2,3,4,5,6))
+
+def test_goaleval():
+    x, y = var('x'), var('y')
+    g = eq(x, 2)
+    assert goaleval(g) == g
+    assert callable(goaleval((eq, x, 2)))
+    raises(EarlyGoalError, lambda: goaleval((membero, x, y)))
+    assert callable(goaleval((lall, (eq, x, 2))))
+
+def test_goalexpand():
+    def growing_goal(*args):
+        if len(args) < 10:
+            return (growing_goal, 1) + tuple(args)
+        else:
+            return lambda s: (1,)
+
+    g = (growing_goal, 2)
+    assert goalexpand(g) == (growing_goal, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2)
+    t = goalexpand((membero, x, (1,2,3)))
+    assert t == (lany, (eq, x, 1), (eq, x, 2), (eq, x, 3))
 
 def test_goal_tuple_eval():
     x, y = var(), var()
-    s = {y: (1, 2)}
-    results = tuple(goal_tuple_eval((membero, x, y))(s))
-    assert all(res[x] in (1, 2) for res in results)
+    s = {y: 1}
+    assert tuple(goal_tuple_eval((eq, x, y))(s)) == ({x: 1, y: 1},)
+
+def test_early():
+    x, y = var(), var()
+    assert run(0, x, lallearly((eq, y, (1, 2)), (membero, x, y)))
+    assert run(0, x, lallearly((membero, x, y), (eq, y, (1, 2))))
+
+def test_conso_early():
+    x, y, z = var(), var(), var()
+    assert (run(0, x, (conso, x, y, z), (eq, z, (1, 2, 3)))
+            == (1,))
+
+def test_lany_is_early_safe():
+    x = var()
+    y = var()
+    assert run(0, x, lany((membero, x, y), (eq, x, 2))) == (2,)
+
+def results(g, s={}):
+    return tuple(goaleval(g)(s))
 
 def test_conso():
     x = var()
     y = var()
-    assert not tuple(conso(x, y, ())({}))
-    assert tuple(conso(1, (2, 3), (1, 2, 3))({}))
-    assert tuple(conso(x, (2, 3), (1, 2, 3))({})) == ({x: 1},)
-    assert tuple(conso(1, (2, 3), x)({})) == ({x: (1, 2, 3)},)
-    assert tuple(conso(x, y, (1, 2, 3))({})) == ({x: 1, y: (2, 3)},)
-    assert tuple(conso(x, (2, 3), y)({})) == ({y: (x, 2, 3)},)
+    assert not results(conso(x, y, ()))
+    assert results(conso(1, (2, 3), (1, 2, 3)))
+    assert results(conso(x, (2, 3), (1, 2, 3))) == ({x: 1},)
+    assert results(conso(1, (2, 3), x)) == ({x: (1, 2, 3)},)
+    assert results(conso(x, y, (1, 2, 3))) == ({x: 1, y: (2, 3)},)
+    assert results(conso(x, (2, 3), y)) == ({y: (x, 2, 3)},)
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
 
 def test_heado():
-    x = var('x')
+    x, y = var('x'), var('y')
     assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
     assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
+    raises(EarlyGoalError, lambda: heado(x, y))
 
 def test_tailo():
-    x = var('x')
+    x, y = var('x'), var('y')
     assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
+    raises(EarlyGoalError, lambda: tailo(x, y))
 
 def test_appendo():
     x = var('x')
-    assert tuple(appendo((), (1,2), (1,2))({})) == ({},)
-    assert tuple(appendo((), (1,2), (1))({})) == ()
-    assert tuple(appendo((1,2), (3,4), (1,2,3,4))({}))
+    assert results(appendo((), (1,2), (1,2))) == ({},)
+    assert results(appendo((), (1,2), (1))) == ()
+    assert results(appendo((1,2), (3,4), (1,2,3,4)))
     assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
 
 """
