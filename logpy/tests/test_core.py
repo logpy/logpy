@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
         reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
-        goaleval, lany, lall, goalexpand, earlyorder, EarlyGoalError)
+        goaleval, lany, lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
 import itertools
 from unittest import expectedFailure as FAIL
 
@@ -211,6 +211,11 @@ def test_goal_tuple_eval():
     x, y = var(), var()
     s = {y: 1}
     assert tuple(goal_tuple_eval((eq, x, y))(s)) == ({x: 1, y: 1},)
+
+def test_early():
+    x, y = var(), var()
+    assert run(0, x, lallearly((eq, y, (1, 2)), (membero, x, y)))
+    assert run(0, x, lallearly((membero, x, y), (eq, y, (1, 2))))
 
 def results(g, s={}):
     return tuple(goaleval(g)(s))

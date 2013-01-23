@@ -139,7 +139,7 @@ def earlyorder(*goals):
         if not bad:
             return tuple(good)
         else:
-            return tuple(good) + ((lallearly,) + tuple(bad))
+            return tuple(good) + ((lallearly,) + tuple(bad),)
 
 def bind(stream, goal):
     """ Bind a goal to a stream
