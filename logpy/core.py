@@ -101,11 +101,14 @@ def lall(*goals):
     """
     if not goals:
         return success
-    goal = goaleval(goals[0])
     if len(goals) == 1:
-        return goal
-    tail = lall(*goals[1:])
-    return lambda s: unique_dict(interleave(it.imap(tail, goal(s))))
+        return goals[0]
+    def allgoal(s):
+        g = goaleval(reify(goals[0], s))
+        return unique_dict(interleave(
+            goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
+            for ss in g(s)))
+    return allgoal
 
 def lany(*goals):
     """ Logical any
@@ -115,7 +118,28 @@ def lany(*goals):
     >>> tuple(g({}))
     ({x: 1}, {x: 2}, {x: 3}, {x: 4})
     """
+    if len(goals) == 1:
+        return goals[0]
     return lambda s: interleave(goal(s) for goal in map(goaleval, goals))
+
+def lallearly(*goals):
+    return (lall,) + tuple(earlyorder(*goals))
+
+def earlyorder(*goals):
+    good, bad = [], []
+    for goal in goals:
+        try:
+            goaleval(goal)
+            good.append(goal)
+        except EarlyGoalError:
+            bad.append(goal)
+    if not good:
+        raise EarlyGoalError()
+    else:
+        if not bad:
+            return tuple(good)
+        else:
+            return tuple(good) + ((lallearly,) + tuple(bad))
 
 def bind(stream, goal):
     """ Bind a goal to a stream
@@ -157,7 +181,9 @@ def run(n, x, *goals, **kwargs):
     (1,)
     """
     bindfn = kwargs.get('bindfn', binddefault)
-    return take(n, unique(walkstar(x, s) for s in bindfn(({},), *goals)))
+    return take(n, unique(walkstar(x, s) for s in goaleval(lall(*goals))({})))
+
+    # bindfn(({},), *goals)))
 
 
 # Goals
@@ -223,7 +249,8 @@ def goaleval(goal):
     if callable(goal):          # goal is already a function like eq(x, 1)
         return goal
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
-        return goal_tuple_eval(goal)
+        egoal = goalexpand(goal)
+        return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
 
 def goalexpand(goalt):

@@ -1,5 +1,5 @@
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
-        Relation, heado, conde, var, eq, fail, goaleval)
+        Relation, heado, conde, var, eq, fail, goaleval, lall)
 from sympy.utilities.iterables import kbins
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm', 'opo']
@@ -58,7 +58,7 @@ def opo(x, op):
 
     op((add, 1, 2), x) --> {x: add}
     """
-    return (conde, ((heado, op, x), (operation, op)))
+    return (lall, (heado, op, x), (operation, op))
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
