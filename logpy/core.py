@@ -234,6 +234,9 @@ def seteq(a, b, eq=eq):
     >>> x = var()
     >>> run(0, x, seteq(x, (1, 2)))
     ((1, 2), (2, 1))
+
+    >>> run(0, x, seteq((2, 1, x), (3, 1, 2)))
+    (3,)
     """
     if isinstance(a, tuple) and isinstance(b, tuple):
         if set(a) == set(b):
@@ -242,7 +245,8 @@ def seteq(a, b, eq=eq):
             return fail
         else:
             c, d = a, b
-
+            return (condeseq, (((eq, cc, dd) for cc, dd in zip(c, perm))
+                                     for perm in it.permutations(d, len(d))))
 
     if isvar(a) and isvar(b):
         raise EarlyGoalError()

@@ -1,7 +1,8 @@
 from logpy.core import var, run, fact, eq, goaleval, EarlyGoalError
 from logpy.assoccomm import (unify_assoc, unify_comm, eq_assoc, eq_comm,
         operation, associative, commutative, eq_assoccomm, conde, opo,
-        groupsizes_to_partition, assocunify, eq_comm2, eq_assoc2)
+        groupsizes_to_partition, assocunify, eq_comm2, eq_assoc2,
+        eq_assoccomm2)
 from logpy.util import raises
 
 a = 'assoc_op'
@@ -56,7 +57,7 @@ def test_eq_comm2():
     assert not results(eq_comm2((3, c, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((c, 1, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((a, 1, 2, 3), (c, 1, 2, 3)))
-    assert len(results(eq_comm2((c, 3, 2, 1), x))) == 6
+    assert len(results(eq_comm2((c, 3, 2, 1), x))) >= 6
 
 def test_eq_assoc2():
     assert results(eq_assoc2((a, 1, 2, 3), (a, 1, 2, 3)))
@@ -70,12 +71,23 @@ def test_eq_assoc2():
     # print (results(eq_assoc2((a, 1, 2, 3), x)))
     # assert len(results(eq_assoc2((a, 1, 2, 3), x))) == 3
 
+def test_eq_assoccomm2():
+    eqac = eq_assoccomm2
+    ac = 'commassoc_op'
+    fact(commutative, ac)
+    fact(associative, ac)
+    assert results((eqac, 1, 1))
+    assert results(eqac((a, (a, 1, 2), 3), (a, 1, 2, 3)))
+    assert results(eqac((ac, (ac, 1, 2), 3), (ac, 1, 2, 3)))
+    assert results(eqac((ac, 3, (ac, 1, 2)), (ac, 1, 2, 3)))
+
 def test_deep_commutativity():
     x, y = var('x'), var('y')
 
     e1 = (c, (c, 1, x), y)
     e2 = (c, 2, (c, 3, 1))
     assert run(0, (x,y), eq_comm(e1, e2)) == ((3, 2),)
+    assert run(0, (x,y), eq_comm2(e1, e2)) == ((3, 2),)
 
 def test_opo_early():
     x, y = var('x'), var('y')

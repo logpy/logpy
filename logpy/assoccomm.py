@@ -165,7 +165,7 @@ def eq_assoc2(u, v, eq=core.eq):
                  [(heado, op, u), (heado, op, v), (associative, op),
                   lambda s: assocunify(u, v, s, eq)])
 
-def eq_comm2(u, v, eq=core.eq):
+def eq_comm2(u, v, eq=None):
     """ Goal for commutative equality
 
     >>> from logpy import run, var
@@ -174,12 +174,18 @@ def eq_comm2(u, v, eq=core.eq):
     >>> run(0, eq((add, 1, 2, 3), ('add', x, 1)))
     (('add', 2, 3), ('add', 3, 2))
     """
+    eq = eq or eq_comm2
     op = var()
     utail = var()
     vtail = var()
     if isvar(u) and isvar(v):
         raise EarlyGoalException()
-    return (conde, ((conso, op, utail, u),
+    return (conde, ((core.eq, u, v),),
+                   ((conso, op, utail, u),
                     (conso, op, vtail, v),
                     (commutative, op),
                     (seteq, utail, vtail, eq)))
+
+def eq_assoccomm2(u, v):
+    w = var()
+    return lall((eq_comm2, u, w), (eq_assoc2, w, v))
