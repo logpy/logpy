@@ -186,11 +186,7 @@ def test_goaleval():
     g = eq(x, 2)
     assert goaleval(g) == g
     assert callable(goaleval((eq, x, 2)))
-    try:
-        goaleval((membero, x, y))
-        assert False
-    except EarlyGoalError:
-        pass
+    raises(EarlyGoalError, lambda: goaleval((membero, x, y)))
     assert callable(goaleval((lall, (eq, x, 2))))
 
 def test_goalexpand():
