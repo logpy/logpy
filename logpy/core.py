@@ -31,6 +31,7 @@ var = lambda *args: Var(*args)
 isvar = lambda t: isinstance(t, Var)
 
 class wild(object):
+    """ A dummy variable, often used inside Vars """
     _id = 1
 
     def __init__(self):
@@ -81,7 +82,6 @@ def conde(*goalseqs, **kwargs):
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
-    return condeseq(goalseqs, **kwargs)
 
 def condeseq(goalseqs, **kwargs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
@@ -134,9 +134,15 @@ def lany(*goals):
             (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
 
 def lallearly(*goals):
+    """ Logical all with goal reordering to avoid EarlyGoalErrors """
     return (lall,) + tuple(earlyorder(*goals))
 
 def earlyorder(*goals):
+    """ Reorder goals to avoid EarlyGoalErrors
+
+    All goals are evaluated.  Those that raise EarlyGoalErrors are placed at
+    the end in a lallearly
+    """
     good, bad = [], []
     for goal in goals:
         try:
@@ -366,6 +372,7 @@ def facts(rel, *lists):
         fact(rel, *l)
 
 def conso(h, t, l):
+    """ Logical cons -- l[0], l[1:] == h, t """
     if isinstance(l, tuple):
         if len(l) == 0:
             return fail
@@ -385,6 +392,12 @@ def conso(h, t, l):
 """
 
 def heado(x, coll):
+    """ x is the head of coll
+
+    See also:
+        heado
+        conso
+    """
     if not isinstance(coll, tuple):
         raise EarlyGoalError()
     if isinstance(coll, tuple) and len(coll) >= 1:
@@ -393,6 +406,12 @@ def heado(x, coll):
         return fail
 
 def tailo(x, coll):
+    """ x is the tail of coll
+
+    See also:
+        heado
+        conso
+    """
     if not isinstance(coll, tuple):
         raise EarlyGoalError()
     if isinstance(coll, tuple) and len(coll) >= 1:
