@@ -57,16 +57,13 @@ def test_lany():
 
 def test_lall():
     x = var('x')
-    print results(lall((eq, x, 2)))
     assert results(lall((eq, x, 2))) == ({x: 2},)
-    print goaleval(lall((eq, x, 2), (eq, x, 3)))({})
     assert results(lall((eq, x, 2), (eq, x, 3))) == ()
 
 def test_earlyorder():
     x, y = var(), var()
     assert earlyorder((eq, 2, x)) == ((eq, 2, x),)
     assert earlyorder((eq, 2, x), (eq, 3, x)) == ((eq, 2, x), (eq, 3, x))
-    print earlyorder((membero, x, y), (eq, y, (1,2,3)))[0]
     assert earlyorder((membero, x, y), (eq, y, (1,2,3)))[0] == (eq, y, (1,2,3))
 
 
@@ -192,7 +189,6 @@ def test_goaleval():
         assert False
     except EarlyGoalError:
         pass
-    print goaleval((lall, (eq, x, 2)))
     assert callable(goaleval((lall, (eq, x, 2))))
 
 def test_goalexpand():
@@ -218,7 +214,8 @@ def test_early():
     assert run(0, x, lallearly((membero, x, y), (eq, y, (1, 2))))
 
 def test_conso_early():
-    assert (run(0, x, (conso, x, y, z), (eq, z, (1, 2, 3)), bindfn=bindearly)
+    x, y, z = var(), var(), var()
+    assert (run(0, x, (conso, x, y, z), (eq, z, (1, 2, 3)))
             == (1,))
 
 def results(g, s={}):
