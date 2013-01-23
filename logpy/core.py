@@ -31,6 +31,7 @@ var = lambda *args: Var(*args)
 isvar = lambda t: isinstance(t, Var)
 
 class wild(object):
+    """ A dummy variable, often used inside Vars """
     _id = 1
 
     def __init__(self):
@@ -80,7 +81,7 @@ def conde(*goalseqs, **kwargs):
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
     """
-    return condeseq(goalseqs, **kwargs)
+    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
 def condeseq(goalseqs, **kwargs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
@@ -89,6 +90,73 @@ def condeseq(goalseqs, **kwargs):
         return unique_dict(interleave(bindfn((s,), *goals)
                                      for goals in goalseqs))
     return goal_conde
+
+def lall(*goals):
+    """ Logical all
+
+    >>> from logpy import lall, membero
+    >>> g = lall(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> tuple(g({}))
+    ({x: 2}, {x: 3})
+    """
+    if not goals:
+        return success
+    if len(goals) == 1:
+        return goals[0]
+    def allgoal(s):
+        g = goaleval(reify(goals[0], s))
+        return unique_dict(interleave(
+            goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
+            for ss in g(s)))
+    return allgoal
+
+def lany(*goals):
+    """ Logical any
+
+    >>> from logpy import lall, membero
+    >>> g = lany(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> tuple(g({}))
+    ({x: 1}, {x: 2}, {x: 3}, {x: 4})
+    """
+    if len(goals) == 1:
+        return goals[0]
+
+    def anygoal(s):
+        gs = []
+        for goal in goals:
+            try:
+                gs.append(goaleval(reify(goal, s)))
+            except EarlyGoalError:
+                pass
+        return interleave((g(s) for g in gs), [EarlyGoalError])
+    return anygoal
+    return lambda s: interleave(
+            (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
+
+def lallearly(*goals):
+    """ Logical all with goal reordering to avoid EarlyGoalErrors """
+    return (lall,) + tuple(earlyorder(*goals))
+
+def earlyorder(*goals):
+    """ Reorder goals to avoid EarlyGoalErrors
+
+    All goals are evaluated.  Those that raise EarlyGoalErrors are placed at
+    the end in a lallearly
+    """
+    good, bad = [], []
+    for goal in goals:
+        try:
+            goaleval(goal)
+            good.append(goal)
+        except EarlyGoalError:
+            bad.append(goal)
+    if not good:
+        raise EarlyGoalError()
+    else:
+        if not bad:
+            return tuple(good)
+        else:
+            return tuple(good) + ((lallearly,) + tuple(bad),)
 
 def bind(stream, goal):
     """ Bind a goal to a stream
@@ -130,7 +198,9 @@ def run(n, x, *goals, **kwargs):
     (1,)
     """
     bindfn = kwargs.get('bindfn', binddefault)
-    return take(n, unique(walkstar(x, s) for s in bindfn(({},), *goals)))
+    return take(n, unique(walkstar(x, s) for s in goaleval(lallearly(*goals))({})))
+
+    # bindfn(({},), *goals)))
 
 
 # Goals
@@ -157,10 +227,9 @@ def eq(u, v):
 def membero(x, coll):
     """ Goal such that x is an item of coll """
     try:
-        return condeseq([[(eq, x, item)] for item in coll])
+        return (lany,) + tuple((eq, x, item) for item in coll)
     except TypeError:
         raise EarlyGoalError()
-    # return condeseq(([(eq, x, item)] for item in coll))
 
 def seteq(a, b, eq=eq):
     """ Set Equality
@@ -171,12 +240,19 @@ def seteq(a, b, eq=eq):
     >>> x = var()
     >>> run(0, x, seteq(x, (1, 2)))
     ((1, 2), (2, 1))
+
+    >>> run(0, x, seteq((2, 1, x), (3, 1, 2)))
+    (3,)
     """
     if isinstance(a, tuple) and isinstance(b, tuple):
         if set(a) == set(b):
             return success
-        else:
+        elif len(a) != len(b):
             return fail
+        else:
+            c, d = a, b
+            return (condeseq, (((eq, cc, dd) for cc, dd in zip(c, perm))
+                                     for perm in it.permutations(d, len(d))))
 
     if isvar(a) and isvar(b):
         raise EarlyGoalError()
@@ -186,7 +262,7 @@ def seteq(a, b, eq=eq):
     if isvar(b) and isinstance(a, tuple):
         c, d = b, a
 
-    return condeseq([eq(c, perm)] for perm in it.permutations(d, len(d)))
+    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
 def goaleval(goal):
     """ Evaluate an possibly unevaluated goal
@@ -197,8 +273,19 @@ def goaleval(goal):
     if callable(goal):          # goal is already a function like eq(x, 1)
         return goal
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
-        return goal_tuple_eval(goal)
+        egoal = goalexpand(goal)
+        return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
+
+def goalexpand(goalt):
+    """ Expand a goal tuple """
+    tmp = goalt
+    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
+        goalt = tmp
+        tmp = goalt[0](*goalt[1:])
+    return goalt
+
+
 
 def goal_tuple_eval(goalt):
     """ Evaluate an unevaluated goal tuple
@@ -219,7 +306,12 @@ def goal_tuple_eval(goalt):
     See also:
         goaleval - safe to use on eq(x, 1) or (eq, x, 1)
     """
-    return lambda s: evalt(reify(goalt, s))(s)
+    def g(s):
+        tup = reify(goalt, s)
+        while isinstance(tup, tuple) and len(tup) >= 1 and callable(tup[0]):
+            tup = evalt(tup)
+        return tup(s)
+    return g
 
 class Relation(object):
     def __init__(self):
@@ -249,7 +341,7 @@ class Relation(object):
             facts = intersection(*sorted(subsets, key=len))
         else:
             facts = self.facts
-        return conde(*[[eq(a, b) for a, b in zip(args, fact)]
+        return (conde,) + tuple([[eq(a, b) for a, b in zip(args, fact)]
                                  for fact in facts])
 
 def fact(rel, *args):
@@ -280,11 +372,12 @@ def facts(rel, *lists):
         fact(rel, *l)
 
 def conso(h, t, l):
+    """ Logical cons -- l[0], l[1:] == h, t """
     if isinstance(l, tuple):
         if len(l) == 0:
             return fail
         else:
-            return conde([(eq, h, l[0]), (eq, t, l[1:])])
+            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
     elif isinstance(t, tuple):
         return eq((h,) + t, l)
     else:
@@ -299,12 +392,28 @@ def conso(h, t, l):
 """
 
 def heado(x, coll):
+    """ x is the head of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
     if isinstance(coll, tuple) and len(coll) >= 1:
         return eq(x, coll[0])
     else:
         return fail
 
 def tailo(x, coll):
+    """ x is the tail of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
     if isinstance(coll, tuple) and len(coll) >= 1:
         return eq(x, coll[1:])
     else:
@@ -313,5 +422,5 @@ def tailo(x, coll):
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var() for i in range(3)]
-    return conde((eq(l, ()), eq(s, ls)),
-                 ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
+    return (lany, (lall, (eq, l, ()), (eq, s, ls)),
+                  (lallearly, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))

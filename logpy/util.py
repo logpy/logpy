@@ -52,7 +52,7 @@ def unique(seq):
             seen.add(item)
             yield item
 
-def interleave(seqs):
+def interleave(seqs, pass_exceptions=()):
     iters = it.imap(iter, seqs)
     while iters:
         newiters = []
@@ -60,7 +60,7 @@ def interleave(seqs):
             try:
                 yield next(itr)
                 newiters.append(itr)
-            except StopIteration:
+            except (StopIteration,) + tuple(pass_exceptions):
                 pass
         iters = newiters
 
@@ -127,3 +127,10 @@ def groupsizes(total, len):
         for i in xrange(1, total - len + 1 + 1):
             for perm in groupsizes(total - i, len - 1):
                 yield (i,) + perm
+
+def raises(err, lamda):
+    try:
+        lamda()
+        raise Exception("Did not raise %s"%err)
+    except err:
+        pass
