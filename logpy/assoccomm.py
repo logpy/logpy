@@ -59,7 +59,7 @@ def operation(op):
     """ Either an associative or commutative operation """
     return conde([commutative(op)], [associative(op)])
 
-def eq_assoc2(u, v, eq=core.eq):
+def eq_assoc(u, v, eq=core.eq):
     """ Goal for associative equality
 
     >>> from logpy import run, var
@@ -73,7 +73,7 @@ def eq_assoc2(u, v, eq=core.eq):
                  [(heado, op, u), (heado, op, v), (associative, op),
                   lambda s: assocunify(u, v, s, eq)])
 
-def eq_comm2(u, v, eq=None):
+def eq_comm(u, v, eq=None):
     """ Goal for commutative equality
 
     >>> from logpy import run, var
@@ -82,7 +82,7 @@ def eq_comm2(u, v, eq=None):
     >>> run(0, eq((add, 1, 2, 3), ('add', x, 1)))
     (('add', 2, 3), ('add', 3, 2))
     """
-    eq = eq or eq_comm2
+    eq = eq or eq_comm
     op = var()
     utail = var()
     vtail = var()
@@ -95,7 +95,7 @@ def eq_comm2(u, v, eq=None):
                     (commutative, op),
                     (seteq, utail, vtail, eq)))
 
-def eq_assoccomm2(u, v):
+def eq_assoccomm(u, v):
     """ Associative/Commutative eq
 
     Works like logic.core.eq but supports associative/commutative expr trees
@@ -118,5 +118,5 @@ def eq_assoccomm2(u, v):
     (('add', 2, 3), ('add', 3, 2))
     """
     w = var()
-    return lall((eq_comm2, u, w, eq_assoccomm2),
-                (eq_assoc2, w, v, eq_assoccomm2))
+    return lall((eq_comm, u, w, eq_assoccomm),
+                (eq_assoc, w, v, eq_assoccomm))

@@ -1,7 +1,7 @@
 from logpy.core import var, run, fact, eq, goaleval, EarlyGoalError
 from logpy.assoccomm import (associative, commutative, conde,
-        groupsizes_to_partition, assocunify, eq_comm2, eq_assoc2,
-        eq_assoccomm2)
+        groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
+        eq_assoccomm)
 from logpy.util import raises
 
 a = 'assoc_op'
@@ -13,32 +13,32 @@ fact(commutative, c)
 def results(g, s={}):
     return tuple(goaleval(g)(s))
 
-def test_eq_comm2():
-    assert results(eq_comm2(1, 1))
-    assert results(eq_comm2((c, 1, 2, 3), (c, 1, 2, 3)))
-    assert results(eq_comm2((c, 3, 2, 1), (c, 1, 2, 3)))
-    assert not results(eq_comm2((a, 3, 2, 1), (a, 1, 2, 3))) # not commutative
-    assert not results(eq_comm2((3, c, 2, 1), (c, 1, 2, 3)))
-    assert not results(eq_comm2((c, 1, 2, 1), (c, 1, 2, 3)))
-    assert not results(eq_comm2((a, 1, 2, 3), (c, 1, 2, 3)))
-    assert len(results(eq_comm2((c, 3, 2, 1), x))) >= 6
+def test_eq_comm():
+    assert results(eq_comm(1, 1))
+    assert results(eq_comm((c, 1, 2, 3), (c, 1, 2, 3)))
+    assert results(eq_comm((c, 3, 2, 1), (c, 1, 2, 3)))
+    assert not results(eq_comm((a, 3, 2, 1), (a, 1, 2, 3))) # not commutative
+    assert not results(eq_comm((3, c, 2, 1), (c, 1, 2, 3)))
+    assert not results(eq_comm((c, 1, 2, 1), (c, 1, 2, 3)))
+    assert not results(eq_comm((a, 1, 2, 3), (c, 1, 2, 3)))
+    assert len(results(eq_comm((c, 3, 2, 1), x))) >= 6
 
-def test_eq_assoc2():
-    assert results(eq_assoc2(1, 1))
-    assert results(eq_assoc2((a, 1, 2, 3), (a, 1, 2, 3)))
-    assert not results(eq_assoc2((a, 3, 2, 1), (a, 1, 2, 3)))
-    assert results(eq_assoc2((a, (a, 1, 2), 3), (a, 1, 2, 3)))
-    assert results(eq_assoc2((a, 1, 2, 3), (a, (a, 1, 2), 3)))
+def test_eq_assoc():
+    assert results(eq_assoc(1, 1))
+    assert results(eq_assoc((a, 1, 2, 3), (a, 1, 2, 3)))
+    assert not results(eq_assoc((a, 3, 2, 1), (a, 1, 2, 3)))
+    assert results(eq_assoc((a, (a, 1, 2), 3), (a, 1, 2, 3)))
+    assert results(eq_assoc((a, 1, 2, 3), (a, (a, 1, 2), 3)))
     o = 'op'
-    assert not results(eq_assoc2((o, 1, 2, 3), (o, (o, 1, 2), 3)))
+    assert not results(eq_assoc((o, 1, 2, 3), (o, (o, 1, 2), 3)))
 
     # See TODO in assocunify
-    # print (results(eq_assoc2((a, 1, 2, 3), x)))
-    # assert len(results(eq_assoc2((a, 1, 2, 3), x))) == 3
+    # print (results(eq_assoc((a, 1, 2, 3), x)))
+    # assert len(results(eq_assoc((a, 1, 2, 3), x))) == 3
 
-def test_eq_assoccomm2():
+def test_eq_assoccomm():
     x, y = var(), var()
-    eqac = eq_assoccomm2
+    eqac = eq_assoccomm
     ac = 'commassoc_op'
     fact(commutative, ac)
     fact(associative, ac)
@@ -61,14 +61,14 @@ def test_expr():
 
     pattern = (mul, (add, 1, x), y)                # (1 + x) * y
     expr    = (mul, 2, (add, 3, 1))                # 2 * (3 + 1)
-    assert run(0, (x,y), eq_assoccomm2(pattern, expr)) == ((3, 2),)
+    assert run(0, (x,y), eq_assoccomm(pattern, expr)) == ((3, 2),)
 
 def test_deep_commutativity():
     x, y = var('x'), var('y')
 
     e1 = (c, (c, 1, x), y)
     e2 = (c, 2, (c, 3, 1))
-    assert run(0, (x,y), eq_comm2(e1, e2)) == ((3, 2),)
+    assert run(0, (x,y), eq_comm(e1, e2)) == ((3, 2),)
 
 def test_groupsizes_to_parition():
     assert groupsizes_to_partition(2, 3) == [[0, 1], [2, 3, 4]]
