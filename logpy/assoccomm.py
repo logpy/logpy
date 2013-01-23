@@ -28,7 +28,9 @@ def assocunify(u, v, s, eq=core.eq):
         parts = (groupsizes_to_partition(*gsizes) for gsizes
                                                   in  groupsizes(len(lg), len(sm)))
         ops = (makeops(op, partition(lg, part)) for part in parts)
-        return condeseq([(eq, sm, lg2)] for lg2 in ops)(s)
+        return condeseq([(eq, a, b) for a, b in zip(sm, lg2)] for lg2 in ops)(s)
+
+    return ()
 
 def unify_assoccomm(u, v, s, ordering=None):
     u = walk(u, s)
@@ -179,7 +181,8 @@ def eq_comm2(u, v, eq=None):
     utail = var()
     vtail = var()
     if isvar(u) and isvar(v):
-        raise EarlyGoalException()
+        return (core.eq, u, v)
+        raise EarlyGoalError()
     return (conde, ((core.eq, u, v),),
                    ((conso, op, utail, u),
                     (conso, op, vtail, v),
@@ -188,4 +191,5 @@ def eq_comm2(u, v, eq=None):
 
 def eq_assoccomm2(u, v):
     w = var()
-    return lall((eq_comm2, u, w), (eq_assoc2, w, v))
+    return lall((eq_comm2, u, w, eq_assoccomm2),
+                (eq_assoc2, w, v, eq_assoccomm2))

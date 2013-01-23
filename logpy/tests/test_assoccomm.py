@@ -51,6 +51,7 @@ def test_eq_comm():
             set(((c, 1, 2), (c, 2, 1)))
 
 def test_eq_comm2():
+    assert results(eq_comm2(1, 1))
     assert results(eq_comm2((c, 1, 2, 3), (c, 1, 2, 3)))
     assert results(eq_comm2((c, 3, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm2((a, 3, 2, 1), (a, 1, 2, 3))) # not commutative
@@ -60,6 +61,7 @@ def test_eq_comm2():
     assert len(results(eq_comm2((c, 3, 2, 1), x))) >= 6
 
 def test_eq_assoc2():
+    assert results(eq_assoc2(1, 1))
     assert results(eq_assoc2((a, 1, 2, 3), (a, 1, 2, 3)))
     assert not results(eq_assoc2((a, 3, 2, 1), (a, 1, 2, 3)))
     assert results(eq_assoc2((a, (a, 1, 2), 3), (a, 1, 2, 3)))
@@ -72,14 +74,33 @@ def test_eq_assoc2():
     # assert len(results(eq_assoc2((a, 1, 2, 3), x))) == 3
 
 def test_eq_assoccomm2():
+    x, y = var(), var()
     eqac = eq_assoccomm2
     ac = 'commassoc_op'
     fact(commutative, ac)
     fact(associative, ac)
+    assert results(eqac((ac, (ac, 1, x), y), (ac, 2, (ac, 3, 1))))
     assert results((eqac, 1, 1))
     assert results(eqac((a, (a, 1, 2), 3), (a, 1, 2, 3)))
     assert results(eqac((ac, (ac, 1, 2), 3), (ac, 1, 2, 3)))
     assert results(eqac((ac, 3, (ac, 1, 2)), (ac, 1, 2, 3)))
+    assert run(0, x, eqac((ac, 3, (ac, 1, 2)), (ac, 1, x, 3))) == (2,)
+
+def test_expr():
+    add = 'add'
+    mul = 'mul'
+    fact(commutative, add)
+    fact(associative, add)
+    fact(commutative, mul)
+    fact(associative, mul)
+
+    x, y = var('x'), var('y')
+
+    pattern = (mul, (add, 1, x), y)                # (1 + x) * y
+    expr    = (mul, 2, (add, 3, 1))                # 2 * (3 + 1)
+    assert run(0, (x,y), eq_assoccomm2(pattern, expr)) == ((3, 2),)
+    assert run(0, (x,y), eq_assoccomm(pattern, expr)) == ((3, 2),)
+
 
 def test_deep_commutativity():
     x, y = var('x'), var('y')
