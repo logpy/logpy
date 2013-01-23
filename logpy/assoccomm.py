@@ -162,7 +162,7 @@ def eq_assoc2(u, v, eq=core.eq):
     """
     op = var()
     return conde([(core.eq, u, v)],
-                 [(opo, u, op), (opo, v, op), (associative, op),
+                 [(heado, op, u), (heado, op, v), (associative, op),
                   lambda s: assocunify(u, v, s, eq)])
 
 def eq_comm2(u, v, eq=core.eq):
