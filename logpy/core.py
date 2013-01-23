@@ -120,7 +120,7 @@ def lany(*goals):
     """
     if len(goals) == 1:
         return goals[0]
-    return lambda s: interleave(goal(s) for goal in map(goaleval, goals))
+    return lambda s: interleave(goaleval(reify(goal, s))(s) for goal in goals)
 
 def lallearly(*goals):
     return (lall,) + tuple(earlyorder(*goals))
@@ -181,7 +181,7 @@ def run(n, x, *goals, **kwargs):
     (1,)
     """
     bindfn = kwargs.get('bindfn', binddefault)
-    return take(n, unique(walkstar(x, s) for s in goaleval(lall(*goals))({})))
+    return take(n, unique(walkstar(x, s) for s in goaleval(lallearly(*goals))({})))
 
     # bindfn(({},), *goals)))
 
@@ -381,5 +381,5 @@ def tailo(x, coll):
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var() for i in range(3)]
-    return (conde, (eq(l, ()), eq(s, ls)),
-                  ((conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
+    return (lany, (lall, (eq, l, ()), (eq, s, ls)),
+                  (lallearly, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))

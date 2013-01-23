@@ -217,6 +217,10 @@ def test_early():
     assert run(0, x, lallearly((eq, y, (1, 2)), (membero, x, y)))
     assert run(0, x, lallearly((membero, x, y), (eq, y, (1, 2))))
 
+def test_conso_early():
+    assert (run(0, x, (conso, x, y, z), (eq, z, (1, 2, 3)), bindfn=bindearly)
+            == (1,))
+
 def results(g, s={}):
     return tuple(goaleval(g)(s))
 
