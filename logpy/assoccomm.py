@@ -25,10 +25,10 @@ def assocunify(u, v, s, eq=core.eq):
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
 
-        return condeseq([(eq, a, b) for a, b in
-            zip(sm,
-                makeops(op, partition(lg, groupsizes_to_partition(*gsizes))))]
-                for gsizes in groupsizes(len(lg), len(sm)))(s)
+        parts = (groupsizes_to_partition(*gsizes) for gsizes
+                                                  in  groupsizes(len(lg), len(sm)))
+        ops = (makeops(op, partition(lg, part)) for part in parts)
+        return condeseq([(eq, sm, lg2)] for lg2 in ops)(s)
 
 def unify_assoccomm(u, v, s, ordering=None):
     u = walk(u, s)
