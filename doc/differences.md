@@ -49,3 +49,25 @@ To overcome this weakness LogPy detects failed goals and reorders them at goal c
 
     >>> run(0, x, (membero, x, y), (eq, y, (1, 2, 3)))  # original
     >>> run(0, x, (eq, y, (1, 2, 3)), (membero, x, y))  # optimized
+
+`conde`
+-------
+
+`conde` is available and common in LogPy; it is not however related to
+any idiomatic Python concept.  We separate `conde` into two functions
+
+*   `lall` - Logical All
+*   `lany` - Logical Any
+
+As a result the following are equivalent and the first expands to the second
+
+    (conde, (a, b, c), 
+            (d, e))
+
+    (lany, (lall, a, b, c),
+           (lall, d, e))
+
+`lany` and `lall` were roughly `mplus` and `bind*` in miniKanren.  `lany`
+interleaves results rather than chain them.  `lall` reorders goals as mentioned
+above.  There is some development to make these behaviors programmable through
+strategies.
