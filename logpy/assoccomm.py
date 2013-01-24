@@ -103,10 +103,6 @@ def groupsizes_to_partition(*gsizes):
         part.append(l)
     return part
 
-def operation(op):
-    """ Either an associative or commutative operation """
-    return conde([commutative(op)], [associative(op)])
-
 def eq_assoc(u, v, eq=core.eq):
     """ Goal for associative equality
 
