@@ -117,18 +117,16 @@ License
 
 New BSD license. See LICENSE.txt
 
+Motivation
+----------
+
+Logic programming is a general programming paradigm.  This implementation however came about specifically to serve as an algorithmic core for Computer Algebra Systems in Python and for the automated generation and optimization of numeric software.  Domain specific languages, code generation, and compilers have recently been a hot topic in the Scientific Python community.  LogPy aims to be a low-level core for these projects.
+
 References
 ----------
 
-[Logic Programming](http://en.wikipedia.org/wiki/Logic_programming) 
-was first popularized through the 
-[Prolog language](http://en.wikipedia.org/wiki/Prolog). 
-
-This implementation closely follows the design of
-[miniKanren](http://kanren.sourceforge.net/), a Scheme library for relational
-programming.  More information can be found in the 
+*   [Logic Programming on wikipedia](http://en.wikipedia.org/wiki/Logic_programming) 
+*   [miniKanren](http://kanren.sourceforge.net/), a Scheme library for relational programming on which this library is based.  More information can be found in the 
 [thesis of William
 Byrd](https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf).
-
-miniKanren came to our attention through the
-[core.logic](https://github.com/clojure/core.logic) Clojure library.
+*   [core.logic](https://github.com/clojure/core.logic) a popular implementation of miniKanren in Clojure.
