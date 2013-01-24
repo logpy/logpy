@@ -1,9 +1,12 @@
+""" Example using SymPy to construct a prime number goal """
+
 from logpy.core import (isvar, success, fail, assoc, goaleval, var, run,
         membero, condeseq, eq)
 from sympy.ntheory.generate import prime, isprime
 import itertools as it
 
 def primo(x):
+    """ x is a prime number """
     if isvar(x):
         return condeseq([(eq, x, p)] for p in it.imap(prime, it.count(1)))
     else:
