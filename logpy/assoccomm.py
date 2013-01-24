@@ -1,5 +1,9 @@
 """ Associative and Commutative unification
 
+This module provides goals for associative and commutative unification.  It
+accomplishes this through naively trying all possibilities.  This was built to
+be used in the computer algebra systems SymPy and Theano.
+
 >>> from logpy import run, var, fact
 >>> from logpy.assoccomm import eq_assoccomm as eq
 >>> from logpy.assoccomm import commutative, associative
@@ -11,6 +15,8 @@
 >>> # Declare that these ops are commutative using the facts system
 >>> fact(commutative, mul)
 >>> fact(commutative, add)
+>>> fact(associative, mul)
+>>> fact(associative, add)
 
 >>> # Define some wild variables
 >>> x, y = var('x'), var('y')
