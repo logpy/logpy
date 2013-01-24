@@ -12,8 +12,7 @@ adjacent = Relation()
 coastal  = Relation()
 
 
-coastal_states = 'WA,OR,CA,TX,LA,MS,AL,GA,FL,SC,NC,VA,MD,DE,NJ,NY,CT,RI,MA,
-ME,NH,AK,HI'.split(',')
+coastal_states = 'WA,OR,CA,TX,LA,MS,AL,GA,FL,SC,NC,VA,MD,DE,NJ,NY,CT,RI,MA,ME,NH,AK,HI'.split(',')
 
 for state in coastal_states:        # ['NY', 'NJ', 'CT', ...]
     fact(coastal, state)            # e.g. 'NY' is coastal
