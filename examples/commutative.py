@@ -8,6 +8,8 @@ mul = 'mul'
 # Declare that these ops are commutative using the facts system
 fact(commutative, mul)
 fact(commutative, add)
+fact(associative, mul)
+fact(associative, add)
 
 # Define some wild variables
 x, y = var('x'), var('y')
