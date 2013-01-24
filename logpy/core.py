@@ -134,8 +134,8 @@ def lany(*goals):
                 pass
         return interleave((g(s) for g in gs), [EarlyGoalError])
     return anygoal
-    return lambda s: interleave(
-            (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
+    # return lambda s: interleave(
+    #        (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
 
 def lallearly(*goals):
     """ Logical all with goal reordering to avoid EarlyGoalErrors
@@ -185,6 +185,7 @@ def bindstar(stream, *goals):
 
     See Also:
         bind
+        lall - lall has largely replaced bindstar
     """
     for goal in goals:
         # Short circuit in case of empty stream

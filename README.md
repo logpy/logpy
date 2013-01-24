@@ -49,10 +49,10 @@ such that x is a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
 (2, 3)       
 ~~~~~~~~~~~
 
-LogPy supports relations and facts.  This is best demonstrated by example. 
+LogPy stores data as facts that state relationships between items.
 
 The following code creates a parent relationship and uses it to state 
-facts about who is a parent of whom.
+facts about who is a parent of whom within the Simpsons family.
 
 ~~~~~~~~~~~Python
 >>> from logpy import Relation, facts
