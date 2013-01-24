@@ -80,6 +80,10 @@ def conde(*goalseqs, **kwargs):
     Goal constructor to provides logical AND and OR
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
+
+    See Also:
+        lall - logical all
+        lany - logical any
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
@@ -197,10 +201,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    bindfn = kwargs.get('bindfn', binddefault)
     return take(n, unique(walkstar(x, s) for s in goaleval(lallearly(*goals))({})))
-
-    # bindfn(({},), *goals)))
 
 
 # Goals
@@ -268,7 +269,7 @@ def goaleval(goal):
     """ Evaluate an possibly unevaluated goal
 
     See also:
-        goal_tuple_eval
+       goalexpand
     """
     if callable(goal):          # goal is already a function like eq(x, 1)
         return goal
@@ -285,33 +286,6 @@ def goalexpand(goalt):
         tmp = goalt[0](*goalt[1:])
     return goalt
 
-
-
-def goal_tuple_eval(goalt):
-    """ Evaluate an unevaluated goal tuple
-
-    Converts a goal-tuple like (eq, x, 1) into a goal like eq(x, 1) so that the
-    tuple first reifies against the input substitution.  This enables the use
-    of unevaluated goals.
-
-    >>> x, y = var(), var()
-    >>> g = goal_tuple_eval((membero, x, y))
-
-    This would fail if done as ``membero(x, y)`` because y is a var, not a
-    collection.  goal_tuple_eval wait to evaluate membero until the last
-    moment.  It uses the substitution given to the goal to first reify the
-    goal tuple, replacing all variables with the current values in the
-    substitution.
-
-    See also:
-        goaleval - safe to use on eq(x, 1) or (eq, x, 1)
-    """
-    def g(s):
-        tup = reify(goalt, s)
-        while isinstance(tup, tuple) and len(tup) >= 1 and callable(tup[0]):
-            tup = evalt(tup)
-        return tup(s)
-    return g
 
 class Relation(object):
     def __init__(self):

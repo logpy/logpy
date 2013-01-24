@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, goal_tuple_eval, tailo, heado, appendo, seteq, conso, condeseq,
-        goaleval, lany, lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
+        reify, tailo, heado, appendo, seteq, conso, condeseq, goaleval, lany,
+        lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
 import itertools
 from unittest import expectedFailure as FAIL
 from logpy.util import raises
@@ -200,11 +200,6 @@ def test_goalexpand():
     assert goalexpand(g) == (growing_goal, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2)
     t = goalexpand((membero, x, (1,2,3)))
     assert t == (lany, (eq, x, 1), (eq, x, 2), (eq, x, 3))
-
-def test_goal_tuple_eval():
-    x, y = var(), var()
-    s = {y: 1}
-    assert tuple(goal_tuple_eval((eq, x, y))(s)) == ({x: 1, y: 1},)
 
 def test_early():
     x, y = var(), var()
