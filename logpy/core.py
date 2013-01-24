@@ -138,7 +138,12 @@ def lany(*goals):
             (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
 
 def lallearly(*goals):
-    """ Logical all with goal reordering to avoid EarlyGoalErrors """
+    """ Logical all with goal reordering to avoid EarlyGoalErrors
+
+    See also:
+        EarlyGoalError
+        earlyorder
+    """
     return (lall,) + tuple(earlyorder(*goals))
 
 def earlyorder(*goals):
@@ -146,6 +151,9 @@ def earlyorder(*goals):
 
     All goals are evaluated.  Those that raise EarlyGoalErrors are placed at
     the end in a lallearly
+
+    See also:
+        EarlyGoalError
     """
     good, bad = [], []
     for goal in goals:
@@ -206,7 +214,30 @@ def run(n, x, *goals, **kwargs):
 
 # Goals
 
-class EarlyGoalError(Exception):  pass
+class EarlyGoalError(Exception):
+    """ A Goal has been constructed prematurely
+
+    Consider the following case
+
+    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
+
+    The first goal, membero, iterates over an infinite sequence of all possible
+    collections.  This is unproductive.  Rather than proceed, membero raises an
+    EarlyGoalError, stating that this goal has been called early.
+
+    The goal constructor lallearly Logical-All-Early will reorder such goals to
+    the end so that the call becomes
+
+    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
+
+    In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
+    all elements of coll, 1, then 2, then 3.
+
+    See Also:
+        lallearly
+        earlyorder
+    """
+    pass
 
 def fail(s):
     return ()
