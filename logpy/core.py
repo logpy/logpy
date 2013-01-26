@@ -210,7 +210,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, unique(walkstar(x, s) for s in goaleval(lallearly(*goals))({})))
+    return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
 
 
 # Goals

@@ -126,6 +126,11 @@ def test_run():
                        eq(z, 4)) == ((3, 4),)
     assert set(run(2, x, conde([eq(x, 1)], [eq(x, 2)]))) == set((1, 2))
 
+def test_run_output_reify():
+    x = var()
+    assert run(0, (1, 2, x), eq(x, 3)) == ((1, 2, 3),)
+
+
 def test_membero():
     x = var('x')
     assert set(run(5, x, membero(x, (1,2,3)),
