@@ -337,7 +337,15 @@ class EarlyGoalError(Exception):
     """
 
 def goalexpand(goalt):
-    """ Expand a goal tuple until it can no longer be expanded """
+    """ Expand a goal tuple until it can no longer be expanded
+
+    >>> goal = (membero, x, (1, 2, 3))
+    >>> goalexpand(goal)
+    (<function logpy.core.lany>,
+      (<function logpy.core.eq>, ~_1, 1),
+      (<function logpy.core.eq>, ~_1, 2),
+      (<function logpy.core.eq>, ~_1, 3))
+    """
     tmp = goalt
     while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
         goalt = tmp
@@ -346,7 +354,9 @@ def goalexpand(goalt):
 
 
 def goaleval(goal):
-    """ Evaluate a possibly unevaluated goal
+    """ Expand and then evaluate a goal
+
+    Idempotent
 
     See also:
        goalexpand
