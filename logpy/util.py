@@ -71,6 +71,15 @@ def take(n, seq):
         return tuple(seq)
     return tuple(it.islice(seq, 0, n))
 
+def groupby(f, coll):
+    d = dict()
+    for item in coll:
+        key = f(item)
+        if key not in d:
+            d[key] = []
+        d[key].append(item)
+    return d
+
 
 def evalt(t):
     """ Evaluate tuple if unevaluated
@@ -86,23 +95,6 @@ def evalt(t):
         return t[0](*t[1:])
     else:
         return t
-
-def isempty(it):
-    """ Is an iterable empty
-
-    destructive.  Use with tee
-
-    >>> from itertools import tee
-    >>> it = range(3)
-    >>> tmp, it = tee(it, 2)
-    >>> isempty(tmp)
-    False
-    """
-    try:
-        next(iter(it))
-        return False
-    except StopIteration:
-        return True
 
 def intersection(*seqs):
     for item in seqs[0]:

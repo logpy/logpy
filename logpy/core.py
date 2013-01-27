@@ -1,8 +1,12 @@
 import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
-from util import (assoc, unique, unique_dict, interleave, take, evalt, isempty,
-        intersection)
+from util import (assoc, unique, unique_dict, interleave, take, evalt,
+        intersection, groupby)
+
+###############################
+# Classes for Logic variables #
+###############################
 
 class Var(object):
     """ Logic Variable """
@@ -42,7 +46,18 @@ class wild(object):
         return "_%d"%self.id
     __repr__ = __str__
 
+#########################################
+# Functions for Expression Manipulation #
+#########################################
+
 def reify(e, s):
+    """ Replace variables of expression with substitution
+
+    >>> e = (1, x, (3, y))
+    >>> s = {x: 2, y: 4}
+    >>> reify(e, s)
+    (1, 2, (3, 4))
+    """
     if isvar(e):
         return walkstar(e, s)
     elif isinstance(e, tuple):
@@ -74,171 +89,9 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
-def conde(*goalseqs, **kwargs):
-    """ Logical cond
-
-    Goal constructor to provides logical AND and OR
-
-    conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
-
-    See Also:
-        lall - logical all
-        lany - logical any
-    """
-    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
-
-def condeseq(goalseqs, **kwargs):
-    """ Like conde but supports generic (possibly infinite) iterator of goals"""
-    bindfn = kwargs.get('bindfn', binddefault)
-    def goal_conde(s):
-        return unique_dict(interleave(bindfn((s,), *goals)
-                                     for goals in goalseqs))
-    return goal_conde
-
-def lall(*goals):
-    """ Logical all
-
-    >>> from logpy import lall, membero
-    >>> g = lall(membero(x, (1,2,3), membero(x, (2,3,4))))
-    >>> tuple(g({}))
-    ({x: 2}, {x: 3})
-    """
-    if not goals:
-        return success
-    if len(goals) == 1:
-        return goals[0]
-    def allgoal(s):
-        g = goaleval(reify(goals[0], s))
-        return unique_dict(interleave(
-            goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
-            for ss in g(s)))
-    return allgoal
-
-def lany(*goals):
-    """ Logical any
-
-    >>> from logpy import lall, membero
-    >>> g = lany(membero(x, (1,2,3), membero(x, (2,3,4))))
-    >>> tuple(g({}))
-    ({x: 1}, {x: 2}, {x: 3}, {x: 4})
-    """
-    if len(goals) == 1:
-        return goals[0]
-
-    def anygoal(s):
-        gs = []
-        for goal in goals:
-            try:
-                gs.append(goaleval(reify(goal, s)))
-            except EarlyGoalError:
-                pass
-        return interleave((g(s) for g in gs), [EarlyGoalError])
-    return anygoal
-    # return lambda s: interleave(
-    #        (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
-
-def lallearly(*goals):
-    """ Logical all with goal reordering to avoid EarlyGoalErrors
-
-    See also:
-        EarlyGoalError
-        earlyorder
-    """
-    return (lall,) + tuple(earlyorder(*goals))
-
-def earlyorder(*goals):
-    """ Reorder goals to avoid EarlyGoalErrors
-
-    All goals are evaluated.  Those that raise EarlyGoalErrors are placed at
-    the end in a lallearly
-
-    See also:
-        EarlyGoalError
-    """
-    good, bad = [], []
-    for goal in goals:
-        try:
-            goaleval(goal)
-            good.append(goal)
-        except EarlyGoalError:
-            bad.append(goal)
-    if not good:
-        raise EarlyGoalError()
-    else:
-        if not bad:
-            return tuple(good)
-        else:
-            return tuple(good) + ((lallearly,) + tuple(bad),)
-
-def bind(stream, goal):
-    """ Bind a goal to a stream
-
-    inputs:
-        stream - sequence of substitutions (dicts)
-        goal   - function :: substitution -> stream
-
-    """
-    return unique_dict(interleave(it.imap(goaleval(goal), stream)))
-
-def bindstar(stream, *goals):
-    """ Bind many goals to a stream
-
-    See Also:
-        bind
-        lall - lall has largely replaced bindstar
-    """
-    for goal in goals:
-        # Short circuit in case of empty stream
-        a, stream = it.tee(stream, 2)
-        if isempty(a):
-            return stream
-        # Bind stream to new goal
-        stream = bind(stream, goal)
-    return stream
-binddefault = bindstar
-
-def run(n, x, *goals, **kwargs):
-    """ Run a logic program.  Obtain n solutions to satisfy goals.
-
-    n     - number of desired solutions.  See ``take``
-            0 for all
-            None for a lazy sequence
-    x     - Output variable
-    goals - a sequence of goals.  All must be true
-
-    >>> from logpy import run, var, eq
-    >>> run(1, x, eq(x, 1))
-    (1,)
-    """
-    return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
-
-
-# Goals
-
-class EarlyGoalError(Exception):
-    """ A Goal has been constructed prematurely
-
-    Consider the following case
-
-    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
-
-    The first goal, membero, iterates over an infinite sequence of all possible
-    collections.  This is unproductive.  Rather than proceed, membero raises an
-    EarlyGoalError, stating that this goal has been called early.
-
-    The goal constructor lallearly Logical-All-Early will reorder such goals to
-    the end so that the call becomes
-
-    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
-
-    In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
-    all elements of coll, 1, then 2, then 3.
-
-    See Also:
-        lallearly
-        earlyorder
-    """
-    pass
+#########
+# Goals #
+#########
 
 def fail(s):
     return ()
@@ -297,8 +150,214 @@ def seteq(a, b, eq=eq):
 
     return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
+def conso(h, t, l):
+    """ Logical cons -- l[0], l[1:] == h, t """
+    if isinstance(l, tuple):
+        if len(l) == 0:
+            return fail
+        else:
+            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
+    elif isinstance(t, tuple):
+        return eq((h,) + t, l)
+    else:
+        raise EarlyGoalError()
+
+def heado(x, coll):
+    """ x is the head of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return eq(x, coll[0])
+    else:
+        return fail
+
+def tailo(x, coll):
+    """ x is the tail of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return eq(x, coll[1:])
+    else:
+        return fail
+
+################################
+# Logical combination of goals #
+################################
+
+def lall(*goals):
+    """ Logical all
+
+    >>> from logpy import lall, membero
+    >>> g = lall(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> tuple(g({}))
+    ({x: 2}, {x: 3})
+    """
+    if not goals:
+        return success
+    if len(goals) == 1:
+        return goals[0]
+    def allgoal(s):
+        g = goaleval(reify(goals[0], s))
+        return unique_dict(interleave(
+            goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
+            for ss in g(s)))
+    return allgoal
+
+def lanyseq(goals):
+    """ Logical any with possibly infinite number of goals """
+    def anygoal(s):
+        reifiedgoals = (reify(goal, s) for goal in goals)
+        return interleave((goaleval(goal)(s) for goal in reifiedgoals
+                                    if earlysafe(goal)), [EarlyGoalError])
+    return anygoal
+
+def lany(*goals):
+    """ Logical any
+
+    >>> from logpy import lall, membero
+    >>> g = lany(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> tuple(g({}))
+    ({x: 1}, {x: 2}, {x: 3}, {x: 4})
+    """
+    if len(goals) == 1:
+        return goals[0]
+    return lanyseq(goals)
+
+def lallearly(*goals):
+    """ Logical all with goal reordering to avoid EarlyGoalErrors
+
+    See also:
+        EarlyGoalError
+        earlyorder
+    """
+    return (lall,) + tuple(earlyorder(*goals))
+
+def earlysafe(goal):
+    """ Call goal be evaluated without raising an EarlyGoalError """
+    try:
+        goaleval(goal)
+        return True
+    except EarlyGoalError:
+        return False
+
+def earlyorder(*goals):
+    """ Reorder goals to avoid EarlyGoalErrors
+
+    All goals are evaluated.  Those that raise EarlyGoalErrors are placed at
+    the end in a lallearly
+
+    See also:
+        EarlyGoalError
+    """
+    groups = groupby(earlysafe, goals)
+    good = groups.get(True, [])
+    bad  = groups.get(False, [])
+
+    if not good:
+        raise EarlyGoalError()
+    else:
+        if not bad:
+            return tuple(good)
+        else:
+            return tuple(good) + ((lallearly,) + tuple(bad),)
+
+def conde(*goalseqs, **kwargs):
+    """ Logical cond
+
+    Goal constructor to provides logical AND and OR
+
+    conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
+
+    See Also:
+        lall - logical all
+        lany - logical any
+    """
+    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
+
+def condeseq(goalseqs):
+    """ Like conde but supports generic (possibly infinite) iterator of goals"""
+    return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
+
+########################
+# User level execution #
+########################
+
+def run(n, x, *goals, **kwargs):
+    """ Run a logic program.  Obtain n solutions to satisfy goals.
+
+    n     - number of desired solutions.  See ``take``
+            0 for all
+            None for a lazy sequence
+    x     - Output variable
+    goals - a sequence of goals.  All must be true
+
+    >>> from logpy import run, var, eq
+    >>> run(1, x, eq(x, 1))
+    (1,)
+    """
+    return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
+
+
+###################
+# Goal Evaluation #
+###################
+
+class EarlyGoalError(Exception):
+    """ A Goal has been constructed prematurely
+
+    Consider the following case
+
+    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
+
+    The first goal, membero, iterates over an infinite sequence of all possible
+    collections.  This is unproductive.  Rather than proceed, membero raises an
+    EarlyGoalError, stating that this goal has been called early.
+
+    The goal constructor lallearly Logical-All-Early will reorder such goals to
+    the end so that the call becomes
+
+    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
+
+    In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
+    all elements of coll, 1, then 2, then 3.
+
+    See Also:
+        lallearly
+        earlyorder
+    """
+
+def goalexpand(goalt):
+    """ Expand a goal tuple until it can no longer be expanded
+
+    >>> x = var('x')
+    >>> goal = (membero, x, (1, 2, 3))
+    >>> goalexpand(goal)
+    (<function logpy.core.lany>,
+      (<function logpy.core.eq>, ~x, 1),
+      (<function logpy.core.eq>, ~x, 2),
+      (<function logpy.core.eq>, ~x, 3))
+    """
+    tmp = goalt
+    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
+        goalt = tmp
+        tmp = goalt[0](*goalt[1:])
+    return goalt
+
+
 def goaleval(goal):
-    """ Evaluate an possibly unevaluated goal
+    """ Expand and then evaluate a goal
+
+    Idempotent
 
     See also:
        goalexpand
@@ -310,14 +369,9 @@ def goaleval(goal):
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
 
-def goalexpand(goalt):
-    """ Expand a goal tuple """
-    tmp = goalt
-    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
-        goalt = tmp
-        tmp = goalt[0](*goalt[1:])
-    return goalt
-
+#######################
+# Facts and Relations #
+#######################
 
 class Relation(object):
     def __init__(self):
@@ -377,18 +431,6 @@ def facts(rel, *lists):
     for l in lists:
         fact(rel, *l)
 
-def conso(h, t, l):
-    """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
-        if len(l) == 0:
-            return fail
-        else:
-            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
-        return eq((h,) + t, l)
-    else:
-        raise EarlyGoalError()
-
 """
 -This is an attempt to create appendo.  It does not currently work.
 -As written in miniKanren, appendo uses LISP machinery not present in Python
@@ -396,34 +438,6 @@ def conso(h, t, l):
 -around some of these issues but not all.  appendo is a stress test for this
 -implementation
 """
-
-def heado(x, coll):
-    """ x is the head of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return eq(x, coll[0])
-    else:
-        return fail
-
-def tailo(x, coll):
-    """ x is the tail of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return eq(x, coll[1:])
-    else:
-        return fail
 
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
