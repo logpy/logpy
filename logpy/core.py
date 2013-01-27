@@ -43,6 +43,13 @@ class wild(object):
     __repr__ = __str__
 
 def reify(e, s):
+    """ Replace variables of expression with substitution
+
+    >>> e = (1, x, (3, y))
+    >>> s = {x: 2, y: 4}
+    >>> reify(e, s)
+    (1, 2, (3, 4))
+    """
     if isvar(e):
         return walkstar(e, s)
     elif isinstance(e, tuple):
@@ -74,23 +81,6 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
-def conde(*goalseqs, **kwargs):
-    """ Logical cond
-
-    Goal constructor to provides logical AND and OR
-
-    conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
-
-    See Also:
-        lall - logical all
-        lany - logical any
-    """
-    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
-
-def condeseq(goalseqs):
-    """ Like conde but supports generic (possibly infinite) iterator of goals"""
-    return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
-
 def lall(*goals):
     """ Logical all
 
@@ -111,10 +101,11 @@ def lall(*goals):
     return allgoal
 
 def lanyseq(goals):
+    """ Logical any with possibly infinite number of goals """
     def anygoal(s):
         reifiedgoals = (reify(goal, s) for goal in goals)
         return interleave((goaleval(goal)(s) for goal in reifiedgoals
-                                          if  earlysafe(goal)), [EarlyGoalError])
+                                    if earlysafe(goal)), [EarlyGoalError])
     return anygoal
 
 def lany(*goals):
@@ -139,6 +130,7 @@ def lallearly(*goals):
     return (lall,) + tuple(earlyorder(*goals))
 
 def earlysafe(goal):
+    """ Call goal be evaluated without raising an EarlyGoalError """
     try:
         goaleval(goal)
         return True
@@ -166,6 +158,23 @@ def earlyorder(*goals):
         else:
             return tuple(good) + ((lallearly,) + tuple(bad),)
 
+def conde(*goalseqs, **kwargs):
+    """ Logical cond
+
+    Goal constructor to provides logical AND and OR
+
+    conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
+
+    See Also:
+        lall - logical all
+        lany - logical any
+    """
+    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
+
+def condeseq(goalseqs):
+    """ Like conde but supports generic (possibly infinite) iterator of goals"""
+    return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
+
 def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
@@ -180,7 +189,6 @@ def run(n, x, *goals, **kwargs):
     (1,)
     """
     return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
-
 
 # Goals
 
@@ -266,8 +274,48 @@ def seteq(a, b, eq=eq):
 
     return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
+def conso(h, t, l):
+    """ Logical cons -- l[0], l[1:] == h, t """
+    if isinstance(l, tuple):
+        if len(l) == 0:
+            return fail
+        else:
+            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
+    elif isinstance(t, tuple):
+        return eq((h,) + t, l)
+    else:
+        raise EarlyGoalError()
+
+def heado(x, coll):
+    """ x is the head of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return eq(x, coll[0])
+    else:
+        return fail
+
+def tailo(x, coll):
+    """ x is the tail of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return eq(x, coll[1:])
+    else:
+        return fail
+
 def goaleval(goal):
-    """ Evaluate an possibly unevaluated goal
+    """ Evaluate a possibly unevaluated goal
 
     See also:
        goalexpand
@@ -280,13 +328,14 @@ def goaleval(goal):
     raise TypeError("Expected either function or tuple")
 
 def goalexpand(goalt):
-    """ Expand a goal tuple """
+    """ Expand a goal tuple until it can no longer be expanded """
     tmp = goalt
     while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
         goalt = tmp
         tmp = goalt[0](*goalt[1:])
     return goalt
 
+# Facts and Relations
 
 class Relation(object):
     def __init__(self):
@@ -346,18 +395,6 @@ def facts(rel, *lists):
     for l in lists:
         fact(rel, *l)
 
-def conso(h, t, l):
-    """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
-        if len(l) == 0:
-            return fail
-        else:
-            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
-        return eq((h,) + t, l)
-    else:
-        raise EarlyGoalError()
-
 """
 -This is an attempt to create appendo.  It does not currently work.
 -As written in miniKanren, appendo uses LISP machinery not present in Python
@@ -365,34 +402,6 @@ def conso(h, t, l):
 -around some of these issues but not all.  appendo is a stress test for this
 -implementation
 """
-
-def heado(x, coll):
-    """ x is the head of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return eq(x, coll[0])
-    else:
-        return fail
-
-def tailo(x, coll):
-    """ x is the tail of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return eq(x, coll[1:])
-    else:
-        return fail
 
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
