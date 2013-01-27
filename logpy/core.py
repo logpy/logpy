@@ -89,6 +89,107 @@ def unify(u, v, s):  # no check at the moment
         return s
     return False
 
+#########
+# Goals #
+#########
+
+def fail(s):
+    return ()
+def success(s):
+    return (s,)
+
+def eq(u, v):
+    """ Goal such that u == v
+
+    See also:
+        unify
+    """
+    def goal_eq(s):
+        result = unify(u, v, s)
+        if result is not False:
+            yield result
+    return goal_eq
+
+def membero(x, coll):
+    """ Goal such that x is an item of coll """
+    try:
+        return (lany,) + tuple((eq, x, item) for item in coll)
+    except TypeError:
+        raise EarlyGoalError()
+
+def seteq(a, b, eq=eq):
+    """ Set Equality
+
+    For example (1, 2, 3) set equates to (2, 1, 3)
+
+    >>> from logpy import var, run, seteq
+    >>> x = var()
+    >>> run(0, x, seteq(x, (1, 2)))
+    ((1, 2), (2, 1))
+
+    >>> run(0, x, seteq((2, 1, x), (3, 1, 2)))
+    (3,)
+    """
+    if isinstance(a, tuple) and isinstance(b, tuple):
+        if set(a) == set(b):
+            return success
+        elif len(a) != len(b):
+            return fail
+        else:
+            c, d = a, b
+            return (condeseq, (((eq, cc, dd) for cc, dd in zip(c, perm))
+                                     for perm in it.permutations(d, len(d))))
+
+    if isvar(a) and isvar(b):
+        raise EarlyGoalError()
+
+    if isvar(a) and isinstance(b, tuple):
+        c, d = a, b
+    if isvar(b) and isinstance(a, tuple):
+        c, d = b, a
+
+    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
+
+def conso(h, t, l):
+    """ Logical cons -- l[0], l[1:] == h, t """
+    if isinstance(l, tuple):
+        if len(l) == 0:
+            return fail
+        else:
+            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
+    elif isinstance(t, tuple):
+        return eq((h,) + t, l)
+    else:
+        raise EarlyGoalError()
+
+def heado(x, coll):
+    """ x is the head of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return eq(x, coll[0])
+    else:
+        return fail
+
+def tailo(x, coll):
+    """ x is the tail of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return eq(x, coll[1:])
+    else:
+        return fail
+
 ################################
 # Logical combination of goals #
 ################################
@@ -206,106 +307,6 @@ def run(n, x, *goals, **kwargs):
     """
     return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
 
-#########
-# Goals #
-#########
-
-def fail(s):
-    return ()
-def success(s):
-    return (s,)
-
-def eq(u, v):
-    """ Goal such that u == v
-
-    See also:
-        unify
-    """
-    def goal_eq(s):
-        result = unify(u, v, s)
-        if result is not False:
-            yield result
-    return goal_eq
-
-def membero(x, coll):
-    """ Goal such that x is an item of coll """
-    try:
-        return (lany,) + tuple((eq, x, item) for item in coll)
-    except TypeError:
-        raise EarlyGoalError()
-
-def seteq(a, b, eq=eq):
-    """ Set Equality
-
-    For example (1, 2, 3) set equates to (2, 1, 3)
-
-    >>> from logpy import var, run, seteq
-    >>> x = var()
-    >>> run(0, x, seteq(x, (1, 2)))
-    ((1, 2), (2, 1))
-
-    >>> run(0, x, seteq((2, 1, x), (3, 1, 2)))
-    (3,)
-    """
-    if isinstance(a, tuple) and isinstance(b, tuple):
-        if set(a) == set(b):
-            return success
-        elif len(a) != len(b):
-            return fail
-        else:
-            c, d = a, b
-            return (condeseq, (((eq, cc, dd) for cc, dd in zip(c, perm))
-                                     for perm in it.permutations(d, len(d))))
-
-    if isvar(a) and isvar(b):
-        raise EarlyGoalError()
-
-    if isvar(a) and isinstance(b, tuple):
-        c, d = a, b
-    if isvar(b) and isinstance(a, tuple):
-        c, d = b, a
-
-    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
-
-def conso(h, t, l):
-    """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
-        if len(l) == 0:
-            return fail
-        else:
-            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
-        return eq((h,) + t, l)
-    else:
-        raise EarlyGoalError()
-
-def heado(x, coll):
-    """ x is the head of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return eq(x, coll[0])
-    else:
-        return fail
-
-def tailo(x, coll):
-    """ x is the tail of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return eq(x, coll[1:])
-    else:
-        return fail
 
 ###################
 # Goal Evaluation #
@@ -334,7 +335,15 @@ class EarlyGoalError(Exception):
         lallearly
         earlyorder
     """
-    pass
+
+def goalexpand(goalt):
+    """ Expand a goal tuple until it can no longer be expanded """
+    tmp = goalt
+    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
+        goalt = tmp
+        tmp = goalt[0](*goalt[1:])
+    return goalt
+
 
 def goaleval(goal):
     """ Evaluate a possibly unevaluated goal
@@ -348,14 +357,6 @@ def goaleval(goal):
         egoal = goalexpand(goal)
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
-
-def goalexpand(goalt):
-    """ Expand a goal tuple until it can no longer be expanded """
-    tmp = goalt
-    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
-        goalt = tmp
-        tmp = goalt[0](*goalt[1:])
-    return goalt
 
 #######################
 # Facts and Relations #
