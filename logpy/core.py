@@ -2,7 +2,7 @@ import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
 from util import (assoc, unique, unique_dict, interleave, take, evalt, isempty,
-        intersection)
+        intersection, groupby)
 
 class Var(object):
     """ Logic Variable """
@@ -126,13 +126,9 @@ def lany(*goals):
         return goals[0]
 
     def anygoal(s):
-        gs = []
-        for goal in goals:
-            try:
-                gs.append(goaleval(reify(goal, s)))
-            except EarlyGoalError:
-                pass
-        return interleave((g(s) for g in gs), [EarlyGoalError])
+        reifiedgoals = (reify(goal, s) for goal in goals)
+        return interleave((goaleval(goal)(s) for goal in reifiedgoals
+                                          if  earlysafe(goal)), [EarlyGoalError])
     return anygoal
     # return lambda s: interleave(
     #        (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
@@ -146,6 +142,13 @@ def lallearly(*goals):
     """
     return (lall,) + tuple(earlyorder(*goals))
 
+def earlysafe(goal):
+    try:
+        goaleval(goal)
+        return True
+    except EarlyGoalError:
+        return False
+
 def earlyorder(*goals):
     """ Reorder goals to avoid EarlyGoalErrors
 
@@ -155,13 +158,10 @@ def earlyorder(*goals):
     See also:
         EarlyGoalError
     """
-    good, bad = [], []
-    for goal in goals:
-        try:
-            goaleval(goal)
-            good.append(goal)
-        except EarlyGoalError:
-            bad.append(goal)
+    groups = groupby(earlysafe, goals)
+    good = groups.get(True, [])
+    bad  = groups.get(False, [])
+
     if not good:
         raise EarlyGoalError()
     else:

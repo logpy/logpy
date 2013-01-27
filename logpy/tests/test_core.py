@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
         bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
         reify, tailo, heado, appendo, seteq, conso, condeseq, goaleval, lany,
-        lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
+        lall, goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
 import itertools
 from unittest import expectedFailure as FAIL
 from logpy.util import raises
@@ -60,6 +60,13 @@ def test_lall():
     x = var('x')
     assert results(lall((eq, x, 2))) == ({x: 2},)
     assert results(lall((eq, x, 2), (eq, x, 3))) == ()
+
+def test_earlysafe():
+    x, y = var('x'), var('y')
+    assert earlysafe((eq, 2, 2))
+    assert earlysafe((eq, 2, 3))
+    assert earlysafe((membero, x, (1,2,3)))
+    assert not earlysafe((membero, x, y))
 
 def test_earlyorder():
     x, y = var(), var()
