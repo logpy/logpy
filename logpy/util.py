@@ -71,6 +71,15 @@ def take(n, seq):
         return tuple(seq)
     return tuple(it.islice(seq, 0, n))
 
+def groupby(f, coll):
+    d = dict()
+    for item in coll:
+        key = f(item)
+        if key not in d:
+            d[key] = []
+        d[key].append(item)
+    return d
+
 
 def evalt(t):
     """ Evaluate tuple if unevaluated
