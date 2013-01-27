@@ -4,6 +4,10 @@ from util import deep_transitive_get as walkstar
 from util import (assoc, unique, unique_dict, interleave, take, evalt,
         intersection, groupby)
 
+###############################
+# Classes for Logic variables #
+###############################
+
 class Var(object):
     """ Logic Variable """
 
@@ -41,6 +45,10 @@ class wild(object):
     def __str__(self):
         return "_%d"%self.id
     __repr__ = __str__
+
+########################################
+# Function for Expression Manipulation #
+########################################
 
 def reify(e, s):
     """ Replace variables of expression with substitution
@@ -80,6 +88,10 @@ def unify(u, v, s):  # no check at the moment
                 return False
         return s
     return False
+
+################################
+# Logical combination of goals #
+################################
 
 def lall(*goals):
     """ Logical all
@@ -175,6 +187,10 @@ def condeseq(goalseqs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
     return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
 
+########################
+# User level execution #
+########################
+
 def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
@@ -190,32 +206,9 @@ def run(n, x, *goals, **kwargs):
     """
     return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
 
-# Goals
-
-class EarlyGoalError(Exception):
-    """ A Goal has been constructed prematurely
-
-    Consider the following case
-
-    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
-
-    The first goal, membero, iterates over an infinite sequence of all possible
-    collections.  This is unproductive.  Rather than proceed, membero raises an
-    EarlyGoalError, stating that this goal has been called early.
-
-    The goal constructor lallearly Logical-All-Early will reorder such goals to
-    the end so that the call becomes
-
-    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
-
-    In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
-    all elements of coll, 1, then 2, then 3.
-
-    See Also:
-        lallearly
-        earlyorder
-    """
-    pass
+#########
+# Goals #
+#########
 
 def fail(s):
     return ()
@@ -314,6 +307,35 @@ def tailo(x, coll):
     else:
         return fail
 
+###################
+# Goal Evaluation #
+###################
+
+class EarlyGoalError(Exception):
+    """ A Goal has been constructed prematurely
+
+    Consider the following case
+
+    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
+
+    The first goal, membero, iterates over an infinite sequence of all possible
+    collections.  This is unproductive.  Rather than proceed, membero raises an
+    EarlyGoalError, stating that this goal has been called early.
+
+    The goal constructor lallearly Logical-All-Early will reorder such goals to
+    the end so that the call becomes
+
+    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
+
+    In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
+    all elements of coll, 1, then 2, then 3.
+
+    See Also:
+        lallearly
+        earlyorder
+    """
+    pass
+
 def goaleval(goal):
     """ Evaluate a possibly unevaluated goal
 
@@ -335,7 +357,9 @@ def goalexpand(goalt):
         tmp = goalt[0](*goalt[1:])
     return goalt
 
-# Facts and Relations
+#######################
+# Facts and Relations #
+#######################
 
 class Relation(object):
     def __init__(self):
