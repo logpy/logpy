@@ -46,9 +46,9 @@ class wild(object):
         return "_%d"%self.id
     __repr__ = __str__
 
-########################################
-# Function for Expression Manipulation #
-########################################
+#########################################
+# Functions for Expression Manipulation #
+#########################################
 
 def reify(e, s):
     """ Replace variables of expression with substitution
@@ -339,12 +339,13 @@ class EarlyGoalError(Exception):
 def goalexpand(goalt):
     """ Expand a goal tuple until it can no longer be expanded
 
+    >>> x = var('x')
     >>> goal = (membero, x, (1, 2, 3))
     >>> goalexpand(goal)
     (<function logpy.core.lany>,
-      (<function logpy.core.eq>, ~_1, 1),
-      (<function logpy.core.eq>, ~_1, 2),
-      (<function logpy.core.eq>, ~_1, 3))
+      (<function logpy.core.eq>, ~x, 1),
+      (<function logpy.core.eq>, ~x, 2),
+      (<function logpy.core.eq>, ~x, 3))
     """
     tmp = goalt
     while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
