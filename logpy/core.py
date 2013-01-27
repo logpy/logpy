@@ -1,7 +1,7 @@
 import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
-from util import (assoc, unique, unique_dict, interleave, take, evalt, isempty,
+from util import (assoc, unique, unique_dict, interleave, take, evalt,
         intersection, groupby)
 
 class Var(object):
@@ -165,33 +165,6 @@ def earlyorder(*goals):
             return tuple(good)
         else:
             return tuple(good) + ((lallearly,) + tuple(bad),)
-
-def bind(stream, goal):
-    """ Bind a goal to a stream
-
-    inputs:
-        stream - sequence of substitutions (dicts)
-        goal   - function :: substitution -> stream
-
-    """
-    return unique_dict(interleave(it.imap(goaleval(goal), stream)))
-
-def bindstar(stream, *goals):
-    """ Bind many goals to a stream
-
-    See Also:
-        bind
-        lall - lall has largely replaced bindstar
-    """
-    for goal in goals:
-        # Short circuit in case of empty stream
-        a, stream = it.tee(stream, 2)
-        if isempty(a):
-            return stream
-        # Bind stream to new goal
-        stream = bind(stream, goal)
-    return stream
-binddefault = bindstar
 
 def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.

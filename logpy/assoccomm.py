@@ -29,8 +29,8 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
-        Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
+from logpy.core import (isvar, assoc, walk, unify, unique_dict, Relation,
+        heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, seteq, conso, goaleval)
 from logpy import core
 from logpy.util import groupsizes
