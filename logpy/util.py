@@ -96,23 +96,6 @@ def evalt(t):
     else:
         return t
 
-def isempty(it):
-    """ Is an iterable empty
-
-    destructive.  Use with tee
-
-    >>> from itertools import tee
-    >>> it = range(3)
-    >>> tmp, it = tee(it, 2)
-    >>> isempty(tmp)
-    False
-    """
-    try:
-        next(iter(it))
-        return False
-    except StopIteration:
-        return True
-
 def intersection(*seqs):
     for item in seqs[0]:
         found = True
