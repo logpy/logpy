@@ -87,13 +87,9 @@ def conde(*goalseqs, **kwargs):
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
-def condeseq(goalseqs, **kwargs):
+def condeseq(goalseqs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
-    bindfn = kwargs.get('bindfn', binddefault)
-    def goal_conde(s):
-        return unique_dict(interleave(bindfn((s,), *goals)
-                                     for goals in goalseqs))
-    return goal_conde
+    return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
 
 def lall(*goals):
     """ Logical all
@@ -114,6 +110,13 @@ def lall(*goals):
             for ss in g(s)))
     return allgoal
 
+def lanyseq(goals):
+    def anygoal(s):
+        reifiedgoals = (reify(goal, s) for goal in goals)
+        return interleave((goaleval(goal)(s) for goal in reifiedgoals
+                                          if  earlysafe(goal)), [EarlyGoalError])
+    return anygoal
+
 def lany(*goals):
     """ Logical any
 
@@ -124,14 +127,7 @@ def lany(*goals):
     """
     if len(goals) == 1:
         return goals[0]
-
-    def anygoal(s):
-        reifiedgoals = (reify(goal, s) for goal in goals)
-        return interleave((goaleval(goal)(s) for goal in reifiedgoals
-                                          if  earlysafe(goal)), [EarlyGoalError])
-    return anygoal
-    # return lambda s: interleave(
-    #        (goaleval(reify(goal, s))(s) for goal in goals), (EarlyGoalError,))
+    return lanyseq(goals)
 
 def lallearly(*goals):
     """ Logical all with goal reordering to avoid EarlyGoalErrors
