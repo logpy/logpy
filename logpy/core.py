@@ -11,9 +11,11 @@ from util import (assoc, unique, unique_dict, interleave, take, evalt,
 class Var(object):
     """ Logic Variable """
 
+    _id = 1
     def __new__(cls, *token):
         if len(token) == 0:
-            token = wild()
+            token = "_%s" % Var._id
+            Var._id += 1
         elif len(token) == 1:
             token = token[0]
 
@@ -33,18 +35,6 @@ class Var(object):
 
 var = lambda *args: Var(*args)
 isvar = lambda t: isinstance(t, Var)
-
-class wild(object):
-    """ A dummy variable, often used inside Vars """
-    _id = 1
-
-    def __init__(self):
-        self.id = wild._id
-        wild._id += 1
-
-    def __str__(self):
-        return "_%d"%self.id
-    __repr__ = __str__
 
 #########################################
 # Functions for Expression Manipulation #

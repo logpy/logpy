@@ -35,6 +35,7 @@ def test_isvar():
 
 def test_var():
     assert var(1) == var(1)
+    assert var() != var()
 
 def test_unify():
     assert unify(1, 1, {}) == {}
