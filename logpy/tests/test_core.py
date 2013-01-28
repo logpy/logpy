@@ -1,7 +1,7 @@
-from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde, bind,
-        bindstar, run, membero, evalt, fail, success, Relation, fact, facts,
-        reify, tailo, heado, appendo, seteq, conso, condeseq, goaleval, lany,
-        lall, goalexpand, earlyorder, EarlyGoalError, lallearly)
+from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde,  run,
+        membero, evalt, fail, success, Relation, fact, facts, reify, tailo,
+        heado, appendo, seteq, conso, condeseq, goaleval, lany, lall,
+        goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
 import itertools
 from unittest import expectedFailure as FAIL
 from logpy.util import raises
@@ -61,6 +61,13 @@ def test_lall():
     assert results(lall((eq, x, 2))) == ({x: 2},)
     assert results(lall((eq, x, 2), (eq, x, 3))) == ()
 
+def test_earlysafe():
+    x, y = var('x'), var('y')
+    assert earlysafe((eq, 2, 2))
+    assert earlysafe((eq, 2, 3))
+    assert earlysafe((membero, x, (1,2,3)))
+    assert not earlysafe((membero, x, y))
+
 def test_earlyorder():
     x, y = var(), var()
     assert earlyorder((eq, 2, x)) == ((eq, 2, x),)
@@ -92,22 +99,6 @@ def test_condeseq():
     goals = ([eq(x, i)] for i in itertools.count()) # infinite number of goals
     assert next(condeseq(goals)({})) == {x: 0}
 """
-
-def test_bind():
-    x = var('x')
-    stream = tuple({x: i} for i in range(5))
-    success = lambda s: (s,)
-    assert tuple(bind(stream, success)) == stream
-    assert tuple(bind(stream, eq(x, 3))) == ({x: 3},)
-
-def test_bindstar():
-    x = var('x')
-    stream = tuple({x: i} for i in range(5))
-    success = lambda s: (s,)
-    assert tuple(bindstar(stream, success)) == stream
-    assert tuple(bindstar(stream, eq(x, 3))) == ({x: 3},)
-    assert tuple(bindstar(stream, success, eq(x, 3))) == ({x: 3},)
-    assert tuple(bindstar(stream, eq(x, 2), eq(x, 3))) == ()
 
 def test_short_circuit():
     def badgoal(s):
@@ -142,11 +133,6 @@ def test_evalt():
     assert evalt((add, 2, 3)) == 5
     assert evalt(add(2, 3)) == 5
     assert evalt((1,2)) == (1,2)
-
-def test_bindstar_evalt():
-    x = var('x')
-    stream = bindstar(({},), success, (eq, x, 1))
-    assert tuple(stream) == ({x: 1},)
 
 def test_relation():
     parent = Relation()

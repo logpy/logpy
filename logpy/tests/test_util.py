@@ -1,5 +1,5 @@
-from logpy.util import (isempty, take, unique, unique_dict, interleave,
-        intersection, groupsizes, raises)
+from logpy.util import (take, unique, unique_dict, interleave, intersection,
+        groupsizes, raises, groupby)
 import itertools
 
 def test_unique():
@@ -21,14 +21,6 @@ def test_take():
     assert take(0, range(5)) == (0, 1, 2, 3, 4)
     assert take(None, range(5)) == range(5)
 
-def test_isempty():
-    assert isempty(())
-    assert not isempty((1,2))
-    it = (x for x in (1,2))
-    a, it = itertools.tee(it, 2)
-    assert not isempty(a)
-    assert next(it) == 1
-
 def test_interleave():
     assert ''.join(interleave(('ABC', '123'))) == 'A1B2C3'
     assert ''.join(interleave(('ABC', '1'))) == 'A1BC'
@@ -41,3 +33,9 @@ def test_groupsizes():
 
 def test_raises():
     raises(ZeroDivisionError, lambda: 1/0)
+
+def test_groupby():
+    d = groupby(lambda x: x%2, range(10))
+    assert set(d.keys()) == set((0, 1))
+    assert set(d[0]) == set((0, 2, 4, 6, 8))
+    assert set(d[1]) == set((1, 3, 5, 7, 9))

@@ -29,9 +29,9 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from logpy.core import (isvar, assoc, walk, unify, unique_dict, bindstar,
-        Relation, heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq, seteq, conso)
+from logpy.core import (isvar, assoc, walk, unify, unique_dict, Relation,
+        heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
+        condeseq, seteq, conso, goaleval)
 from logpy import core
 from logpy.util import groupsizes
 
@@ -64,7 +64,8 @@ def assocunify(u, v, s, eq=core.eq):
         parts = (groupsizes_to_partition(*gsizes) for gsizes
                                                   in  groupsizes(len(lg), len(sm)))
         ops = (makeops(op, partition(lg, part)) for part in parts)
-        return condeseq([(eq, a, b) for a, b in zip(sm, lg2)] for lg2 in ops)(s)
+        goal = condeseq([(eq, a, b) for a, b in zip(sm, lg2)] for lg2 in ops)
+        return goaleval(goal)(s)
 
     return ()
 
