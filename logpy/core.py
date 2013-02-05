@@ -152,6 +152,16 @@ def conso(h, t, l):
     else:
         raise EarlyGoalError()
 
+def setaddo(h, t, l):
+    if isinstance(l, tuple):
+        return (conde,) + tuple([(eq, h, l[i]), (seteq, t, l[0:i] + l[i+1:])]
+                                for i in range(len(l)))
+    if isinstance(t, tuple):
+        a = var()
+        return (conde, ((conso, h, t, a), (seteq, l, a)))
+
+    raise EarlyGoalError()
+
 def heado(x, coll):
     """ x is the head of coll
 
