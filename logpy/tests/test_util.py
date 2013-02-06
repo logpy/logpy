@@ -13,7 +13,6 @@ def test_unique_dict():
 def test_intersection():
     a,b,c = (1,2,3,4), (2,3,4,5), (3,4,5,6)
 
-    print tuple(intersection(a,b,c))
     assert tuple(intersection(a,b,c)) == (3,4)
 
 def test_take():

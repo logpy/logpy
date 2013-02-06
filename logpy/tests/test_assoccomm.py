@@ -34,7 +34,6 @@ def test_eq_assoc():
 
     # See TODO in assocunify
     gen = results(eq_assoc((a, 1, 2, 3), x, n=2))
-    print set(g[x] for g in gen)
     assert set(g[x] for g in gen).issuperset(set([(a,(a,1,2),3), (a,1,(a,2,3))]))
 
 def test_eq_assoccomm():
