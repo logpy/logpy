@@ -73,7 +73,6 @@ def assocunify(u, v, s, eq=core.eq, n=None):
     op, tail = a[0], a[1:]
 
     ns = [n] if n else range(2, len(a))
-    print ns
     knowns = (((op,) + x) for n in ns for x in assocsized(op, tail, n))
 
     goal = condeseq([(core.eq, b, k)] for k in knowns)
