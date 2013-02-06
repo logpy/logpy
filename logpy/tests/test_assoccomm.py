@@ -33,8 +33,9 @@ def test_eq_assoc():
     assert not results(eq_assoc((o, 1, 2, 3), (o, (o, 1, 2), 3)))
 
     # See TODO in assocunify
-    # print (results(eq_assoc((a, 1, 2, 3), x)))
-    # assert len(results(eq_assoc((a, 1, 2, 3), x))) == 3
+    gen = results(eq_assoc((a, 1, 2, 3), x, n=2))
+    print set(g[x] for g in gen)
+    assert set(g[x] for g in gen).issuperset(set([(a,(a,1,2),3), (a,1,(a,2,3))]))
 
 def test_eq_assoccomm():
     x, y = var(), var()
@@ -81,6 +82,12 @@ def test_assocunify():
     assert tuple(assocunify((a, 1, (a, 2, 3), 4), (a, 1, 2, 3, 4), {}))
     assert tuple(assocunify((a, 1, x, 4), (a, 1, 2, 3, 4), {})) == \
                 ({x: (a, 2, 3)},)
+
+    gen = assocunify((a, 1, 2, 3), x, {}, n=2)
+    assert set(g[x] for g in gen) == set([(a,(a,1,2),3), (a,1,(a,2,3))])
+
+    gen = assocunify((a, 1, 2, 3), x, {})
+    assert set(g[x] for g in gen) == set([(a,1,2,3), (a,(a,1,2),3), (a,1,(a,2,3))])
 
 def test_assocsized():
     add = 'add'
