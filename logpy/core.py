@@ -217,8 +217,13 @@ def lanyseq(goals):
     """ Logical any with possibly infinite number of goals """
     def anygoal(s):
         reifiedgoals = (reify(goal, s) for goal in goals)
-        return interleave((goaleval(goal)(s) for goal in reifiedgoals
-                                    if earlysafe(goal)), [EarlyGoalError])
+        def f(goals):
+            for goal in goals:
+                try:
+                    yield goaleval(goal)(s)
+                except EarlyGoalError:
+                    pass
+        return interleave(f(reifiedgoals), [EarlyGoalError])
     return anygoal
 
 def lany(*goals):
@@ -365,6 +370,8 @@ def goaleval(goal):
     if callable(goal):          # goal is already a function like eq(x, 1)
         return goal
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
+        from logpy.util import pprint
+        print pprint(goal)
         egoal = goalexpand(goal)
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
