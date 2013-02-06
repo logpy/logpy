@@ -154,6 +154,9 @@ def test_relation():
 
     assert set(run(5, x, grandparent(x, "Bart") )) == set(("Abe", "Jackie"))
 
+    foo = Relation('foo')
+    assert 'foo' in str(foo)
+
 def test_var_inputs():
     assert var(1) == var(1)
     assert var() != var()
