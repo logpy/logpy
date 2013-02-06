@@ -370,8 +370,6 @@ def goaleval(goal):
     if callable(goal):          # goal is already a function like eq(x, 1)
         return goal
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
-        from logpy.util import pprint
-        print pprint(goal)
         egoal = goalexpand(goal)
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
