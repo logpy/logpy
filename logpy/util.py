@@ -126,3 +126,12 @@ def raises(err, lamda):
         raise Exception("Did not raise %s"%err)
     except err:
         pass
+
+def pprint(g):
+    if callable(g) and hasattr(g, 'func_name'):
+        return g.func_name
+    if isinstance(g, type):
+        return g.__name__
+    if isinstance(g, tuple):
+        return "(" + ', '.join(map(pprint, g)) + ")"
+    return str(g)
