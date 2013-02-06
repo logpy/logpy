@@ -127,8 +127,11 @@ def seteq(a, b, eq=eq):
             return fail
         else:
             c, d = a, b
-            return (condeseq, (((eq, cc, dd) for cc, dd in zip(c, perm))
-                                     for perm in it.permutations(d, len(d))))
+            if len(c) == 1:
+                return (eq, c[0], d[0])
+            return (conde,) + tuple(
+                    ((eq, c[i], d[0]), (seteq, c[0:i] + c[i+1:], d[1:], eq))
+                        for i in range(len(c)))
 
     if isvar(a) and isvar(b):
         raise EarlyGoalError()

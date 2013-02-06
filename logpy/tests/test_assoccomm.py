@@ -1,7 +1,7 @@
 from logpy.core import var, run, fact, eq, goaleval, EarlyGoalError
 from logpy.assoccomm import (associative, commutative, conde,
         groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
-        eq_assoccomm)
+        eq_assoccomm, assocsized)
 from logpy.util import raises
 
 a = 'assoc_op'
@@ -82,6 +82,12 @@ def test_assocunify():
     assert tuple(assocunify((a, 1, x, 4), (a, 1, 2, 3, 4), {})) == \
                 ({x: (a, 2, 3)},)
 
+def test_assocsized():
+    add = 'add'
+    assert set(assocsized(add, (1, 2, 3), 2)) == \
+            set((((add, 1, 2), 3), (1, (add, 2, 3))))
+    assert set(assocsized(add, (1, 2, 3), 1)) == \
+            set((((add, 1, 2, 3),),))
 
 """
 Failing test.  This would work if we flattened first

@@ -60,14 +60,17 @@ def assocunify(u, v, s, eq=core.eq):
         op = walk(uop, s)
 
         sm, lg = (u, v) if len(u) <= len(v) else (v, u)
-
-        parts = (groupsizes_to_partition(*gsizes) for gsizes
-                                                  in  groupsizes(len(lg), len(sm)))
-        ops = (makeops(op, partition(lg, part)) for part in parts)
-        goal = condeseq([(eq, a, b) for a, b in zip(sm, lg2)] for lg2 in ops)
+        ops = assocsized(op, lg, len(sm))
+        goal = condeseq([(eq, a, b) for a, b, in zip(sm, lg2)] for lg2 in ops)
         return goaleval(goal)(s)
 
     return ()
+
+def assocsized(op, tail, n):
+    """ All associative combinations of x in n groups """
+    gsizess = groupsizes(len(tail), n)
+    partitions = (groupsizes_to_partition(*gsizes) for gsizes in gsizess)
+    return (makeops(op, partition(tail, part)) for part in partitions)
 
 def makeops(op, lists):
     """ Construct operations from an op and parition lists
