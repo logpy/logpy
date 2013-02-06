@@ -107,7 +107,7 @@ def membero(x, coll):
     except TypeError:
         raise EarlyGoalError()
 
-def seteq(a, b, eq=eq):
+def seteq(a, b, eq2=eq):
     """ Set Equality
 
     For example (1, 2, 3) set equates to (2, 1, 3)
@@ -128,9 +128,9 @@ def seteq(a, b, eq=eq):
         else:
             c, d = a, b
             if len(c) == 1:
-                return (eq, c[0], d[0])
+                return (eq2, c[0], d[0])
             return (conde,) + tuple(
-                    ((eq, c[i], d[0]), (seteq, c[0:i] + c[i+1:], d[1:], eq))
+                    ((eq2, c[i], d[0]), (seteq, c[0:i] + c[i+1:], d[1:], eq2))
                         for i in range(len(c)))
 
     if isvar(a) and isvar(b):
