@@ -136,3 +136,7 @@ def pprint(g):
     if isinstance(g, tuple):
         return "(" + ', '.join(map(pprint, g)) + ")"
     return str(g)
+
+def index(tup, ind):
+    """ Fancy indexing with tuples """
+    return tuple(tup[i] for i in ind)

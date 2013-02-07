@@ -33,7 +33,7 @@ from logpy.core import (isvar, assoc, walk, unify, unique_dict, Relation,
         heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, seteq, conso, goaleval, tailo)
 from logpy import core
-from logpy.util import groupsizes
+from logpy.util import groupsizes, index
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm']
 
@@ -99,10 +99,6 @@ def partition(tup, part):
     [('a', 'b'), ('e', 'd', 'c')]
     """
     return [index(tup, ind) for ind in part]
-
-def index(tup, ind):
-    """ Fancy indexing with tuples """
-    return tuple(tup[i] for i in ind)
 
 def groupsizes_to_partition(*gsizes):
     """
