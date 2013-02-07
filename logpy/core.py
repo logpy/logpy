@@ -2,7 +2,7 @@ import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
 from util import (assoc, unique, unique_dict, interleave, take, evalt,
-        intersection, groupby)
+        intersection, groupby, index, merge)
 
 ###############################
 # Classes for Logic variables #
@@ -408,14 +408,24 @@ class Relation(object):
             self.index[key].add(fact)
 
     def __call__(self, *args):
-        subsets = [self.index[key] for key in enumerate(args)
-                                   if  key in self.index]
-        if subsets:     # we are able to reduce the pool early
-            facts = intersection(*sorted(subsets, key=len))
-        else:
-            facts = self.facts
-        return (condeseq, ([[eq(a, b) for a, b in zip(args, fact)]
-                                 for fact in facts]))
+        def f(s):
+            args2 = reify(args, s)
+            subsets = [self.index[key] for key in enumerate(args)
+                                       if  key in self.index]
+            if subsets:     # we are able to reduce the pool early
+                facts = intersection(*sorted(subsets, key=len))
+            else:
+                facts = self.facts
+            varinds = [i for i, arg in enumerate(args2) if isvar(arg)]
+            valinds = [i for i, arg in enumerate(args2) if not isvar(arg)]
+            vars = index(args2, varinds)
+            vals = index(args2, valinds)
+            assert not any(var in s for var in vars)
+
+            return (merge(dict(zip(vars, index(fact, varinds))), s)
+                              for fact in self.facts
+                              if vals == index(fact, valinds))
+        return f
 
     def __str__(self):
         return "Rel: " + self.name
