@@ -105,6 +105,7 @@ def intersection(*seqs):
                 break
         if found:
             yield item
+    # return reduce(set.intersection, map(set, seqs[1:]), set(seqs[0]))
 
 def groupsizes(total, len):
     """ Groups of length len that add up to total
