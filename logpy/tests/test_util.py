@@ -1,5 +1,5 @@
 from logpy.util import (take, unique, unique_dict, interleave, intersection,
-        groupsizes, raises, groupby)
+        groupsizes, raises, groupby, merge)
 import itertools
 
 def test_unique():
@@ -38,3 +38,6 @@ def test_groupby():
     assert set(d.keys()) == set((0, 1))
     assert set(d[0]) == set((0, 2, 4, 6, 8))
     assert set(d[1]) == set((1, 3, 5, 7, 9))
+
+def test_merge():
+    assert merge({1: 2}, {3: 4}, {5: 6}) == {1: 2, 3: 4, 5: 6}

@@ -140,3 +140,6 @@ def pprint(g):
 def index(tup, ind):
     """ Fancy indexing with tuples """
     return tuple(tup[i] for i in ind)
+
+def merge(*dicts):
+    return dict(item for dict in dicts for item in dict.iteritems())
