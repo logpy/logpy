@@ -414,8 +414,8 @@ class Relation(object):
             facts = intersection(*sorted(subsets, key=len))
         else:
             facts = self.facts
-        return (conde,) + tuple([[eq(a, b) for a, b in zip(args, fact)]
-                                 for fact in facts])
+        return (condeseq, ([[eq(a, b) for a, b in zip(args, fact)]
+                                 for fact in facts]))
 
     def __str__(self):
         return "Rel: " + self.name
