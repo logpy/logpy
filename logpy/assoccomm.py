@@ -31,7 +31,7 @@ be used in the computer algebra systems SymPy and Theano.
 
 from logpy.core import (isvar, assoc, walk, unify, unique_dict, Relation,
         heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq, seteq, conso, goaleval)
+        condeseq, seteq, conso, goaleval, tailo)
 from logpy import core
 from logpy.util import groupsizes
 
@@ -167,10 +167,13 @@ def eq_comm(u, v, eq=None):
     if isvar(u) and isvar(v):
         return (core.eq, u, v)
         raise EarlyGoalError()
+    if isinstance(v, tuple) and not isinstance(u, tuple):
+        u, v = v, u
     return (conde, ((core.eq, u, v),),
-                   ((conso, op, utail, u),
-                    (conso, op, vtail, v),
+                   ((heado, op, u),
                     (commutative, op),
+                    (tailo, utail, u),
+                    (conso, op, vtail, v),
                     (seteq, utail, vtail, eq)))
 
 def eq_assoccomm(u, v):
@@ -196,11 +199,24 @@ def eq_assoccomm(u, v):
     >>> run(0, x, eq(e1, e2))
     (('add', 2, 3), ('add', 3, 2))
     """
+    if isinstance(u, tuple) and not isinstance(v, tuple) and not isvar(v):
+        return fail
+    if isinstance(v, tuple) and not isinstance(u, tuple) and not isvar(u):
+        return fail
+    if isinstance(u, tuple) and isinstance(v, tuple) and not u[0] == v[0]:
+        return fail
+    if isinstance(u, tuple) and not (u[0],) in associative.facts:
+        return (eq, u, v)
+    if isinstance(v, tuple) and not (v[0],) in associative.facts:
+        return (eq, u, v)
+
     if isinstance(u, tuple) and isinstance(v, tuple):
         u, v = (u, v) if len(u) >= len(v) else (v, u)
         n = len(v)-1  # length of shorter tail
     else:
         n = None
+    if isinstance(v, tuple) and not isinstance(u, tuple):
+        u, v = v, u
     w = var()
     return lall((eq_assoc, u, w, eq_assoccomm, n),
                 (eq_comm, v, w, eq_assoccomm))

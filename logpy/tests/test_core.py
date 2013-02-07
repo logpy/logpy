@@ -245,13 +245,13 @@ def test_setaddo():
 
 def test_heado():
     x, y = var('x'), var('y')
-    assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
-    assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
+    assert results(heado(x, (1,2,3))) == ({x: 1},)
+    assert results(heado(1, (x,2,3))) == ({x: 1},)
     raises(EarlyGoalError, lambda: heado(x, y))
 
 def test_tailo():
     x, y = var('x'), var('y')
-    assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
+    assert results((tailo, x, (1,2,3))) == ({x: (2,3)},)
     raises(EarlyGoalError, lambda: tailo(x, y))
 
 def test_appendo():
