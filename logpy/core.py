@@ -130,19 +130,6 @@ def lall(*goals):
             for ss in g(s)))
     return allgoal
 
-def lanyseq(goals):
-    """ Logical any with possibly infinite number of goals """
-    def anygoal(s):
-        reifiedgoals = (reify(goal, s) for goal in goals)
-        def f(goals):
-            for goal in goals:
-                try:
-                    yield goaleval(goal)(s)
-                except EarlyGoalError:
-                    pass
-        return interleave(f(reifiedgoals), [EarlyGoalError])
-    return anygoal
-
 def lany(*goals):
     """ Logical any
 
@@ -206,6 +193,19 @@ def conde(*goalseqs, **kwargs):
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
+def lanyseq(goals):
+    """ Logical any with possibly infinite number of goals """
+    def anygoal(s):
+        reifiedgoals = (reify(goal, s) for goal in goals)
+        def f(goals):
+            for goal in goals:
+                try:
+                    yield goaleval(goal)(s)
+                except EarlyGoalError:
+                    pass
+        return interleave(f(reifiedgoals), [EarlyGoalError])
+    return anygoal
+
 def condeseq(goalseqs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
     return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
@@ -228,7 +228,6 @@ def run(n, x, *goals, **kwargs):
     (1,)
     """
     return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
-
 
 ###################
 # Goal Evaluation #
