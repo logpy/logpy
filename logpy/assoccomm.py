@@ -89,6 +89,7 @@ def assocsized(op, tail, n):
 def makeops(op, lists):
     """ Construct operations from an op and parition lists
 
+    >>> from logpy.assoccomm import makeops
     >>> makeops('add', [(1, 2), (3, 4, 5)])
     (('add', 1, 2), ('add', 3, 4, 5))
     """
@@ -97,6 +98,7 @@ def makeops(op, lists):
 def partition(tup, part):
     """ Partition a tuple
 
+    >>> from logpy.assoccomm import partition
     >>> partition("abcde", [[0,1], [4,3,2]])
     [('a', 'b'), ('e', 'd', 'c')]
     """
@@ -104,6 +106,7 @@ def partition(tup, part):
 
 def groupsizes_to_partition(*gsizes):
     """
+    >>> from logpy.assoccomm import groupsizes_to_partition
     >>> groupsizes_to_partition(2, 3)
     [[0, 1], [2, 3, 4]]
     """
@@ -120,14 +123,14 @@ def groupsizes_to_partition(*gsizes):
 def eq_assoc(u, v, eq=core.eq, n=None):
     """ Goal for associative equality
 
-    >>> from logpy import run, var
+    >>> from logpy import run, var, fact
     >>> from logpy.assoccomm import eq_assoc as eq
 
     >>> fact(commutative, 'add')    # declare that 'add' is commutative
     >>> fact(associative, 'add')    # declare that 'add' is associative
 
     >>> x = var()
-    >>> run(0, eq(('add', 1, 2, 3), ('add', 1, x)))
+    >>> run(0, x, eq(('add', 1, 2, 3), ('add', 1, x)))
     (('add', 2, 3),)
     """
     op = var()
@@ -148,14 +151,15 @@ def eq_assoc(u, v, eq=core.eq, n=None):
 def eq_comm(u, v, eq=None):
     """ Goal for commutative equality
 
-    >>> from logpy import run, var
+    >>> from logpy import run, var, fact
     >>> from logpy.assoccomm import eq_comm as eq
+    >>> from logpy.assoccomm import commutative, associative
 
     >>> fact(commutative, 'add')    # declare that 'add' is commutative
     >>> fact(associative, 'add')    # declare that 'add' is associative
 
     >>> x = var()
-    >>> run(0, eq(('add', 1, 2, 3), ('add', 2, x, 1)))
+    >>> run(0, x, eq(('add', 1, 2, 3), ('add', 2, x, 1)))
     (3,)
     """
     eq = eq or eq_comm
