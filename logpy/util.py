@@ -3,6 +3,7 @@ import itertools as it
 def transitive_get(key, d):
     """ Transitive dict.get
 
+    >>> from logpy.util import transitive_get
     >>> d = {1: 2, 2: 3, 3: 4}
     >>> d.get(1)
     2
@@ -16,6 +17,7 @@ def transitive_get(key, d):
 def deep_transitive_get(key, d):
     """ Transitive get that propagates within tuples
 
+    >>> from logpy.util import transitive_get, deep_transitive_get
     >>> d = {1: (2, 3), 2: 12, 3: 13}
     >>> transitive_get(1, d)
     (2, 3)
@@ -84,6 +86,7 @@ def groupby(f, coll):
 def evalt(t):
     """ Evaluate tuple if unevaluated
 
+    >>> from logpy.util import evalt
     >>> add = lambda x, y: x + y
     >>> evalt((add, 2, 3))
     5
@@ -129,6 +132,7 @@ def raises(err, lamda):
         pass
 
 def pprint(g):
+    """ Pretty print a tree of goals """
     if callable(g) and hasattr(g, 'func_name'):
         return g.func_name
     if isinstance(g, type):
