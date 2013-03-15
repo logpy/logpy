@@ -100,15 +100,8 @@ def evalt(t):
         return t
 
 def intersection(*seqs):
-    for item in seqs[0]:
-        found = True
-        for seq in seqs[1:]:
-            if item not in seq:
-                found = False
-                break
-        if found:
-            yield item
-    # return reduce(set.intersection, map(set, seqs[1:]), set(seqs[0]))
+    return (item for item in seqs[0]
+                 if all(item in seq for seq in seqs[1:]))
 
 def groupsizes(total, len):
     """ Groups of length len that add up to total
