@@ -78,16 +78,6 @@ def seteq(a, b, eq2=eq):
 
     return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
-def setaddo(h, t, l):
-    if isinstance(l, tuple):
-        return (conde,) + tuple([(eq, h, l[i]), (seteq, t, l[0:i] + l[i+1:])]
-                                for i in range(len(l)))
-    if isinstance(t, tuple):
-        a = var()
-        return (conde, ((conso, h, t, a), (seteq, l, a)))
-
-    raise EarlyGoalError()
-
 """
 -This is an attempt to create appendo.  It does not currently work.
 -As written in miniKanren, appendo uses LISP machinery not present in Python
