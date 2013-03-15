@@ -1,5 +1,5 @@
-from logpy.util import (take, unique, unique_dict, interleave, intersection,
-        groupsizes, raises, groupby, merge)
+from logpy.util import (take, unique, interleave, intersection,
+        groupsizes, raises, groupby, merge, dicthash)
 import itertools
 
 def test_unique():
@@ -7,8 +7,8 @@ def test_unique():
     assert tuple(unique((1,2,1,3))) == (1,2,3)
 
 def test_unique_dict():
-    assert tuple(unique_dict(({1: 2}, {2: 3}))) == ({1: 2}, {2: 3})
-    assert tuple(unique_dict(({1: 2}, {1: 2}))) == ({1: 2},)
+    assert tuple(unique(({1: 2}, {2: 3}), key=dicthash)) == ({1: 2}, {2: 3})
+    assert tuple(unique(({1: 2}, {1: 2}), key=dicthash)) == ({1: 2},)
 
 def test_intersection():
     a,b,c = (1,2,3,4), (2,3,4,5), (3,4,5,6)

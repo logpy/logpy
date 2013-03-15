@@ -39,19 +39,11 @@ def assoc(dict, key, value):
 def dicthash(d):
     return hash(frozenset(d.items()))
 
-def unique_dict(seq):
-    seen = set()
-    for d in seq:
-        h = dicthash(d)
-        if h not in seen:
-            seen.add(h)
-            yield d
-
-def unique(seq):
+def unique(seq, key=lambda x: x):
     seen = set()
     for item in seq:
-        if item not in seen:
-            seen.add(item)
+        if key(item) not in seen:
+            seen.add(key(item))
             yield item
 
 def interleave(seqs, pass_exceptions=()):

@@ -29,7 +29,7 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from logpy.core import (isvar, assoc, walk, unify, unique_dict,
+from logpy.core import (isvar, assoc, walk, unify,
         conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, goaleval)
 from logpy.goals import heado, seteq, conso, tailo

@@ -1,7 +1,7 @@
 import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
-from util import (assoc, unique, unique_dict, interleave, take, evalt,
+from util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index)
 
 ###############################
@@ -130,9 +130,10 @@ def lall(*goals):
         return goals[0]
     def allgoal(s):
         g = goaleval(reify(goals[0], s))
-        return unique_dict(interleave(
-            goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
-            for ss in g(s)))
+        return unique(interleave(
+                        goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
+                        for ss in g(s)),
+                      key=dicthash)
     return allgoal
 
 def lany(*goals):
@@ -208,7 +209,8 @@ def lanyseq(goals):
                     yield goaleval(goal)(s)
                 except EarlyGoalError:
                     pass
-        return unique_dict(interleave(f(reifiedgoals), [EarlyGoalError]))
+        return unique(interleave(f(reifiedgoals), [EarlyGoalError]),
+                      key=dicthash)
     return anygoal
 
 def condeseq(goalseqs):
