@@ -1,5 +1,5 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde,  run,
-        membero, evalt, fail, success, Relation, fact, facts, reify, tailo,
+        membero, evalt, fail, success, reify, tailo,
         heado, appendo, seteq, conso, condeseq, goaleval, lany, lall,
         goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe, setaddo)
 import itertools
@@ -139,41 +139,9 @@ def test_evalt():
     assert evalt(add(2, 3)) == 5
     assert evalt((1,2)) == (1,2)
 
-def test_relation():
-    parent = Relation()
-    fact(parent, "Homer", "Bart")
-    fact(parent, "Homer", "Lisa")
-    fact(parent, "Marge", "Bart")
-    fact(parent, "Marge", "Lisa")
-    fact(parent, "Abe", "Homer")
-    fact(parent, "Jackie", "Marge")
-
-    x = var('x')
-    assert set(run(5, x, parent("Homer", x))) == set(("Bart", "Lisa"))
-    assert set(run(5, x, parent(x, "Bart")))  == set(("Homer", "Marge"))
-
-    def grandparent(x, z):
-        y = var()
-        return conde((parent(x, y), parent(y, z)))
-
-    assert set(run(5, x, grandparent(x, "Bart") )) == set(("Abe", "Jackie"))
-
-    foo = Relation('foo')
-    assert 'foo' in str(foo)
-
 def test_var_inputs():
     assert var(1) == var(1)
     assert var() != var()
-
-def test_fact():
-    rel = Relation()
-    fact(rel, 1, 2)
-    assert (1, 2) in rel.facts
-    assert (10, 10) not in rel.facts
-
-    facts(rel, (2, 3), (3, 4))
-    assert (2, 3) in rel.facts
-    assert (3, 4) in rel.facts
 
 def test_uneval_membero():
     x, y = var('x'), var('y')
