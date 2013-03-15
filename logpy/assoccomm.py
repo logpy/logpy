@@ -37,8 +37,8 @@ from logpy.util import groupsizes
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm']
 
-associative = Relation()
-commutative = Relation()
+associative = Relation('associative')
+commutative = Relation('commutative')
 
 def assocunify(u, v, s, eq=core.eq):
     """ Associative Unification

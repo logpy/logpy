@@ -152,6 +152,16 @@ def conso(h, t, l):
     else:
         raise EarlyGoalError()
 
+def setaddo(h, t, l):
+    if isinstance(l, tuple):
+        return (conde,) + tuple([(eq, h, l[i]), (seteq, t, l[0:i] + l[i+1:])]
+                                for i in range(len(l)))
+    if isinstance(t, tuple):
+        a = var()
+        return (conde, ((conso, h, t, a), (seteq, l, a)))
+
+    raise EarlyGoalError()
+
 def heado(x, coll):
     """ x is the head of coll
 
@@ -207,8 +217,13 @@ def lanyseq(goals):
     """ Logical any with possibly infinite number of goals """
     def anygoal(s):
         reifiedgoals = (reify(goal, s) for goal in goals)
-        return interleave((goaleval(goal)(s) for goal in reifiedgoals
-                                    if earlysafe(goal)), [EarlyGoalError])
+        def f(goals):
+            for goal in goals:
+                try:
+                    yield goaleval(goal)(s)
+                except EarlyGoalError:
+                    pass
+        return interleave(f(reifiedgoals), [EarlyGoalError])
     return anygoal
 
 def lany(*goals):
@@ -364,9 +379,14 @@ def goaleval(goal):
 #######################
 
 class Relation(object):
-    def __init__(self):
+    _id = 0
+    def __init__(self, name=None):
         self.facts = set()
         self.index = dict()
+        if not name:
+            name = "_%d"%Relation._id
+            Relation._id += 1
+        self.name = name
 
     def add_fact(self, *inputs):
         """ Add a fact to the knowledgebase.
@@ -393,6 +413,11 @@ class Relation(object):
             facts = self.facts
         return (conde,) + tuple([[eq(a, b) for a, b in zip(args, fact)]
                                  for fact in facts])
+
+    def __str__(self):
+        return "Rel: " + self.name
+    __repr__ = __str__
+
 
 def fact(rel, *args):
     """ Declare a fact
