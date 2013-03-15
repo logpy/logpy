@@ -2,6 +2,46 @@ from core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
         lallearly, fail, success)
 import itertools as it
 
+def heado(x, coll):
+    """ x is the head of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return (eq, x, coll[0])
+    else:
+        return fail
+
+def tailo(x, coll):
+    """ x is the tail of coll
+
+    See also:
+        heado
+        conso
+    """
+    if not isinstance(coll, tuple):
+        raise EarlyGoalError()
+    if isinstance(coll, tuple) and len(coll) >= 1:
+        return (eq, x, coll[1:])
+    else:
+        return fail
+
+def conso(h, t, l):
+    """ Logical cons -- l[0], l[1:] == h, t """
+    if isinstance(l, tuple):
+        if len(l) == 0:
+            return fail
+        else:
+            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
+    elif isinstance(t, tuple):
+        return eq((h,) + t, l)
+    else:
+        raise EarlyGoalError()
+
 def seteq(a, b, eq2=eq):
     """ Set Equality
 
@@ -38,18 +78,6 @@ def seteq(a, b, eq2=eq):
 
     return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
-def conso(h, t, l):
-    """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
-        if len(l) == 0:
-            return fail
-        else:
-            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
-        return eq((h,) + t, l)
-    else:
-        raise EarlyGoalError()
-
 def setaddo(h, t, l):
     if isinstance(l, tuple):
         return (conde,) + tuple([(eq, h, l[i]), (seteq, t, l[0:i] + l[i+1:])]
@@ -59,34 +87,6 @@ def setaddo(h, t, l):
         return (conde, ((conso, h, t, a), (seteq, l, a)))
 
     raise EarlyGoalError()
-
-def heado(x, coll):
-    """ x is the head of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[0])
-    else:
-        return fail
-
-def tailo(x, coll):
-    """ x is the tail of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[1:])
-    else:
-        return fail
 
 """
 -This is an attempt to create appendo.  It does not currently work.
