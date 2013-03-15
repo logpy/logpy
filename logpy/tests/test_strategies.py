@@ -1,4 +1,5 @@
-from logpy.core import var, run, eq, membero, fail, conso
+from logpy.core import var, run, eq, membero, fail
+from logpy.goals import conso
 from logpy.strategies import bindearly, anyfail
 
 x = var()

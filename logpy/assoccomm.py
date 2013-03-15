@@ -30,8 +30,9 @@ be used in the computer algebra systems SymPy and Theano.
 """
 
 from logpy.core import (isvar, assoc, walk, unify, unique_dict,
-        heado, conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq, seteq, conso, goaleval, tailo)
+        conde, var, eq, fail, goaleval, lall, EarlyGoalError,
+        condeseq, goaleval)
+from logpy.goals import heado, seteq, conso, tailo
 from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
