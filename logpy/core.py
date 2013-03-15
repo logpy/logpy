@@ -43,6 +43,8 @@ isvar = lambda t: isinstance(t, Var)
 def reify(e, s):
     """ Replace variables of expression with substitution
 
+    >>> from logpy.core import reify, var
+    >>> x, y = var(), var()
     >>> e = (1, x, (3, y))
     >>> s = {x: 2, y: 4}
     >>> reify(e, s)
@@ -58,8 +60,10 @@ def reify(e, s):
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
+    >>> from logpy.core import unify, var
+    >>> x = var('x')
     >>> unify((1, x), (1, 2), {})
-    {x: 2}
+    {~x: 2}
     """
     u = walk(u, s)
     v = walk(v, s)
@@ -114,10 +118,11 @@ def membero(x, coll):
 def lall(*goals):
     """ Logical all
 
-    >>> from logpy import lall, membero
-    >>> g = lall(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> from logpy.core import lall, membero
+    >>> x = var('x')
+    >>> g = lall(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
-    ({x: 2}, {x: 3})
+    ({~x: 2}, {~x: 3})
     """
     if not goals:
         return success
@@ -133,10 +138,11 @@ def lall(*goals):
 def lany(*goals):
     """ Logical any
 
-    >>> from logpy import lall, membero
-    >>> g = lany(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> from logpy.core import lany, membero
+    >>> x = var('x')
+    >>> g = lany(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
-    ({x: 1}, {x: 2}, {x: 3}, {x: 4})
+    ({~x: 1}, {~x: 2}, {~x: 3}, {~x: 4})
     """
     if len(goals) == 1:
         return goals[0]
@@ -203,7 +209,7 @@ def lanyseq(goals):
                     yield goaleval(goal)(s)
                 except EarlyGoalError:
                     pass
-        return interleave(f(reifiedgoals), [EarlyGoalError])
+        return unique_dict(interleave(f(reifiedgoals), [EarlyGoalError]))
     return anygoal
 
 def condeseq(goalseqs):
@@ -224,6 +230,7 @@ def run(n, x, *goals, **kwargs):
     goals - a sequence of goals.  All must be true
 
     >>> from logpy import run, var, eq
+    >>> x = var()
     >>> run(1, x, eq(x, 1))
     (1,)
     """
@@ -238,7 +245,9 @@ class EarlyGoalError(Exception):
 
     Consider the following case
 
-    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
+    >>> from logpy import run, eq, membero, var
+    >>> x, coll = var(), var()
+    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3))) # doctest: +SKIP
 
     The first goal, membero, iterates over an infinite sequence of all possible
     collections.  This is unproductive.  Rather than proceed, membero raises an
@@ -247,7 +256,7 @@ class EarlyGoalError(Exception):
     The goal constructor lallearly Logical-All-Early will reorder such goals to
     the end so that the call becomes
 
-    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
+    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll)) # doctest: +SKIP
 
     In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
     all elements of coll, 1, then 2, then 3.
@@ -260,13 +269,12 @@ class EarlyGoalError(Exception):
 def goalexpand(goalt):
     """ Expand a goal tuple until it can no longer be expanded
 
+    >>> from logpy.core import var, membero, goalexpand
+    >>> from logpy.util import pprint
     >>> x = var('x')
     >>> goal = (membero, x, (1, 2, 3))
-    >>> goalexpand(goal)
-    (<function logpy.core.lany>,
-      (<function logpy.core.eq>, ~x, 1),
-      (<function logpy.core.eq>, ~x, 2),
-      (<function logpy.core.eq>, ~x, 3))
+    >>> print pprint(goalexpand(goal))
+    (lany, (eq, ~x, 1), (eq, ~x, 2), (eq, ~x, 3))
     """
     tmp = goalt
     while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
