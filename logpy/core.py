@@ -180,11 +180,10 @@ def earlyorder(*goals):
 
     if not good:
         raise EarlyGoalError()
+    elif not bad:
+        return tuple(good)
     else:
-        if not bad:
-            return tuple(good)
-        else:
-            return tuple(good) + ((lallearly,) + tuple(bad),)
+        return tuple(good) + ((lallearly,) + tuple(bad),)
 
 def conde(*goalseqs, **kwargs):
     """ Logical cond
