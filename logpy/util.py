@@ -105,6 +105,7 @@ def intersection(*seqs):
                 break
         if found:
             yield item
+    # return reduce(set.intersection, map(set, seqs[1:]), set(seqs[0]))
 
 def groupsizes(total, len):
     """ Groups of length len that add up to total
@@ -135,3 +136,10 @@ def pprint(g):
     if isinstance(g, tuple):
         return "(" + ', '.join(map(pprint, g)) + ")"
     return str(g)
+
+def index(tup, ind):
+    """ Fancy indexing with tuples """
+    return tuple(tup[i] for i in ind)
+
+def merge(*dicts):
+    return dict(item for dict in dicts for item in dict.iteritems())

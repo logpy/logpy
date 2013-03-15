@@ -78,6 +78,7 @@ def test_earlyorder():
 
 def test_seteq():
     x = var('x')
+    y = var('y')
     abc = tuple('abc')
     bca = tuple('bca')
     assert results(seteq(abc, bca))
@@ -85,6 +86,9 @@ def test_seteq():
     assert len(results(seteq(x, abc))) == 6
     assert bca in run(0, x, seteq(abc, x))
     assert results(seteq((1, 2, 3), (3, x, 1))) == ({x: 2},)
+
+    assert run(0, (x, y), seteq((1, 2, x), (2, 3, y)))[0] == (3, 1)
+    assert not run(0, (x, y), seteq((4, 5, x), (2, 3, y)))
 
 def test_conde():
     x = var('x')
@@ -241,13 +245,13 @@ def test_setaddo():
 
 def test_heado():
     x, y = var('x'), var('y')
-    assert tuple(heado(x, (1,2,3))({})) == ({x: 1},)
-    assert tuple(heado(1, (x,2,3))({})) == ({x: 1},)
+    assert results(heado(x, (1,2,3))) == ({x: 1},)
+    assert results(heado(1, (x,2,3))) == ({x: 1},)
     raises(EarlyGoalError, lambda: heado(x, y))
 
 def test_tailo():
     x, y = var('x'), var('y')
-    assert tuple(tailo(x, (1,2,3))({})) == ({x: (2,3)},)
+    assert results((tailo, x, (1,2,3))) == ({x: (2,3)},)
     raises(EarlyGoalError, lambda: tailo(x, y))
 
 def test_appendo():
