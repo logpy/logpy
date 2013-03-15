@@ -55,10 +55,11 @@ class Relation(object):
 def fact(rel, *args):
     """ Declare a fact
 
-    >>> from logpy import fact, Relation, var
+    >>> from logpy import fact, Relation, var, run
     >>> parent = Relation()
     >>> fact(parent, "Homer", "Bart")
     >>> fact(parent, "Homer", "Lisa")
+
     >>> x = var()
     >>> run(1, x, parent(x, "Bart"))
     ('Homer',)
@@ -68,10 +69,11 @@ def fact(rel, *args):
 def facts(rel, *lists):
     """ Declare several facts
 
-    >>> from logpy import fact, Relation, var
+    >>> from logpy import fact, Relation, var, run
     >>> parent = Relation()
     >>> facts(parent,  ("Homer", "Bart"),
     ...                ("Homer", "Lisa"))
+
     >>> x = var()
     >>> run(1, x, parent(x, "Bart"))
     ('Homer',)
