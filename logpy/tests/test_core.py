@@ -1,7 +1,7 @@
 from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde,  run,
         membero, evalt, fail, success, Relation, fact, facts, reify, tailo,
         heado, appendo, seteq, conso, condeseq, goaleval, lany, lall,
-        goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
+        goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe, setaddo)
 import itertools
 from unittest import expectedFailure as FAIL
 from logpy.util import raises
@@ -154,6 +154,9 @@ def test_relation():
 
     assert set(run(5, x, grandparent(x, "Bart") )) == set(("Abe", "Jackie"))
 
+    foo = Relation('foo')
+    assert 'foo' in str(foo)
+
 def test_var_inputs():
     assert var(1) == var(1)
     assert var() != var()
@@ -221,6 +224,20 @@ def test_conso():
     assert results(conso(x, y, (1, 2, 3))) == ({x: 1, y: (2, 3)},)
     assert results(conso(x, (2, 3), y)) == ({y: (x, 2, 3)},)
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
+
+def test_setaddo():
+    x = var('x')
+    y = var('y')
+    assert results(setaddo(1, (2, 3), (1, 2, 3)))
+    assert results(setaddo(1, (2, 3), (1, 3, 2)))
+    assert results(setaddo(1, (2, 3), (2, 3, 1)))
+    assert not results(setaddo(1, (2, 3), (2, 3)))
+    assert results(setaddo(1, x, (2, 3, 1)))
+    assert not results(setaddo(4, x, (2, 3, 1)))
+    assert len(results(setaddo(y, x, (2, 3, 1)))) in (3, 6)
+    assert set(run(0, x, setaddo(1, x, (2, 3, 1)))) == set([(2, 3), (3, 2)])
+
+    assert set(run(1, x, setaddo(1, (2, 3), x))[0]) == set((1, 2, 3))
 
 def test_heado():
     x, y = var('x'), var('y')
