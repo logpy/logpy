@@ -1,4 +1,5 @@
-from logpy.core import var, run, fact, eq, goaleval, EarlyGoalError
+from logpy.core import var, run, eq, goaleval, EarlyGoalError
+from logpy.facts import fact
 from logpy.assoccomm import (associative, commutative, conde,
         groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
         eq_assoccomm, assocsized)

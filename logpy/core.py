@@ -2,7 +2,7 @@ import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
 from util import (assoc, unique, unique_dict, interleave, take, evalt,
-        intersection, groupby, index, merge)
+        groupby, index)
 
 ###############################
 # Classes for Logic variables #
@@ -43,6 +43,8 @@ isvar = lambda t: isinstance(t, Var)
 def reify(e, s):
     """ Replace variables of expression with substitution
 
+    >>> from logpy.core import reify, var
+    >>> x, y = var(), var()
     >>> e = (1, x, (3, y))
     >>> s = {x: 2, y: 4}
     >>> reify(e, s)
@@ -58,8 +60,10 @@ def reify(e, s):
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
+    >>> from logpy.core import unify, var
+    >>> x = var('x')
     >>> unify((1, x), (1, 2), {})
-    {x: 2}
+    {~x: 2}
     """
     u = walk(u, s)
     v = walk(v, s)
@@ -107,92 +111,6 @@ def membero(x, coll):
     except TypeError:
         raise EarlyGoalError()
 
-def seteq(a, b, eq2=eq):
-    """ Set Equality
-
-    For example (1, 2, 3) set equates to (2, 1, 3)
-
-    >>> from logpy import var, run, seteq
-    >>> x = var()
-    >>> run(0, x, seteq(x, (1, 2)))
-    ((1, 2), (2, 1))
-
-    >>> run(0, x, seteq((2, 1, x), (3, 1, 2)))
-    (3,)
-    """
-    if isinstance(a, tuple) and isinstance(b, tuple):
-        if set(a) == set(b):
-            return success
-        elif len(a) != len(b):
-            return fail
-        else:
-            c, d = a, b
-            if len(c) == 1:
-                return (eq2, c[0], d[0])
-            return (conde,) + tuple(
-                    ((eq2, c[i], d[0]), (seteq, c[0:i] + c[i+1:], d[1:], eq2))
-                        for i in range(len(c)))
-
-    if isvar(a) and isvar(b):
-        raise EarlyGoalError()
-
-    if isvar(a) and isinstance(b, tuple):
-        c, d = a, b
-    if isvar(b) and isinstance(a, tuple):
-        c, d = b, a
-
-    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
-
-def conso(h, t, l):
-    """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
-        if len(l) == 0:
-            return fail
-        else:
-            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
-        return eq((h,) + t, l)
-    else:
-        raise EarlyGoalError()
-
-def setaddo(h, t, l):
-    if isinstance(l, tuple):
-        return (conde,) + tuple([(eq, h, l[i]), (seteq, t, l[0:i] + l[i+1:])]
-                                for i in range(len(l)))
-    if isinstance(t, tuple):
-        a = var()
-        return (conde, ((conso, h, t, a), (seteq, l, a)))
-
-    raise EarlyGoalError()
-
-def heado(x, coll):
-    """ x is the head of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[0])
-    else:
-        return fail
-
-def tailo(x, coll):
-    """ x is the tail of coll
-
-    See also:
-        heado
-        conso
-    """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[1:])
-    else:
-        return fail
-
 ################################
 # Logical combination of goals #
 ################################
@@ -200,10 +118,11 @@ def tailo(x, coll):
 def lall(*goals):
     """ Logical all
 
-    >>> from logpy import lall, membero
-    >>> g = lall(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> from logpy.core import lall, membero
+    >>> x = var('x')
+    >>> g = lall(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
-    ({x: 2}, {x: 3})
+    ({~x: 2}, {~x: 3})
     """
     if not goals:
         return success
@@ -216,26 +135,14 @@ def lall(*goals):
             for ss in g(s)))
     return allgoal
 
-def lanyseq(goals):
-    """ Logical any with possibly infinite number of goals """
-    def anygoal(s):
-        reifiedgoals = (reify(goal, s) for goal in goals)
-        def f(goals):
-            for goal in goals:
-                try:
-                    yield goaleval(goal)(s)
-                except EarlyGoalError:
-                    pass
-        return interleave(f(reifiedgoals), [EarlyGoalError])
-    return anygoal
-
 def lany(*goals):
     """ Logical any
 
-    >>> from logpy import lall, membero
-    >>> g = lany(membero(x, (1,2,3), membero(x, (2,3,4))))
+    >>> from logpy.core import lany, membero
+    >>> x = var('x')
+    >>> g = lany(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
-    ({x: 1}, {x: 2}, {x: 3}, {x: 4})
+    ({~x: 1}, {~x: 2}, {~x: 3}, {~x: 4})
     """
     if len(goals) == 1:
         return goals[0]
@@ -292,6 +199,19 @@ def conde(*goalseqs, **kwargs):
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
+def lanyseq(goals):
+    """ Logical any with possibly infinite number of goals """
+    def anygoal(s):
+        reifiedgoals = (reify(goal, s) for goal in goals)
+        def f(goals):
+            for goal in goals:
+                try:
+                    yield goaleval(goal)(s)
+                except EarlyGoalError:
+                    pass
+        return unique_dict(interleave(f(reifiedgoals), [EarlyGoalError]))
+    return anygoal
+
 def condeseq(goalseqs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
     return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
@@ -310,11 +230,11 @@ def run(n, x, *goals, **kwargs):
     goals - a sequence of goals.  All must be true
 
     >>> from logpy import run, var, eq
+    >>> x = var()
     >>> run(1, x, eq(x, 1))
     (1,)
     """
     return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
-
 
 ###################
 # Goal Evaluation #
@@ -325,7 +245,9 @@ class EarlyGoalError(Exception):
 
     Consider the following case
 
-    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3)))
+    >>> from logpy import run, eq, membero, var
+    >>> x, coll = var(), var()
+    >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3))) # doctest: +SKIP
 
     The first goal, membero, iterates over an infinite sequence of all possible
     collections.  This is unproductive.  Rather than proceed, membero raises an
@@ -334,7 +256,7 @@ class EarlyGoalError(Exception):
     The goal constructor lallearly Logical-All-Early will reorder such goals to
     the end so that the call becomes
 
-    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll))
+    >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll)) # doctest: +SKIP
 
     In this case coll is first unified to ``(1, 2, 3)`` then x iterates over
     all elements of coll, 1, then 2, then 3.
@@ -347,13 +269,12 @@ class EarlyGoalError(Exception):
 def goalexpand(goalt):
     """ Expand a goal tuple until it can no longer be expanded
 
+    >>> from logpy.core import var, membero, goalexpand
+    >>> from logpy.util import pprint
     >>> x = var('x')
     >>> goal = (membero, x, (1, 2, 3))
-    >>> goalexpand(goal)
-    (<function logpy.core.lany>,
-      (<function logpy.core.eq>, ~x, 1),
-      (<function logpy.core.eq>, ~x, 2),
-      (<function logpy.core.eq>, ~x, 3))
+    >>> print pprint(goalexpand(goal))
+    (lany, (eq, ~x, 1), (eq, ~x, 2), (eq, ~x, 3))
     """
     tmp = goalt
     while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
@@ -376,99 +297,3 @@ def goaleval(goal):
         egoal = goalexpand(goal)
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
-
-#######################
-# Facts and Relations #
-#######################
-
-class Relation(object):
-    _id = 0
-    def __init__(self, name=None):
-        self.facts = set()
-        self.index = dict()
-        if not name:
-            name = "_%d"%Relation._id
-            Relation._id += 1
-        self.name = name
-
-    def add_fact(self, *inputs):
-        """ Add a fact to the knowledgebase.
-
-        See Also:
-            fact
-            facts
-        """
-        fact = tuple(inputs)
-
-        self.facts.add(fact)
-
-        for key in enumerate(inputs):
-            if key not in self.index:
-                self.index[key] = set()
-            self.index[key].add(fact)
-
-    def __call__(self, *args):
-        def f(s):
-            args2 = reify(args, s)
-            subsets = [self.index[key] for key in enumerate(args)
-                                       if  key in self.index]
-            if subsets:     # we are able to reduce the pool early
-                facts = intersection(*sorted(subsets, key=len))
-            else:
-                facts = self.facts
-            varinds = [i for i, arg in enumerate(args2) if isvar(arg)]
-            valinds = [i for i, arg in enumerate(args2) if not isvar(arg)]
-            vars = index(args2, varinds)
-            vals = index(args2, valinds)
-            assert not any(var in s for var in vars)
-
-            return (merge(dict(zip(vars, index(fact, varinds))), s)
-                              for fact in self.facts
-                              if vals == index(fact, valinds))
-        return f
-
-    def __str__(self):
-        return "Rel: " + self.name
-    __repr__ = __str__
-
-
-def fact(rel, *args):
-    """ Declare a fact
-
-    >>> from logpy import fact, Relation, var
-    >>> parent = Relation()
-    >>> fact(parent, "Homer", "Bart")
-    >>> fact(parent, "Homer", "Lisa")
-    >>> x = var()
-    >>> run(1, x, parent(x, "Bart"))
-    ('Homer',)
-    """
-    rel.add_fact(*args)
-
-def facts(rel, *lists):
-    """ Declare several facts
-
-    >>> from logpy import fact, Relation, var
-    >>> parent = Relation()
-    >>> facts(parent,  ("Homer", "Bart"),
-    ...                ("Homer", "Lisa"))
-    >>> x = var()
-    >>> run(1, x, parent(x, "Bart"))
-    ('Homer',)
-    """
-    for l in lists:
-        fact(rel, *l)
-
-"""
--This is an attempt to create appendo.  It does not currently work.
--As written in miniKanren, appendo uses LISP machinery not present in Python
--such as quoted expressions and macros for short circuiting.  I have gotten
--around some of these issues but not all.  appendo is a stress test for this
--implementation
-"""
-
-def appendo(l, s, ls):
-    """ Byrd thesis pg. 247 """
-    a, d, res = [var() for i in range(3)]
-    return (lany, (lall, (eq, l, ()), (eq, s, ls)),
-                  (lallearly, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
