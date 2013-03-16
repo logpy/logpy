@@ -44,12 +44,11 @@ such that x is a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
 >>> run(2, x, membero(x, (1, 2, 3)),  # x is a member of (1, 2, 3)
               membero(x, (2, 3, 4)))  # x is a member of (2, 3, 4)
 (2, 3)
->>> run(4, x, membero(x, (1, 2, 3)), # asks for 4 values of x
-              membero(x, (2, 3, 4))) # but only 2 values are members of both
-(2, 3)       
 ~~~~~~~~~~~
 
-LogPy stores data as facts that state relationships between items.
+### Representing Knowledge
+
+LogPy stores data as facts that state relationships between terms.
 
 The following code creates a parent relationship and uses it to state 
 facts about who is a parent of whom within the Simpsons family.
@@ -88,6 +87,11 @@ We can express the grandfather relationship separately.  In this example we use 
 ('Abe,')
 ~~~~~~~~~~~~
 
+Data Structures
+---------------
+
+LogPy depends on functions, tuples, dicts, and generators.  There are almost no new data structures/classes in LogPy so it should be simple to integrate into preexisting code.
+
 Install
 -------
 
@@ -103,7 +107,7 @@ From source
 
 Run tests with nose
     
-    nosetests
+    nosetests --with-doctest
 
 LogPy is pure Python
 
