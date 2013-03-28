@@ -46,6 +46,16 @@ def assoc(dict, key, value):
 def dicthash(d):
     return hash(frozenset(d.items()))
 
+def multihash(x):
+    try:
+        return hash(x)
+    except TypeError:
+        if isinstance(x, (list, tuple, set, frozenset)):
+            return hash(tuple(map(multihash, x)))
+        if type(x) is dict:
+            return hash(frozenset(map(multihash, x.items())))
+        raise TypeError('Hashing not covered for ' + str(x))
+
 def unique(seq, key=lambda x: x):
     seen = set()
     for item in seq:

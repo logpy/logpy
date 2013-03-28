@@ -2,7 +2,7 @@ import itertools as it
 from util import transitive_get as walk
 from util import deep_transitive_get as walkstar
 from util import (assoc, unique, dicthash, interleave, take, evalt,
-        groupby, index)
+        groupby, index, multihash)
 
 from variables import var, isvar
 from unify import reify, unify
@@ -160,7 +160,8 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    return take(n, unique(reify(x, s) for s in goaleval(lallearly(*goals))({})))
+    results = (reify(x, s) for s in goaleval(lallearly(*goals))({}))
+    return take(n, unique(results, key=multihash))
 
 ###################
 # Goal Evaluation #
