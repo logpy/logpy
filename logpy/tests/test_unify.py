@@ -1,5 +1,5 @@
-from logpy.unify import (unify, unify_dict, unify_tuple, reify_dict, reify,
-        unify_object, reify_object)
+from logpy.unify import (unify, unify_dict, unify_seq, reify_dict, reify_list,
+        reify, unify_object, reify_object)
 from logpy.variables import var
 
 def test_reify():
@@ -17,12 +17,18 @@ def test_reify_dict():
     e = {1: x, 3: {5: y}}
     assert reify_dict(e, s) == {1: 2, 3: {5: 4}}
 
+def test_reify_list():
+    x, y = var(), var()
+    s = {x: 2, y: 4}
+    e = [1, [x, 3], y]
+    assert reify_list(e, s) == [1, [2, 3], 4]
+
 def test_reify_complex():
     x, y = var(), var()
     s = {x: 2, y: 4}
-    e = {1: x, 3: (y, 5)}
+    e = {1: [x], 3: (y, 5)}
 
-    assert reify(e, s) == {1: 2, 3: (4, 5)}
+    assert reify(e, s) == {1: [2], 3: (4, 5)}
 
 def test_unify():
     assert unify(1, 1, {}) == {}
@@ -30,11 +36,12 @@ def test_unify():
     assert unify(var(1), 2, {}) == {var(1): 2}
     assert unify(2, var(1), {}) == {var(1): 2}
 
-def test_unify_tuple():
-    assert unify_tuple((1, 2), (1, 2), {}) == {}
-    assert unify_tuple((1, 2), (1, 2, 3), {}) == False
-    assert unify_tuple((1, var(1)), (1, 2), {}) == {var(1): 2}
-    assert unify_tuple((1, var(1)), (1, 2), {var(1): 3}) == False
+def test_unify_seq():
+    assert unify_seq((1, 2), (1, 2), {}) == {}
+    assert unify_seq([1, 2], [1, 2], {}) == {}
+    assert unify_seq((1, 2), (1, 2, 3), {}) == False
+    assert unify_seq((1, var(1)), (1, 2), {}) == {var(1): 2}
+    assert unify_seq((1, var(1)), (1, 2), {var(1): 3}) == False
 
 def test_unify_dict():
     assert unify_dict({1: 2}, {1: 2}, {}) == {}
@@ -48,6 +55,7 @@ def test_unify_complex():
     assert unify((1, {2: var(5)}), (1, {2: 4}), {}) == {var(5): 4}
 
     assert unify({1: (2, 3)}, {1: (2, var(5))}, {}) == {var(5): 3}
+    assert unify({1: [2, 3]}, {1: [2, var(5)]}, {}) == {var(5): 3}
 
 class Foo(object):
         def __init__(self, a, b):
@@ -88,3 +96,21 @@ def test_objects_full():
     del reify_dispatch[Foo]
     del unify_dispatch[(Foo, Foo)]
     del unify_dispatch[(Bar, Bar)]
+
+
+def test_list_1():
+    from logpy import run, eq
+    from logpy.unify import unify_dispatch, reify_dispatch
+    unify_dispatch[(Foo, Foo)] = unify_object
+    reify_dispatch[Foo] = reify_object
+
+    x = var('x')
+    y = var('y')
+    rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, [y])))
+    assert rval == ((1, 2),)
+
+    rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, y)))
+    assert rval == ((1, [2]),)
+
+    del reify_dispatch[Foo]
+    del unify_dispatch[(Foo, Foo)]

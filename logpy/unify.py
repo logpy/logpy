@@ -7,15 +7,18 @@ from logpy.variables import Var, var, isvar
 #########################################
 
 def reify_var(v, s):
-    assert isvar(v)
+    # assert isvar(v)
     return reify(s[v], s) if v in s else v
 
-def reify_tuple(t, s):
-    assert isinstance(t, tuple)
-    return tuple(reify(arg, s) for arg in t)
+def reify_generator(t, s):
+    return (reify(arg, s) for arg in t)
+def reify_tuple(*args):
+    return tuple(reify_generator(*args))
+def reify_list(*args):
+    return list(reify_generator(*args))
 
 def reify_dict(d, s):
-    assert isinstance(d, dict)
+    # assert isinstance(d, dict)
     return dict((k, reify(v, s)) for k, v in d.items())
 
 def reify_object(o, s):
@@ -24,9 +27,12 @@ def reify_object(o, s):
     obj.__dict__.update(d)
     return obj
 
-reify_dispatch = {Var: reify_var,
-                  tuple: reify_tuple,
-                  dict:  reify_dict}
+reify_dispatch = {
+        Var:   reify_var,
+        tuple: reify_tuple,
+        list:  reify_list,
+        dict:  reify_dict
+        }
 
 def reify(e, s):
     """ Replace variables of expression with substitution
@@ -49,8 +55,8 @@ def reify(e, s):
         return e
 
 
-def unify_tuple(u, v, s):
-    assert isinstance(u, tuple) and isinstance(v, tuple)
+def unify_seq(u, v, s):
+    # assert isinstance(u, tuple) and isinstance(v, tuple)
     if len(u) != len(v):
         return False
     for uu, vv in zip(u, v):  # avoiding recursion
@@ -60,7 +66,7 @@ def unify_tuple(u, v, s):
     return s
 
 def unify_dict(u, v, s):
-    assert isinstance(u, dict) and isinstance(v, dict)
+    # assert isinstance(u, dict) and isinstance(v, dict)
     if len(u) != len(v):
         return False
     for key, uval in u.iteritems():
@@ -77,7 +83,8 @@ def unify_object(u, v, s):
     return unify_dict(u.__dict__, v.__dict__, s)
 
 unify_dispatch = {
-        (tuple, tuple): unify_tuple,
+        (tuple, tuple): unify_seq,
+        (list, list):   unify_seq,
         (dict, dict):   unify_dict
         }
 
