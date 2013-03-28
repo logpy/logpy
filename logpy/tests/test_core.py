@@ -193,3 +193,7 @@ def test_lany_is_early_safe():
 
 def results(g, s={}):
     return tuple(goaleval(g)(s))
+
+def test_dict():
+    x = var()
+    assert run(0, x, eq({1: x}, {1: 2})) == (2,)
