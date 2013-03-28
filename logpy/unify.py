@@ -28,16 +28,17 @@ def reify_object(o, s):
     obj.__dict__.update(d)
     return obj
 
-def reify_slice(*args):
-    assert len(args) == 3
-    return slice(reify_generator(*args))
+# XXX untested
+#def reify_slice(o, s):
+    #assert len(args) == 3
+    #return slice(reify_generator(*args))
 
 reify_dispatch = {
         Var:   reify_var,
         tuple: reify_tuple,
         list:  reify_list,
         dict:  reify_dict,
-        slice: reify_slice,
+        #slice: reify_slice,
         }
 
 def reify(e, s):
