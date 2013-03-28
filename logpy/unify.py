@@ -1,3 +1,4 @@
+import functools
 from util import transitive_get as walk
 from util import assoc
 from logpy.variables import Var, var, isvar
@@ -92,6 +93,31 @@ def unify_object(u, v, s):
     if type(u) != type(v):
         return False
     return unify_dict(u.__dict__, v.__dict__, s)
+
+def unify_object_attrs(u, v, s, attrs):
+    """Unify an object based on attribute comparison
+
+    This function is meant to be partially specialized:
+
+        unify_Foo = functools.partial(unify_object_attrs,
+            attrs=['attr_i_care_about', 'attr_i_care_about2'])
+
+    """
+    for a in attrs:
+        #print 'pre', a
+        s = unify(getattr(u, a), getattr(v, a), s)
+        #print 'post', a, s
+        if not s:
+            break
+    return s
+
+def register_unify_object(cls):
+    unify_dispatch[(cls, cls)] = unify_object
+    # reify_dispatch[cls] = reify_object
+
+def register_unify_object_attrs(cls, attrs):
+    unify_dispatch[(cls, cls)] = functools.partial(unify_object_attrs,
+            attrs=attrs)
 
 unify_dispatch = {
         (tuple, tuple): unify_seq,
