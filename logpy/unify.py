@@ -7,15 +7,15 @@ from logpy.variables import Var, var, isvar
 #########################################
 
 def reify_var(v, s):
-    assert isvar(v)
+    # assert isvar(v)
     return reify(s[v], s) if v in s else v
 
 def reify_tuple(t, s):
-    assert isinstance(t, tuple)
+    # assert isinstance(t, tuple)
     return tuple(reify(arg, s) for arg in t)
 
 def reify_dict(d, s):
-    assert isinstance(d, dict)
+    # assert isinstance(d, dict)
     return dict((k, reify(v, s)) for k, v in d.items())
 
 def reify_object(o, s):
@@ -50,7 +50,7 @@ def reify(e, s):
 
 
 def unify_tuple(u, v, s):
-    assert isinstance(u, tuple) and isinstance(v, tuple)
+    # assert isinstance(u, tuple) and isinstance(v, tuple)
     if len(u) != len(v):
         return False
     for uu, vv in zip(u, v):  # avoiding recursion
@@ -60,7 +60,7 @@ def unify_tuple(u, v, s):
     return s
 
 def unify_dict(u, v, s):
-    assert isinstance(u, dict) and isinstance(v, dict)
+    # assert isinstance(u, dict) and isinstance(v, dict)
     if len(u) != len(v):
         return False
     for key, uval in u.iteritems():
