@@ -54,7 +54,7 @@ def multihash(x):
             return hash(tuple(map(multihash, x)))
         if type(x) is dict:
             return hash(frozenset(map(multihash, x.items())))
-        print x
+        raise TypeError('Hashing not covered for ' + str(x))
 
 def unique(seq, key=lambda x: x):
     seen = set()
