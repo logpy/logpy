@@ -27,10 +27,12 @@ def reify_object(o, s):
     obj.__dict__.update(d)
     return obj
 
-reify_dispatch = {Var: reify_var,
-                  tuple: reify_tuple,
-                  list: reify_list,
-                  dict:  reify_dict}
+reify_dispatch = {
+        Var:   reify_var,
+        tuple: reify_tuple,
+        list:  reify_list,
+        dict:  reify_dict
+        }
 
 def reify(e, s):
     """ Replace variables of expression with substitution
@@ -82,7 +84,7 @@ def unify_object(u, v, s):
 
 unify_dispatch = {
         (tuple, tuple): unify_seq,
-        (list, list): unify_seq,
+        (list, list):   unify_seq,
         (dict, dict):   unify_dict
         }
 
