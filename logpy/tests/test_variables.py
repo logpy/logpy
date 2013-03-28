@@ -1,4 +1,4 @@
-from logpy.variables import isvar, var
+from logpy.variables import isvar, var, vars
 
 def test_isvar():
     assert not isvar(3)
@@ -12,3 +12,7 @@ def test_var_inputs():
     assert var(1) == var(1)
     assert var() != var()
 
+def test_vars():
+    vs = vars(3)
+    assert len(vs) == 3
+    assert all(map(isvar, vs))
