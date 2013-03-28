@@ -1,5 +1,5 @@
 from logpy.util import (take, unique, interleave, intersection,
-        groupsizes, raises, groupby, merge, dicthash, hashable)
+        groupsizes, raises, groupby, merge, dicthash, hashable, multihash)
 import itertools
 
 def test_hashable():
@@ -15,6 +15,10 @@ def test_unique():
 def test_unique_dict():
     assert tuple(unique(({1: 2}, {2: 3}), key=dicthash)) == ({1: 2}, {2: 3})
     assert tuple(unique(({1: 2}, {1: 2}), key=dicthash)) == ({1: 2},)
+
+def test_multihash():
+    inputs = 2, (1, 2), [1, 2], {1: 2}, (1, [2])
+    assert all(isinstance(multihash(i), int) for i in inputs)
 
 def test_intersection():
     a,b,c = (1,2,3,4), (2,3,4,5), (3,4,5,6)
