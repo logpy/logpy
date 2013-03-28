@@ -1,5 +1,12 @@
 import itertools as it
 
+def hashable(x):
+    try:
+        hash(x)
+        return True
+    except TypeError:
+        return False
+
 def transitive_get(key, d):
     """ Transitive dict.get
 
@@ -10,7 +17,7 @@ def transitive_get(key, d):
     >>> transitive_get(1, d)
     4
     """
-    while key in d:
+    while hashable(key) and key in d:
         key = d[key]
     return key
 

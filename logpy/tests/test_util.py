@@ -1,6 +1,12 @@
 from logpy.util import (take, unique, interleave, intersection,
-        groupsizes, raises, groupby, merge, dicthash)
+        groupsizes, raises, groupby, merge, dicthash, hashable)
 import itertools
+
+def test_hashable():
+    assert hashable(2)
+    assert hashable((2,3))
+    assert not hashable({1: 2})
+    assert not hashable((1, {2: 3}))
 
 def test_unique():
     assert tuple(unique((1,2,3))) == (1,2,3)
