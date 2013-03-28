@@ -6,4 +6,4 @@ from core import run, eq, var, isvar, conde, membero
 from goals import seteq
 from facts import Relation, fact, facts
 
-__version__ = '0.1.8'
+__version__ = '0.1.9'
