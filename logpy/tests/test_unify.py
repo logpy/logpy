@@ -90,3 +90,17 @@ def test_objects_full():
     del reify_dispatch[Foo]
     del unify_dispatch[(Foo, Foo)]
     del unify_dispatch[(Bar, Bar)]
+
+def test_list_1():
+    from logpy import run, eq
+    x = var('x')
+    y = var('y')
+    rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, [y])))
+    assert rval == ((1, 2),)
+
+def test_list_2():
+    from logpy import run, eq
+    x = var('x')
+    y = var('y')
+    rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, y)))
+    assert rval == ((1, [2]),)
