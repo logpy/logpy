@@ -7,4 +7,4 @@ from variables import var, isvar
 from goals import seteq, goalify
 from facts import Relation, fact, facts
 
-__version__ = '0.1.9'
+__version__ = '0.1.10'
