@@ -100,17 +100,12 @@ def unify_object_attrs(u, v, s, attrs):
             attrs=['attr_i_care_about', 'attr_i_care_about2'])
 
     """
-    for a in attrs:
-        #print 'pre', a
-        s = unify(getattr(u, a), getattr(v, a), s)
-        #print 'post', a, s
-        if not s:
-            break
-    return s
+    gu = lambda a: getattr(u, a)
+    gv = lambda a: getattr(v, a)
+    return unify_seq(map(gu, attrs), map(gv, attrs), s)
 
 def register_unify_object(cls):
     unify_dispatch[(cls, cls)] = unify_object
-    # reify_dispatch[cls] = reify_object
 
 def register_unify_object_attrs(cls, attrs):
     unify_dispatch[(cls, cls)] = functools.partial(unify_object_attrs,
