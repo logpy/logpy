@@ -84,13 +84,7 @@ def unify_dict(u, v, s):
     return s
 
 def unify_slice(u, v, s):
-    s = unify(u.start, v.start, s)
-    if s is not False:
-        s = unify(u.stop, v.stop, s)
-    if s is not False:
-        s = unify(u.step, v.step, s)
-    #print 'unify_slice return', s
-    return s
+    return unify_seq((u.start, u.stop, u.step), (v.start, v.stop, v.step), s)
 
 def unify_object(u, v, s):
     if type(u) != type(v):
