@@ -38,7 +38,6 @@ Examples that don't unify
 |:-----------------:|:-----------------:|
 | 123               | 'cat'             |
 | (1, 2)            | 12                |
-| 1                 | ~x                |
 | (1, ~x)           | (2, 2)            |
 | (1, 2)            | (~x, ~x)          |
 
@@ -46,18 +45,25 @@ Actually we lied, `unify` also takes a substitution as input.  This allows us to
 
     >>> unify((1, 2), (1, x), {})  # normal case
     {~x: 2}
-    >>> unify((1, 2), (1, x), {x: 2})  # we know that x is two already; this is ok
+    >>> unify((1, 2), (1, x), {x: 2})  # x is already two. This is consitent
     {~x: 2}
-    >>> unify((1, 2), (1, x), {x: 3})  # we know that x is three.  That conflicts
+    >>> unify((1, 2), (1, x), {x: 3})  # x is already three.  This conflicts
     False
 
 ### Reify
 
 Reify is the opposite of unify.  `reify` transforms a term with logic variables like `(1, ~x)` and a substitution like `{~x: 2}` into a term without logic variables like `(1, 2)`.
 
+    >>> reify((1, x), {x: 2})
+    (1, 2)
+
 ### Goals and Goal Constructors
 
-A *goal* is a function from one substitution to a stream of substitutions.  We make goals with a *goal constructors*.  Goal constructors are the normal building block of a logical program.  Lets look at the goal constructor `membero` which states that the first input must be a member of the second input (a collection).
+A *goal* is a function from one substitution to a stream of substitutions.  
+
+    goal :: substitution -> [substitutions]
+
+We make goals with a *goal constructors*.  Goal constructors are the normal building block of a logical program.  Lets look at the goal constructor `membero` which states that the first input must be a member of the second input (a collection).
 
     goal = membero(x, (1, 2, 3)
 
@@ -71,14 +77,13 @@ We can feed this goal a substitution and it will give us a stream of substitutio
 
 What if we already know that `x` is `2`?
 
-
     >>> for s in goal({x: 2}):
     ...     print s
     {~x: 2}
 
 Remember *goals* are functions from one substitution to a stream of substitutions.  Users usually make goals with *goal constructors* like `eq`, or `membero`.
 
-### Combinations of Goals
+### Goal Combinators
 
 After this point LogPy is just a library to manage streams of substitutions.  
 
@@ -92,7 +97,11 @@ For example if we know both that `membero(x, (1, 2, 3))` and `membero(x, (2, 3, 
     {~x: 2}
     {~x: 3}
 
-Logic programs can have many goals in complex hierarchies.  Writing explicit for loops would quickly become tedious.  Instead we provide functions that conglomerate goals logically.  In particular there is logical all `lall` and logical any `lany`.
+Logic programs can have many goals in complex hierarchies.  Writing explicit for loops would quickly become tedious.  Instead we provide functions that conglomerate goals logically.  
+
+    combinator :: [goals] -> goal
+
+Two important logical goal combinators are logical all `lall` and logical any `lany`.
 
     >>> g = lall(g1, g2)
     >>> for s in g({}):
