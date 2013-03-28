@@ -27,11 +27,16 @@ def reify_object(o, s):
     obj.__dict__.update(d)
     return obj
 
+def reify_slice(*args):
+    assert len(args) == 3
+    return slice(reify_generator(*args))
+
 reify_dispatch = {
         Var:   reify_var,
         tuple: reify_tuple,
         list:  reify_list,
-        dict:  reify_dict
+        dict:  reify_dict,
+        slice: reify_slice,
         }
 
 def reify(e, s):
@@ -77,6 +82,12 @@ def unify_dict(u, v, s):
             return False
     return s
 
+def unify_slice(u, v, s):
+    s = unify(u.start, v.start, s)
+    if s: s = unify(u.stop, v.stop, s)
+    if s: s = unify(u.step, v.step, s)
+    return s
+
 def unify_object(u, v, s):
     if type(u) != type(v):
         return False
@@ -85,7 +96,8 @@ def unify_object(u, v, s):
 unify_dispatch = {
         (tuple, tuple): unify_seq,
         (list, list):   unify_seq,
-        (dict, dict):   unify_dict
+        (dict, dict):   unify_dict,
+        (slice, slice): unify_slice,
         }
 
 def unify(u, v, s):  # no check at the moment

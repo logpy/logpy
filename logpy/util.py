@@ -54,7 +54,10 @@ def multihash(x):
             return hash(tuple(map(multihash, x)))
         if type(x) is dict:
             return hash(frozenset(map(multihash, x.items())))
+        if type(x) is slice:
+            return hash((x.start, x.stop, x.step))
         print x
+        raise
 
 def unique(seq, key=lambda x: x):
     seen = set()

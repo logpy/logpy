@@ -114,3 +114,12 @@ def test_list_1():
 
     del reify_dispatch[Foo]
     del unify_dispatch[(Foo, Foo)]
+
+def test_unify_slice():
+    x = var('x')
+    y = var('y')
+
+    assert unify(slice(1), slice(1), {}) == {}
+    assert unify(slice(1, 2, 3), x, {}) == {x: slice(1, 2, 3)}
+    assert unify(slice(1, 2, None), slice(x, y), {}) == {x: 1, y: 2}
+
