@@ -1,4 +1,4 @@
-from logpy.unify import (unify, unify_dict, unify_tuple, reify_dict, reify,
+from logpy.unify import (unify, unify_dict, unify_seq, reify_dict, reify,
         unify_object, reify_object)
 from logpy.variables import var
 
@@ -30,11 +30,12 @@ def test_unify():
     assert unify(var(1), 2, {}) == {var(1): 2}
     assert unify(2, var(1), {}) == {var(1): 2}
 
-def test_unify_tuple():
-    assert unify_tuple((1, 2), (1, 2), {}) == {}
-    assert unify_tuple((1, 2), (1, 2, 3), {}) == False
-    assert unify_tuple((1, var(1)), (1, 2), {}) == {var(1): 2}
-    assert unify_tuple((1, var(1)), (1, 2), {var(1): 3}) == False
+def test_unify_seq():
+    assert unify_seq((1, 2), (1, 2), {}) == {}
+    assert unify_seq([1, 2], [1, 2], {}) == {}
+    assert unify_seq((1, 2), (1, 2, 3), {}) == False
+    assert unify_seq((1, var(1)), (1, 2), {}) == {var(1): 2}
+    assert unify_seq((1, var(1)), (1, 2), {var(1): 3}) == False
 
 def test_unify_dict():
     assert unify_dict({1: 2}, {1: 2}, {}) == {}
@@ -48,6 +49,7 @@ def test_unify_complex():
     assert unify((1, {2: var(5)}), (1, {2: 4}), {}) == {var(5): 4}
 
     assert unify({1: (2, 3)}, {1: (2, var(5))}, {}) == {var(5): 3}
+    assert unify({1: [2, 3]}, {1: [2, var(5)]}, {}) == {var(5): 3}
 
 class Foo(object):
         def __init__(self, a, b):

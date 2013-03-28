@@ -10,7 +10,7 @@ def reify_var(v, s):
     # assert isvar(v)
     return reify(s[v], s) if v in s else v
 
-def reify_tuple(t, s):
+def reify_seq(t, s):
     # assert isinstance(t, tuple)
     return tuple(reify(arg, s) for arg in t)
 
@@ -25,7 +25,8 @@ def reify_object(o, s):
     return obj
 
 reify_dispatch = {Var: reify_var,
-                  tuple: reify_tuple,
+                  tuple: reify_seq,
+                  list: reify_seq,
                   dict:  reify_dict}
 
 def reify(e, s):
@@ -49,7 +50,7 @@ def reify(e, s):
         return e
 
 
-def unify_tuple(u, v, s):
+def unify_seq(u, v, s):
     # assert isinstance(u, tuple) and isinstance(v, tuple)
     if len(u) != len(v):
         return False
@@ -77,7 +78,8 @@ def unify_object(u, v, s):
     return unify_dict(u.__dict__, v.__dict__, s)
 
 unify_dispatch = {
-        (tuple, tuple): unify_tuple,
+        (tuple, tuple): unify_seq,
+        (list, list): unify_seq,
         (dict, dict):   unify_dict
         }
 
