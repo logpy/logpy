@@ -53,13 +53,38 @@ class Foo(object):
         def __init__(self, a, b):
             self.a = a
             self.b = b
+        def __eq__(self, other):
+            return (self.a, self.b) == (other.a, other.b)
+class Bar(object):
+        def __init__(self, c):
+            self.c = c
+        def __eq__(self, other):
+            return self.c == other.c
 
 def test_unify_object():
     assert unify_object(Foo(1, 2), Foo(1, 2), {}) == {}
     assert unify_object(Foo(1, 2), Foo(1, 3), {}) == False
     assert unify_object(Foo(1, 2), Foo(1, var(3)), {}) == {var(3): 2}
 
+
 def test_reify_object():
     obj = reify_object(Foo(1, var(3)), {var(3): 4})
     assert obj.a == 1
     assert obj.b == 4
+
+def test_objects_full():
+    from logpy.unify import unify_dispatch, reify_dispatch
+    unify_dispatch[(Foo, Foo)] = unify_object
+    unify_dispatch[(Bar, Bar)] = unify_object
+    reify_dispatch[Foo] = reify_object
+    reify_dispatch[Bar] = reify_object
+
+    assert unify_object(Foo(1, Bar(2)), Foo(1, Bar(var(3))), {}) == {var(3): 2}
+    assert reify(Foo(var('a'), Bar(Foo(var('b'), 3))),
+                 {var('a'): 1, var('b'): 2}) == Foo(1, Bar(Foo(2, 3)))
+
+
+    del reify_dispatch[Bar]
+    del reify_dispatch[Foo]
+    del unify_dispatch[(Foo, Foo)]
+    del unify_dispatch[(Bar, Bar)]
