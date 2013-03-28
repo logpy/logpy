@@ -24,5 +24,6 @@ class Var(object):
         return hash((type(self), self.token))
 
 var = lambda *args: Var(*args)
+vars = lambda n: [var() for i in range(n)]
 isvar = lambda t: isinstance(t, Var)
 
