@@ -78,6 +78,30 @@ def seteq(a, b, eq2=eq):
 
     return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
 
+
+def goalify(func):
+    """ Convert Python function into LogPy goal
+
+    >>> from logpy import run, goalify, var, membero
+    >>> typo = goalify(type)
+    >>> x = var('x')
+    >>> run(0, x, membero(x, (1, 'cat', 'hat', 2)), (typo, x, str))
+    ('cat', 'hat')
+    """
+    def funco(inputs, out):
+        if isvar(inputs):
+            raise EarlyGoalError()
+        else:
+            if isinstance(inputs, (tuple, list)):
+                return (eq, func(*inputs), out)
+            else:
+                return (eq, func(inputs), out)
+    return funco
+
+typo = goalify(type)
+isinstanceo = goalify(isinstance)
+
+
 """
 -This is an attempt to create appendo.  It does not currently work.
 -As written in miniKanren, appendo uses LISP machinery not present in Python

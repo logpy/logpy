@@ -1,5 +1,5 @@
-from logpy.goals import tailo, heado, appendo, seteq, conso
-from logpy.core import var, run, eq, EarlyGoalError, goaleval
+from logpy.goals import tailo, heado, appendo, seteq, conso, typo, isinstanceo
+from logpy.core import var, run, eq, EarlyGoalError, goaleval, membero
 from logpy.util import raises
 
 def results(g, s={}):
@@ -40,6 +40,19 @@ def test_seteq():
 
     assert run(0, (x, y), seteq((1, 2, x), (2, 3, y)))[0] == (3, 1)
     assert not run(0, (x, y), seteq((4, 5, x), (2, 3, y)))
+
+def test_typo():
+    x = var('x')
+    assert results(typo(3, int))
+    assert not results(typo(3.3, int))
+    assert run(0, x, membero(x, (1, 'cat', 2.2, 'hat')), (typo, x, str)) ==\
+            ('cat', 'hat')
+
+def test_isinstanceo():
+    assert results(isinstanceo((3, int), True))
+    assert not results(isinstanceo((3, float), True))
+    assert results(isinstanceo((3, float), False))
+
 
 def test_conso_early():
     x, y, z = var(), var(), var()
