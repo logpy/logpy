@@ -10,9 +10,12 @@ def reify_var(v, s):
     # assert isvar(v)
     return reify(s[v], s) if v in s else v
 
-def reify_seq(t, s):
-    # assert isinstance(t, tuple)
-    return tuple(reify(arg, s) for arg in t)
+def reify_generator(t, s):
+    return (reify(arg, s) for arg in t)
+def reify_tuple(*args):
+    return tuple(reify_generator(*args))
+def reify_list(*args):
+    return list(reify_generator(*args))
 
 def reify_dict(d, s):
     # assert isinstance(d, dict)
@@ -25,8 +28,8 @@ def reify_object(o, s):
     return obj
 
 reify_dispatch = {Var: reify_var,
-                  tuple: reify_seq,
-                  list: reify_seq,
+                  tuple: reify_tuple,
+                  list: reify_list,
                   dict:  reify_dict}
 
 def reify(e, s):
