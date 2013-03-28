@@ -4,84 +4,9 @@ from util import deep_transitive_get as walkstar
 from util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index)
 
-###############################
-# Classes for Logic variables #
-###############################
+from variables import var, isvar
+from unify import reify, unify
 
-class Var(object):
-    """ Logic Variable """
-
-    _id = 1
-    def __new__(cls, *token):
-        if len(token) == 0:
-            token = "_%s" % Var._id
-            Var._id += 1
-        elif len(token) == 1:
-            token = token[0]
-
-        obj = object.__new__(cls)
-        obj.token = token
-        return obj
-
-    def __str__(self):
-        return "~" + str(self.token)
-    __repr__ = __str__
-
-    def __eq__(self, other):
-        return type(self) == type(other) and self.token == other.token
-
-    def __hash__(self):
-        return hash((type(self), self.token))
-
-var = lambda *args: Var(*args)
-isvar = lambda t: isinstance(t, Var)
-
-#########################################
-# Functions for Expression Manipulation #
-#########################################
-
-def reify(e, s):
-    """ Replace variables of expression with substitution
-
-    >>> from logpy.core import reify, var
-    >>> x, y = var(), var()
-    >>> e = (1, x, (3, y))
-    >>> s = {x: 2, y: 4}
-    >>> reify(e, s)
-    (1, 2, (3, 4))
-    """
-    if isvar(e):
-        return walkstar(e, s)
-    elif isinstance(e, tuple):
-        return tuple(reify(arg, s) for arg in e)
-    else:
-        return e
-
-def unify(u, v, s):  # no check at the moment
-    """ Find substitution so that u == v while satisfying s
-
-    >>> from logpy.core import unify, var
-    >>> x = var('x')
-    >>> unify((1, x), (1, 2), {})
-    {~x: 2}
-    """
-    u = walk(u, s)
-    v = walk(v, s)
-    if u == v:
-        return s
-    if isvar(u):
-        return assoc(s, u, v)
-    if isvar(v):
-        return assoc(s, v, u)
-    if isinstance(u, tuple) and isinstance(v, tuple):
-        if len(u) != len(v):
-            return False
-        for uu, vv in zip(u, v):  # avoiding recursion
-            s = unify(uu, vv, s)
-            if s is False:
-                return False
-        return s
-    return False
 
 #########
 # Goals #

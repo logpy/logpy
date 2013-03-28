@@ -1,5 +1,5 @@
-from logpy.core import (walk, walkstar, isvar, var, unify, eq, conde,  run,
-        membero, evalt, fail, success, reify,
+from logpy.core import (walk, walkstar, isvar, var, run,
+        membero, evalt, fail, success, reify, eq, conde,
         condeseq, goaleval, lany, lall,
         goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
 import itertools
@@ -19,33 +19,6 @@ def test_deep_walk():
     s = {z: 6, y: 5, x: (y, z)}
     assert walk(x, s) == (y, z)
     assert walkstar(x, s) == (5, 6)
-
-def test_reify():
-    x, y, z = var(), var(), var()
-    s = {x: 1, y: 2, z: (x, y)}
-    assert reify(x, s) == 1
-    assert reify(10, s) == 10
-    assert reify((1, y), s) == (1, 2)
-    assert reify((1, (x, (y, 2))), s) == (1, (1, (2, 2)))
-    assert reify(z, s) == (1, 2)
-
-def test_isvar():
-    assert not isvar(3)
-    assert isvar(var(3))
-
-def test_var():
-    assert var(1) == var(1)
-    assert var() != var()
-
-def test_unify():
-    assert unify(1, 1, {}) == {}
-    assert unify(1, 2, {}) == False
-    assert unify(var(1), 2, {}) == {var(1): 2}
-    assert unify(2, var(1), {}) == {var(1): 2}
-    assert unify((1, 2), (1, 2), {}) == {}
-    assert unify((1, 2), (1, 2, 3), {}) == False
-    assert unify((1, var(1)), (1, 2), {}) == {var(1): 2}
-    assert unify((1, var(1)), (1, 2), {var(1): 3}) == False
 
 def test_eq():
     x = var('x')
@@ -123,10 +96,6 @@ def test_evalt():
     assert evalt(add(2, 3)) == 5
     assert evalt((1,2)) == (1,2)
 
-def test_var_inputs():
-    assert var(1) == var(1)
-    assert var() != var()
-
 def test_uneval_membero():
     x, y = var('x'), var('y')
     assert set(run(100, x, (membero, y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
@@ -164,3 +133,7 @@ def test_lany_is_early_safe():
 
 def results(g, s={}):
     return tuple(goaleval(g)(s))
+
+def test_dict():
+    x = var()
+    assert run(0, x, eq({1: x}, {1: 2})) == (2,)
