@@ -18,6 +18,12 @@ def reify_dict(d, s):
     assert isinstance(d, dict)
     return dict((k, reify(v, s)) for k, v in d.items())
 
+def reify_object(o, s):
+    obj = object.__new__(type(o))
+    d = reify_dict(o.__dict__, s)
+    obj.__dict__.update(d)
+    return obj
+
 reify_dispatch = {Var: reify_var,
                   tuple: reify_tuple,
                   dict:  reify_dict}
@@ -64,6 +70,11 @@ def unify_dict(u, v, s):
         if s is False:
             return False
     return s
+
+def unify_object(u, v, s):
+    if type(u) != type(v):
+        return False
+    return unify_dict(u.__dict__, v.__dict__, s)
 
 unify_dispatch = {
         (tuple, tuple): unify_tuple,

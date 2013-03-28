@@ -1,4 +1,5 @@
-from logpy.unify import unify, unify_dict, unify_tuple, reify_dict, reify
+from logpy.unify import (unify, unify_dict, unify_tuple, reify_dict, reify,
+        unify_object, reify_object)
 from logpy.variables import var
 
 def test_reify():
@@ -48,3 +49,17 @@ def test_unify_complex():
 
     assert unify({1: (2, 3)}, {1: (2, var(5))}, {}) == {var(5): 3}
 
+class Foo(object):
+        def __init__(self, a, b):
+            self.a = a
+            self.b = b
+
+def test_unify_object():
+    assert unify_object(Foo(1, 2), Foo(1, 2), {}) == {}
+    assert unify_object(Foo(1, 2), Foo(1, 3), {}) == False
+    assert unify_object(Foo(1, 2), Foo(1, var(3)), {}) == {var(3): 2}
+
+def test_reify_object():
+    obj = reify_object(Foo(1, var(3)), {var(3): 4})
+    assert obj.a == 1
+    assert obj.b == 4
