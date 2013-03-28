@@ -40,6 +40,22 @@ isvar = lambda t: isinstance(t, Var)
 # Functions for Expression Manipulation #
 #########################################
 
+def reify_var(v, s):
+    assert isvar(v)
+    return reify(s[v], s) if v in s else v
+
+def reify_tuple(t, s):
+    assert isinstance(t, tuple)
+    return tuple(reify(arg, s) for arg in t)
+
+def reify_dict(d, s):
+    assert isinstance(d, dict)
+    return dict((k, reify(v, s)) for k, v in d.items())
+
+reify_dispatch = {Var: reify_var,
+                  tuple: reify_tuple,
+                  dict:  reify_dict}
+
 def reify(e, s):
     """ Replace variables of expression with substitution
 
@@ -49,13 +65,44 @@ def reify(e, s):
     >>> s = {x: 2, y: 4}
     >>> reify(e, s)
     (1, 2, (3, 4))
+
+    >>> e = {1: x, 3: (y, 5)}
+    >>> reify(e, s)
+    {1: 2, 3: (4, 5)}
+
     """
-    if isvar(e):
-        return walkstar(e, s)
-    elif isinstance(e, tuple):
-        return tuple(reify(arg, s) for arg in e)
+    if type(e) in reify_dispatch:
+        return reify_dispatch[type(e)](e, s)
     else:
         return e
+
+
+def unify_tuple(u, v, s):
+    assert isinstance(u, tuple) and isinstance(v, tuple)
+    if len(u) != len(v):
+        return False
+    for uu, vv in zip(u, v):  # avoiding recursion
+        s = unify(uu, vv, s)
+        if s is False:
+            return False
+    return s
+
+def unify_dict(u, v, s):
+    assert isinstance(u, dict) and isinstance(v, dict)
+    if len(u) != len(v):
+        return False
+    for key, uval in u.iteritems():
+        if key not in v:
+            return False
+        s = unify(uval, v[key], s)
+        if s is False:
+            return False
+    return s
+
+unify_dispatch = {
+        (tuple, tuple): unify_tuple,
+        (dict, dict):   unify_dict
+        }
 
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
@@ -73,15 +120,12 @@ def unify(u, v, s):  # no check at the moment
         return assoc(s, u, v)
     if isvar(v):
         return assoc(s, v, u)
-    if isinstance(u, tuple) and isinstance(v, tuple):
-        if len(u) != len(v):
-            return False
-        for uu, vv in zip(u, v):  # avoiding recursion
-            s = unify(uu, vv, s)
-            if s is False:
-                return False
-        return s
-    return False
+    types = (type(u), type(v))
+    if types in unify_dispatch:
+        return unify_dispatch[types](u, v, s)
+    else:
+        return False
+
 
 #########
 # Goals #
