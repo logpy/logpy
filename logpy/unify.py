@@ -85,8 +85,11 @@ def unify_dict(u, v, s):
 
 def unify_slice(u, v, s):
     s = unify(u.start, v.start, s)
-    if s: s = unify(u.stop, v.stop, s)
-    if s: s = unify(u.step, v.step, s)
+    if s is not False:
+        s = unify(u.stop, v.stop, s)
+    if s is not False:
+        s = unify(u.step, v.step, s)
+    #print 'unify_slice return', s
     return s
 
 def unify_object(u, v, s):
