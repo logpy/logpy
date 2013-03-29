@@ -56,7 +56,9 @@ def reify(e, s):
     {1: 2, 3: (4, 5)}
 
     """
-    if type(e) in reify_dispatch:
+    if hasattr(e, '_logpy_reify_dispatch'):
+        return e._logpy_reify_dispatch(s)
+    elif type(e) in reify_dispatch:
         return reify_dispatch[type(e)](e, s)
     else:
         return e
