@@ -16,8 +16,11 @@ def test_unique_dict():
     assert tuple(unique(({1: 2}, {2: 3}), key=dicthash)) == ({1: 2}, {2: 3})
     assert tuple(unique(({1: 2}, {1: 2}), key=dicthash)) == ({1: 2},)
 
+def test_unique_not_hashable():
+    assert tuple(unique(([1], [1])))
+
 def test_multihash():
-    inputs = 2, (1, 2), [1, 2], {1: 2}, (1, [2])
+    inputs = 2, (1, 2), [1, 2], {1: 2}, (1, [2]), slice(1, 2)
     assert all(isinstance(multihash(i), int) for i in inputs)
 
 def test_intersection():
