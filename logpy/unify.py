@@ -3,9 +3,9 @@ from util import transitive_get as walk
 from util import assoc
 from logpy.variables import Var, var, isvar
 
-#########################################
-# Functions for Expression Manipulation #
-#########################################
+################
+# Reificiation #
+################
 
 def reify_generator(t, s):
     return (reify(arg, s) for arg in t)
@@ -18,20 +18,10 @@ def reify_dict(d, s):
     # assert isinstance(d, dict)
     return dict((k, reify(v, s)) for k, v in d.items())
 
-def reify_object(o, s):
-    obj = object.__new__(type(o))
-    d = reify_dict(o.__dict__, s)
-    obj.__dict__.update(d)
-    return obj
-
-def reify_slice(o, s):
-    return slice(*reify_tuple((o.start, o.stop, o.step), s))
-
 reify_dispatch = {
         tuple: reify_tuple,
         list:  reify_list,
         dict:  reify_dict,
-        slice: reify_slice,
         }
 
 def reify(e, s):
@@ -56,6 +46,9 @@ def reify(e, s):
     else:
         return e
 
+###############
+# Unification #
+###############
 
 def unify_seq(u, v, s):
     # assert isinstance(u, tuple) and isinstance(v, tuple)
@@ -79,39 +72,10 @@ def unify_dict(u, v, s):
             return False
     return s
 
-def unify_slice(u, v, s):
-    return unify_seq((u.start, u.stop, u.step), (v.start, v.stop, v.step), s)
-
-def unify_object(u, v, s):
-    if type(u) != type(v):
-        return False
-    return unify_dict(u.__dict__, v.__dict__, s)
-
-def unify_object_attrs(u, v, s, attrs):
-    """Unify an object based on attribute comparison
-
-    This function is meant to be partially specialized:
-
-        unify_Foo = functools.partial(unify_object_attrs,
-            attrs=['attr_i_care_about', 'attr_i_care_about2'])
-
-    """
-    gu = lambda a: getattr(u, a)
-    gv = lambda a: getattr(v, a)
-    return unify_seq(map(gu, attrs), map(gv, attrs), s)
-
-def register_unify_object(cls):
-    unify_dispatch[(cls, cls)] = unify_object
-
-def register_unify_object_attrs(cls, attrs):
-    unify_dispatch[(cls, cls)] = functools.partial(unify_object_attrs,
-            attrs=attrs)
-
 unify_dispatch = {
         (tuple, tuple): unify_seq,
         (list, list):   unify_seq,
         (dict, dict):   unify_dict,
-        (slice, slice): unify_slice,
         }
 
 def unify(u, v, s):  # no check at the moment
