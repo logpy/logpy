@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from logpy.util import hashable
 
 _global_logic_variables = set()
 _glv = _global_logic_variables
@@ -30,7 +31,7 @@ class Var(object):
 
 var = lambda *args: Var(*args)
 vars = lambda n: [var() for i in range(n)]
-isvar = lambda t: isinstance(t, Var) or _glv and t in _glv
+isvar = lambda t: isinstance(t, Var) or _glv and hashable(t) and t in _glv
 
 @contextmanager
 def variables(*variables):
