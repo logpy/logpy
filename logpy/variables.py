@@ -23,6 +23,12 @@ class Var(object):
     def __hash__(self):
         return hash((type(self), self.token))
 
+    def assoc(self, d, value):
+        d = d.copy()
+        d[self] = value
+        return d
+
+
 var = lambda *args: Var(*args)
 vars = lambda n: [var() for i in range(n)]
 isvar = lambda t: isinstance(t, Var)
