@@ -61,9 +61,12 @@ def multihash(x):
 def unique(seq, key=lambda x: x):
     seen = set()
     for item in seq:
-        if key(item) not in seen:
-            seen.add(key(item))
-            yield item
+        try:
+            if key(item) not in seen:
+                seen.add(key(item))
+                yield item
+        except TypeError:   # item probably isn't hashable
+            yield item      # Just return it and hope for the best
 
 def interleave(seqs, pass_exceptions=()):
     iters = it.imap(iter, seqs)
