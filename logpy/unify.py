@@ -6,10 +6,6 @@ from logpy.variables import Var, var, isvar
 # Functions for Expression Manipulation #
 #########################################
 
-def reify_var(v, s):
-    # assert isvar(v)
-    return reify(s[v], s) if v in s else v
-
 def reify_generator(t, s):
     return (reify(arg, s) for arg in t)
 def reify_tuple(*args):
@@ -28,7 +24,6 @@ def reify_object(o, s):
     return obj
 
 reify_dispatch = {
-        Var:   reify_var,
         tuple: reify_tuple,
         list:  reify_list,
         dict:  reify_dict
@@ -49,6 +44,8 @@ def reify(e, s):
     {1: 2, 3: (4, 5)}
 
     """
+    if isvar(e):
+        return reify(s[e], s) if e in s else e
     if type(e) in reify_dispatch:
         return reify_dispatch[type(e)](e, s)
     else:
