@@ -1,7 +1,8 @@
 from logpy.unifymore import unify_object, reify_object, reify_slice, unify_slice
-from logpy import var
+from logpy import var, run, eq
 from logpy.unify import unify, reify
-
+from logpy.variables import variables
+from logpy.unify import unify_dispatch, reify_dispatch
 
 class Foo(object):
         def __init__(self, a, b):
@@ -15,6 +16,19 @@ class Bar(object):
         def __eq__(self, other):
             return self.c == other.c
 
+def test_run_objects_with_context_manager():
+    f = Foo(1, 1234)
+    g = Foo(1, 2)
+    unify_dispatch[(Foo, Foo)] = unify_object
+    reify_dispatch[Foo] = reify_object
+    with variables(1234):
+        assert unify_object(f, g, {})
+        assert run(1, 1234, (eq, f, g)) == (2,)
+        assert run(1, Foo(1234, 1234), (eq, f, g)) == (Foo(2, 2),)
+
+    del reify_dispatch[Foo]
+    del unify_dispatch[(Foo, Foo)]
+
 def test_unify_object():
     assert unify_object(Foo(1, 2), Foo(1, 2), {}) == {}
     assert unify_object(Foo(1, 2), Foo(1, 3), {}) == False
@@ -27,7 +41,6 @@ def test_reify_object():
     assert obj.b == 4
 
 def test_objects_full():
-    from logpy.unify import unify_dispatch, reify_dispatch
     unify_dispatch[(Foo, Foo)] = unify_object
     unify_dispatch[(Bar, Bar)] = unify_object
     reify_dispatch[Foo] = reify_object
@@ -45,7 +58,6 @@ def test_objects_full():
 
 
 def test_list_1():
-    from logpy import run, eq
     from logpy.unify import unify_dispatch, reify_dispatch
     unify_dispatch[(Foo, Foo)] = unify_object
     reify_dispatch[Foo] = reify_object
