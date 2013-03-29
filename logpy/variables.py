@@ -1,3 +1,8 @@
+from contextlib import contextmanager
+
+_global_logic_variables = set()
+_glv = _global_logic_variables
+
 class Var(object):
     """ Logic Variable """
 
@@ -25,5 +30,18 @@ class Var(object):
 
 var = lambda *args: Var(*args)
 vars = lambda n: [var() for i in range(n)]
-isvar = lambda t: isinstance(t, Var)
+isvar = lambda t: isinstance(t, Var) or _glv and t in _glv
 
+@contextmanager
+def variables(*variables):
+    """ Context manager for assumptions
+
+    >>> from __future__ import with_statement
+    """
+    old_global_logic_variables = _global_logic_variables.copy()
+    _global_logic_variables.update(set(variables))
+    try:
+        yield
+    finally:
+        _global_logic_variables.clear()
+        _global_logic_variables.update(old_global_logic_variables)
