@@ -24,9 +24,8 @@ def reify_object(o, s):
     obj.__dict__.update(d)
     return obj
 
-def reify_slice(*args):
-    assert len(args) == 3
-    return slice(reify_generator(*args))
+def reify_slice(o, s):
+    return slice(*reify_tuple((o.start, o.stop, o.step), s))
 
 reify_dispatch = {
         tuple: reify_tuple,

@@ -1,5 +1,5 @@
 from logpy.unify import (unify, unify_dict, unify_seq, reify_dict, reify_list,
-        reify, unify_object, reify_object)
+        reify, unify_object, reify_object, reify_slice, unify_slice)
 from logpy.variables import var
 
 def test_reify():
@@ -119,7 +119,10 @@ def test_unify_slice():
     x = var('x')
     y = var('y')
 
-    assert unify(slice(1), slice(1), {}) == {}
+    assert unify_slice(slice(1), slice(1), {}) == {}
     assert unify(slice(1, 2, 3), x, {}) == {x: slice(1, 2, 3)}
-    assert unify(slice(1, 2, None), slice(x, y), {}) == {x: 1, y: 2}
+    assert unify_slice(slice(1, 2, None), slice(x, y), {}) == {x: 1, y: 2}
 
+def test_reify_slice():
+    x = var('x')
+    assert reify_slice(slice(1, var(2), 3), {var(2): 10}) == slice(1, 10, 3)
