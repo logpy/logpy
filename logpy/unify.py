@@ -131,20 +131,14 @@ def unify(u, v, s):  # no check at the moment
     """
     u = walk(u, s)
     v = walk(v, s)
-    print 'unify', u, v
     if u == v:
-        print 'unify equal', u, v
         return s
     if isvar(u):
-        print 'unifying isvar u', u
         return u.assoc(s, v)
     if isvar(v):
-        print 'unifying isvar v', v
         return v.assoc(s, u)
     types = (type(u), type(v))
     if types in unify_dispatch:
-        print types
         return unify_dispatch[types](u, v, s)
     else:
-        print 'missing types', types
         return False
