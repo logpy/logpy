@@ -39,6 +39,10 @@ def unify_object_attrs(u, v, s, attrs):
     gv = lambda a: getattr(v, a)
     return unify_seq(map(gu, attrs), map(gv, attrs), s)
 
+more_unify_dispatch = {
+        (slice, slice): unify_slice,
+        }
+
 def register_unify_object(cls):
     unify_dispatch[(cls, cls)] = unify_object
 
