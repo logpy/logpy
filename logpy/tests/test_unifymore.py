@@ -1,4 +1,5 @@
-from logpy.unifymore import unify_object, reify_object, reify_slice, unify_slice
+from logpy.unifymore import (unify_object, reify_object, reify_slice,
+        unify_slice, reify_object_attrs, unify_object_attrs)
 from logpy import var, run, eq
 from logpy.unify import unify, reify
 from logpy.variables import variables
@@ -39,6 +40,9 @@ def test_reify_object():
     obj = reify_object(Foo(1, var(3)), {var(3): 4})
     assert obj.a == 1
     assert obj.b == 4
+
+    f = Foo(1, 2)
+    assert reify_object(f, {}) is f
 
 def test_objects_full():
     unify_dispatch[(Foo, Foo)] = unify_object
@@ -84,3 +88,19 @@ def test_unify_slice():
 def test_reify_slice():
     x = var('x')
     assert reify_slice(slice(1, var(2), 3), {var(2): 10}) == slice(1, 10, 3)
+
+def test_unify_object_attrs():
+    x, y = var('x'), var('y')
+    f, g = Foo(1, 2), Foo(x, y)
+    assert unify_object_attrs(f, g, {}, ['a']) == {x: 1}
+    assert unify_object_attrs(f, g, {}, ['b']) == {y: 2}
+    assert unify_object_attrs(f, g, {}, []) == {}
+
+def test_reify_object_attrs():
+    x, y = var('x'), var('y')
+    f, g = Foo(1, 2), Foo(x, y)
+    s = {x: 1, y: 2}
+    assert reify_object_attrs(g, s, ['a', 'b']) == f
+    assert reify_object_attrs(g, s, ['a']) ==  Foo(1, y)
+    assert reify_object_attrs(g, s, ['b']) ==  Foo(x, 2)
+    assert reify_object_attrs(g, s, []) is g
