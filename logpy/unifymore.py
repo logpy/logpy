@@ -1,10 +1,17 @@
 from logpy.unify import (unify_seq, unify_dict, reify_dict, reify_tuple,
         unify_dispatch, reify_dispatch)
 from functools import partial
-# Reify
+
+#########
+# Reify #
+#########
+
+def reify_slice(o, s):
+    """ Reify a Python ``slice`` object """
+    return slice(*reify_tuple((o.start, o.stop, o.step), s))
 
 def reify_object(o, s):
-    """ Reify an object with a substitution
+    """ Reify a Python object with a substitution
 
     >>> from logpy.unifymore import reify_object
     >>> from logpy import var
@@ -31,7 +38,7 @@ def reify_object(o, s):
     return obj
 
 def reify_object_attrs(o, s, attrs):
-    """ Reify only certain attributes of an object
+    """ Reify only certain attributes of a Python object
 
     >>> from logpy.unifymore import reify_object_attrs
     >>> from logpy import var
@@ -68,18 +75,9 @@ def reify_object_attrs(o, s, attrs):
     obj.__dict__.update(d2)                           # update w/ reified vals
     return obj
 
-def register_reify_object_attrs(cls, attrs):
-    reify_dispatch[cls] = partial(reify_object_attrs, attrs=attrs)
-
-def reify_slice(o, s):
-    """ Reify a Python ``slice`` object """
-    return slice(*reify_tuple((o.start, o.stop, o.step), s))
-
-more_reify_dispatch = {
-        slice: reify_slice,
-        }
-
-# Unify
+#########
+# Unify #
+#########
 
 def unify_slice(u, v, s):
     """ Unify a Python ``slice`` object """
@@ -88,7 +86,7 @@ def unify_slice(u, v, s):
 def unify_object(u, v, s):
     """ Unify two Python objects
 
-    Effectively unifies their type and ``__dict__`` attributes
+    Unifies their type and ``__dict__`` attributes
 
     >>> from logpy.unifymore import unify_object
     >>> from logpy import var
@@ -141,9 +139,20 @@ def unify_object_attrs(u, v, s, attrs):
     gv = lambda a: getattr(v, a)
     return unify_seq(map(gu, attrs), map(gv, attrs), s)
 
+
+# Registration
+
+more_reify_dispatch = {
+        slice: reify_slice,
+        }
+
 more_unify_dispatch = {
         (slice, slice): unify_slice,
         }
+
+def register_reify_object_attrs(cls, attrs):
+    reify_dispatch[cls] = partial(reify_object_attrs, attrs=attrs)
+
 
 def register_unify_object(cls):
     unify_dispatch[(cls, cls)] = unify_object
