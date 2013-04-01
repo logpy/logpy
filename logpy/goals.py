@@ -87,6 +87,12 @@ def goalify(func):
     >>> x = var('x')
     >>> run(0, x, membero(x, (1, 'cat', 'hat', 2)), (typo, x, str))
     ('cat', 'hat')
+
+    Goals go both ways.  Here are all of the types in the collection
+
+    >>> typ = var('typ')
+    >>> run(0, typ, membero(x, (1, 'cat', 'hat', 2)), (typo, x, typ))
+    (<type 'int'>, <type 'str'>)
     """
     def funco(inputs, out):
         if isvar(inputs):
