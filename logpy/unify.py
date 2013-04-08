@@ -24,6 +24,8 @@ reify_dispatch = {
         dict:  reify_dict,
         }
 
+reify_isinstance_list = []
+
 def reify(e, s):
     """ Replace variables of expression with substitution
 
@@ -43,6 +45,9 @@ def reify(e, s):
         return reify(s[e], s) if e in s else e
     if type(e) in reify_dispatch:
         return reify_dispatch[type(e)](e, s)
+    for typ, reify_fn in reify_isinstance_list:
+        if isinstance(e, typ):
+            return reify_fn(e, s)
     else:
         return e
 
@@ -78,6 +83,8 @@ unify_dispatch = {
         (dict, dict):   unify_dict,
         }
 
+unify_isinstance_list = []
+
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
@@ -97,5 +104,8 @@ def unify(u, v, s):  # no check at the moment
     types = (type(u), type(v))
     if types in unify_dispatch:
         return unify_dispatch[types](u, v, s)
+    for (typu, typv), unify_fn in unify_isinstance_list:
+        if isinstance(u, typu) and isinstance(v, typv):
+            return unify_fn(u, v, s)
     else:
         return False

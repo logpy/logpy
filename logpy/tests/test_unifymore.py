@@ -3,7 +3,8 @@ from logpy.unifymore import (unify_object, reify_object, reify_slice,
 from logpy import var, run, eq
 from logpy.unify import unify, reify
 from logpy.variables import variables
-from logpy.unify import unify_dispatch, reify_dispatch
+from logpy.unify import (unify_dispatch, reify_dispatch, unify_isinstance_list,
+        reify_isinstance_list)
 
 class Foo(object):
         def __init__(self, a, b):
@@ -104,3 +105,18 @@ def test_reify_object_attrs():
     assert reify_object_attrs(g, s, ['a']) ==  Foo(1, y)
     assert reify_object_attrs(g, s, ['b']) ==  Foo(x, 2)
     assert reify_object_attrs(g, s, []) is g
+
+def test_unify_isinstance_list():
+    class Foo2(Foo): pass
+    x = var('x')
+    y = var('y')
+    f, g = Foo2(1, 2), Foo2(x, y)
+
+    unify_isinstance_list.append(((Foo, Foo), unify_object))
+    reify_isinstance_list.append((Foo, reify_object))
+
+    assert unify(f, g, {})
+    assert reify(g, {x: 1, y: 2}) == f
+
+    unify_isinstance_list.pop()
+    reify_isinstance_list.pop()
