@@ -36,6 +36,7 @@ from logpy.goals import heado, seteq, conso, tailo
 from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
+from logpy.unify import seq_registry
 
 __all__ = ['associative', 'commutative', 'eq_assoccomm']
 
@@ -201,6 +202,11 @@ def eq_assoccomm(u, v):
     >>> run(0, x, eq(e1, e2))
     (('add', 2, 3), ('add', 3, 2))
     """
+    for typ, fn in seq_registry:
+        if isinstance(u, typ):
+            u = fn(u)
+        if isinstance(v, typ):
+            v = fn(v)
     if isinstance(u, tuple) and not isinstance(v, tuple) and not isvar(v):
         return fail
     if isinstance(v, tuple) and not isinstance(u, tuple) and not isvar(u):
