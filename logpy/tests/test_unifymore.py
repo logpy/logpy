@@ -4,7 +4,7 @@ from logpy import var, run, eq
 from logpy.unify import unify, reify
 from logpy.variables import variables
 from logpy.unify import (unify_dispatch, reify_dispatch, unify_isinstance_list,
-        reify_isinstance_list)
+        reify_isinstance_list, seq_registry)
 
 class Foo(object):
         def __init__(self, a, b):
@@ -120,3 +120,14 @@ def test_unify_isinstance_list():
 
     unify_isinstance_list.pop()
     reify_isinstance_list.pop()
+
+def test_unify_seq_registry():
+    seq_registry.append((Foo, lambda x: (type(x), x.a, x.b)))
+
+    x = var('x')
+    y = var('y')
+    f, g = Foo(1, 2), Foo(x, y)
+
+    assert unify(f, g, {}) == {x: 1, y: 2}
+
+    seq_registry.pop()
