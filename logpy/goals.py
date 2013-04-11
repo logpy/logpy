@@ -61,7 +61,7 @@ def seteq(a, b, eq2=eq):
         elif len(a) != len(b):
             return fail
         else:
-            c, d = a, b
+            c, d = tuple(sorted(a)), tuple(sorted(b))
             if len(c) == 1:
                 return (eq2, c[0], d[0])
             return (conde,) + tuple(
