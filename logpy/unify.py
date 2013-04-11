@@ -115,7 +115,7 @@ def unify(u, v, s):  # no check at the moment
         if isinstance(v, typ):
             v = fn(v); action=True
         if action:
-            return unify(u, v, s)
+            return unify_seq(u, v, s)
 
     else:
         return False
