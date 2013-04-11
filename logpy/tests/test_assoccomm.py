@@ -96,6 +96,30 @@ def test_assocsized():
     assert set(assocsized(add, (1, 2, 3), 1)) == \
             set((((add, 1, 2, 3),),))
 
+def test_objects():
+    from logpy.unify import seq_registry, reify
+    class add(object):
+        def __init__(self, *args):
+            self.args = tuple(args)
+    def seq_add(x):
+        return (type(x),) + x.args
+    seq_registry.append((add, seq_add))
+
+    assert seq_add(add(1, 2, 3)) == (add, 1, 2, 3)
+    assert goaleval(eq_assoccomm(add(1, 2, 3), add(3, 1, 2)))({})
+
+    x = var('x')
+
+    assert tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(1, 2, x)))({})) == ({x: 3},)
+
+    fact(commutative, add)
+    fact(associative, add)
+    assert reify(x, next(goaleval(eq_assoccomm(add(1, 2, 3), add(x, 2,
+        1)))({}))) == 3
+
+    seq_registry.pop()
+
+
 """
 Failing test.  This would work if we flattened first
 def test_deep_associativity():

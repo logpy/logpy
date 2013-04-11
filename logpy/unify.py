@@ -84,6 +84,7 @@ unify_dispatch = {
         }
 
 unify_isinstance_list = []
+seq_registry = []
 
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
@@ -107,5 +108,14 @@ def unify(u, v, s):  # no check at the moment
     for (typu, typv), unify_fn in unify_isinstance_list:
         if isinstance(u, typu) and isinstance(v, typv):
             return unify_fn(u, v, s)
+    for typ, fn in seq_registry:
+        action = False
+        if isinstance(u, typ):
+            u = fn(u); action=True
+        if isinstance(v, typ):
+            v = fn(v); action=True
+        if action:
+            return unify(u, v, s)
+
     else:
         return False
