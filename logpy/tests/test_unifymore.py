@@ -122,15 +122,12 @@ def test_unify_isinstance_list():
     reify_isinstance_list.pop()
 
 def test_seq_registry():
-    seq_registry.append((Foo,
-                         (lambda x: (type(x), x.a, x.b)),
-                         (lambda t: t[0](t[1], t[2]))))
+    seq_registry.append((Foo, lambda x: (type(x), x.a, x.b)))
 
     x = var('x')
     y = var('y')
     f, g = Foo(1, 2), Foo(x, y)
 
     assert unify(f, g, {}) == {x: 1, y: 2}
-    assert reify((Foo, 1, x), {x: 2}) == f
 
     seq_registry.pop()
