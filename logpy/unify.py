@@ -43,6 +43,9 @@ def reify(e, s):
     """
     if isvar(e):
         return reify(s[e], s) if e in s else e
+    for typ, _, fn in seq_registry:
+        if isinstance(e, tuple) and len(e) and isinstance(e[0], type) and issubclass(e[0], typ):
+            return fn(reify_tuple(e, s))
     if type(e) in reify_dispatch:
         return reify_dispatch[type(e)](e, s)
     for typ, reify_fn in reify_isinstance_list:
@@ -108,7 +111,7 @@ def unify(u, v, s):  # no check at the moment
     for (typu, typv), unify_fn in unify_isinstance_list:
         if isinstance(u, typu) and isinstance(v, typv):
             return unify_fn(u, v, s)
-    for typ, fn in seq_registry:
+    for typ, fn, _ in seq_registry:
         action = False
         if isinstance(u, typ):
             u = fn(u); action=True
