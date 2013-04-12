@@ -38,7 +38,6 @@ from logpy import core
 from logpy.util import groupsizes, index
 from logpy.unify import seq_registry
 
-__all__ = ['associative', 'commutative', 'eq_assoccomm']
 
 associative = Relation('associative')
 commutative = Relation('commutative')
@@ -149,6 +148,7 @@ def eq_assoc(u, v, eq=core.eq, n=None):
 
     return (core.eq, u, v)
 
+
 def eq_comm(u, v, eq=None):
     """ Goal for commutative equality
 
@@ -170,14 +170,53 @@ def eq_comm(u, v, eq=None):
     if isvar(u) and isvar(v):
         return (core.eq, u, v)
         raise EarlyGoalError()
-    if isinstance(v, tuple) and not isinstance(u, tuple):
-        u, v = v, u
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
+    if not uop and not vop:
+        return (core.eq, u, v)
+    if vop and not uop:
+        uop, uargs = vop, vargs
+        v = u
     return (conde, ((core.eq, u, v),),
-                   ((heado, op, u),
-                    (commutative, op),
-                    (tailo, utail, u),
-                    (conso, op, vtail, v),
-                    (seteq, utail, vtail, eq)))
+                   ((commutative, uop),
+                    (buildo, uop, vtail, v),
+                    (seteq, uargs, vtail, eq)))
+
+def build_tuple(op, args):
+    try:
+        return (op,) + args
+    except TypeError:
+        raise EarlyGoalError()
+
+op_registry = [(lambda x: isinstance(x, (str, object)),
+                lambda x: isinstance(x, tuple),
+                        lambda t: t and t[0],
+                        lambda t: t and t[1:],
+                        build_tuple)]
+
+def buildo(op, args, obj, op_registry=op_registry):
+    """ obj is composed of op on args
+
+    Example: in add(1,2,3) ``add`` is the op and (1,2,3) are the args
+
+    Checks op_regsitry for functions to define op/arg relationships
+    """
+    if not isvar(obj):
+        oop, oargs = op_args(obj, op_registry)
+        return lall((eq, op, oop), (eq, args, oargs))
+    else:
+        for opvalid, objvalid, _, _, buildfn in op_registry:
+            if opvalid(op):
+                return eq(obj, buildfn(op, args))
+    raise EarlyGoalError()
+
+
+def op_args(x, registry=op_registry):
+    """ Break apart x into an operation and tuple of args """
+    for opvalid, objvalid, opfn, argsfn, _ in registry:
+        if objvalid(x):
+            return opfn(x), argsfn(x)
+    return None, None
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
@@ -202,30 +241,27 @@ def eq_assoccomm(u, v):
     >>> run(0, x, eq(e1, e2))
     (('add', 2, 3), ('add', 3, 2))
     """
-    for typ, fn in seq_registry:
-        if isinstance(u, typ):
-            u = fn(u)
-        if isinstance(v, typ):
-            v = fn(v)
-    if isinstance(u, tuple) and not isinstance(v, tuple) and not isvar(v):
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
+
+    if uop and not vop and not isvar(v):
         return fail
-    if isinstance(v, tuple) and not isinstance(u, tuple) and not isvar(u):
+    if vop and not uop and not isvar(u):
         return fail
-    if isinstance(u, tuple) and isinstance(v, tuple) and not u[0] == v[0]:
+    if uop and vop and not uop == vop:
         return fail
-    if isinstance(u, tuple) and not (u[0],) in associative.facts:
+    if uop and not (uop,) in associative.facts:
         return (eq, u, v)
-    if isinstance(v, tuple) and not (v[0],) in associative.facts:
+    if vop and not (vop,) in associative.facts:
         return (eq, u, v)
 
-    if isinstance(u, tuple) and isinstance(v, tuple):
-        u, v = (u, v) if len(u) >= len(v) else (v, u)
-        n = len(v)-1  # length of shorter tail
+    if uop and vop:
+        u, v = (u, v) if len(uargs) >= len(vargs) else (v, u)
+        n = min(map(len, (uargs, vargs)))  # length of shorter tail
     else:
         n = None
-    if isinstance(v, tuple) and not isinstance(u, tuple):
+    if vop and not uop:
         u, v = v, u
     w = var()
-    return lall((eq_assoc, u, w, eq_assoccomm, n),
-                (eq_comm, v, w, eq_assoccomm))
-
+    return (lall, (eq_assoc, u, w, eq_assoccomm, n),
+                  (eq_comm, v, w, eq_assoccomm))
