@@ -61,7 +61,11 @@ def seteq(a, b, eq2=eq):
         elif len(a) != len(b):
             return fail
         else:
-            c, d = tuple(sorted(a)), tuple(sorted(b))
+            c, d = a, b
+            try:
+                c, d = tuple(sorted(c)), tuple(sorted(d))
+            except:
+                pass
             if len(c) == 1:
                 return (eq2, c[0], d[0])
             return condeseq((
@@ -71,12 +75,15 @@ def seteq(a, b, eq2=eq):
     if isvar(a) and isvar(b):
         raise EarlyGoalError()
 
-    if isvar(a) and isinstance(b, tuple):
-        c, d = a, b
-    if isvar(b) and isinstance(a, tuple):
-        c, d = b, a
+    if isvar(a) or isvar(b):
+        if isinstance(b, tuple):
+            c, d = a, b
+        elif isinstance(a, tuple):
+            c, d = b, a
 
-    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
+        return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
+
+    raise Exception()
 
 
 def goalify(func):
