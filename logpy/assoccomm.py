@@ -48,33 +48,33 @@ def assocunify(u, v, s, eq=core.eq, n=None):
     See Also:
         eq_assoccomm
     """
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
 
-    if not isinstance(u, tuple) and not isinstance(v, tuple):
+    if not uop and not vop:
         res = unify(u, v, s)
         if res is not False:
             return (res,)  # TODO: iterate through all possibilities
 
-    if isinstance(u, tuple) and isinstance(v, tuple):
-        uop, u = u[0], u[1:]
-        vop, v = v[0], v[1:]
+    if uop and vop:
         s = unify(uop, vop, s)
         if s is False:
             raise StopIteration()
         op = walk(uop, s)
 
-        sm, lg = (u, v) if len(u) <= len(v) else (v, u)
+        sm, lg = (uargs, vargs) if len(uargs) <= len(vargs) else (vargs, uargs)
         ops = assocsized(op, lg, len(sm))
         goal = condeseq([(eq, a, b) for a, b, in zip(sm, lg2)] for lg2 in ops)
         return goaleval(goal)(s)
 
-    if isinstance(u, tuple):
-        a, b = u, v
-    if isinstance(v, tuple):
-        a, b = v, u
+    if uop:
+        op, tail = uop, uargs
+        b = v
+    if vop:
+        op, tail = vop, vargs
+        b = u
 
-    op, tail = a[0], a[1:]
-
-    ns = [n] if n else range(2, len(a))
+    ns = [n] if n else range(2, len(tail)+1)
     knowns = (((op,) + x) for n in ns for x in assocsized(op, tail, n))
 
     goal = condeseq([(core.eq, b, k)] for k in knowns)
@@ -133,17 +133,21 @@ def eq_assoc(u, v, eq=core.eq, n=None):
     >>> run(0, x, eq(('add', 1, 2, 3), ('add', 1, x)))
     (('add', 2, 3),)
     """
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
     op = var()
-    if isinstance(u, tuple) and isinstance(v, tuple):
+    if uop and vop:
         return conde([(core.eq, u, v)],
-                     [(heado, op, u), (heado, op, v), (associative, op),
+                     [(eq, uop, vop), (associative, uop),
                       lambda s: assocunify(u, v, s, eq, n)])
 
-    if isinstance(u, tuple) or isinstance(v, tuple):
-        if isinstance(v, tuple):
+    if uop or vop:
+        if vop:
+            uop, vop = vop, uop
+            uargs, vargs = vargs, uargs
             v, u = u, v
         return conde([(core.eq, u, v)],
-                     [(heado, op, u), (associative, op),
+                     [(associative, uop),
                       lambda s: assocunify(u, v, s, eq, n)])
 
     return (core.eq, u, v)
@@ -176,7 +180,7 @@ def eq_comm(u, v, eq=None):
         return (core.eq, u, v)
     if vop and not uop:
         uop, uargs = vop, vargs
-        v = u
+        v, u = u, v
     return (conde, ((core.eq, u, v),),
                    ((commutative, uop),
                     (buildo, uop, vtail, v),
