@@ -209,11 +209,14 @@ def buildo(op, args, obj, op_registry=op_registry):
         oop, oargs = op_args(obj, op_registry)
         return lall((eq, op, oop), (eq, args, oargs))
     else:
-        for opvalid, objvalid, _, _, buildfn in op_registry:
-            if opvalid(op):
-                return eq(obj, buildfn(op, args))
+        return eq(obj, build(op, args, op_registry))
     raise EarlyGoalError()
 
+def build(op, args, registry=op_registry):
+    for opvalid, _, _, _, build_fn in registry:
+        if opvalid(op):
+            return build_fn(op, args)
+    return None
 
 def op_args(x, registry=op_registry):
     """ Break apart x into an operation and tuple of args """
