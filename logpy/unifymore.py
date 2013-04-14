@@ -123,7 +123,7 @@ def unify_object_attrs(u, v, s, attrs):
     >>> y = var('y')
     >>> f = Foo(x, y)
     >>> g = Foo(1, 2)
-    >>> print unify_object_attrs(f, g, {}, ['a', 'b'])
+    >>> print unify_object_attrs(f, g, {}, ['a', 'b'])  #doctest: +SKIP
     {~x: 1, ~y: 2}
     >>> print unify_object_attrs(f, g, {}, ['a'])
     {~x: 1}
