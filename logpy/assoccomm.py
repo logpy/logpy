@@ -75,7 +75,7 @@ def assocunify(u, v, s, eq=core.eq, n=None):
         b = u
 
     ns = [n] if n else range(2, len(tail)+1)
-    knowns = (((op,) + x) for n in ns for x in assocsized(op, tail, n))
+    knowns = (build(op, x) for n in ns for x in assocsized(op, tail, n))
 
     goal = condeseq([(core.eq, b, k)] for k in knowns)
     return goaleval(goal)(s)
@@ -93,7 +93,7 @@ def makeops(op, lists):
     >>> makeops('add', [(1, 2), (3, 4, 5)])
     (('add', 1, 2), ('add', 3, 4, 5))
     """
-    return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
+    return tuple(l[0] if len(l) == 1 else build(op, l) for l in lists)
 
 def partition(tup, part):
     """ Partition a tuple
@@ -135,7 +135,6 @@ def eq_assoc(u, v, eq=core.eq, n=None):
     """
     uop, uargs = op_args(u)
     vop, vargs = op_args(v)
-    op = var()
     if uop and vop:
         return conde([(core.eq, u, v)],
                      [(eq, uop, vop), (associative, uop),
