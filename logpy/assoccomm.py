@@ -36,7 +36,6 @@ from logpy.goals import heado, seteq, conso, tailo
 from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
-from logpy.unify import seq_registry
 
 
 associative = Relation('associative')
@@ -191,11 +190,13 @@ def build_tuple(op, args):
     except TypeError:
         raise EarlyGoalError()
 
-op_registry = [(lambda x: isinstance(x, (str, object)),
-                lambda x: isinstance(x, tuple),
-                        lambda t: t and t[0],
-                        lambda t: t and t[1:],
-                        build_tuple)]
+op_registry = [{'opvalid': lambda x: isinstance(x, (str, object)),
+               'objvalid': lambda x: isinstance(x, tuple),
+               'op': lambda t: t and t[0],
+               'args': lambda t: t and t[1:],
+               'build': build_tuple}]
+
+
 
 def buildo(op, args, obj, op_registry=op_registry):
     """ obj is composed of op on args
@@ -212,16 +213,16 @@ def buildo(op, args, obj, op_registry=op_registry):
     raise EarlyGoalError()
 
 def build(op, args, registry=op_registry):
-    for opvalid, _, _, _, build_fn in registry:
-        if opvalid(op):
-            return build_fn(op, args)
+    for d in registry:
+        if d['opvalid'](op):
+            return d['build'](op, args)
     return None
 
 def op_args(x, registry=op_registry):
     """ Break apart x into an operation and tuple of args """
-    for opvalid, objvalid, opfn, argsfn, _ in registry:
-        if objvalid(x):
-            return opfn(x), argsfn(x)
+    for d in registry:
+        if d['objvalid'](x):
+            return d['op'](x), d['args'](x)
     return None, None
 
 def eq_assoccomm(u, v):

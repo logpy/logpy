@@ -149,11 +149,12 @@ class operator(object):
 class add(operator): pass
 class mul(operator): pass
 
-op_registry = [(lambda x: isinstance(x, type) and issubclass(x, operator),
-                lambda x: isinstance(x, operator),
-                          type,
-                          lambda o: o.args,
-                          lambda op, args: op(*args))]
+op_registry = [
+        {'opvalid': lambda x: isinstance(x, type) and issubclass(x, operator),
+         'objvalid': lambda x: isinstance(x, operator),
+         'op': type,
+         'args': lambda o: o.args,
+         'build': lambda op, args: op(*args)}]
 
 def test_op_args():
     print op_args(add(1,2,3), op_registry)
