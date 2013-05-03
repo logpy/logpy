@@ -209,10 +209,16 @@ def buildo(op, args, obj, op_registry=op_registry):
         oop, oargs = op_args(obj, op_registry)
         return lall((eq, op, oop), (eq, args, oargs))
     else:
-        return eq(obj, build(op, args, op_registry))
+        try:
+            return eq(obj, build(op, args, op_registry))
+        except TypeError:
+            raise EarlyGoalError()
     raise EarlyGoalError()
 
 def build(op, args, registry=op_registry):
+    if hasattr(op, '_from_tuple'):
+        tup = (op,) + tuple(args)
+        return op._from_tuple(tup)
     for d in registry:
         if d['opvalid'](op):
             return d['build'](op, args)
@@ -220,6 +226,11 @@ def build(op, args, registry=op_registry):
 
 def op_args(x, registry=op_registry):
     """ Break apart x into an operation and tuple of args """
+    if isvar(x):
+        return None, None
+    if hasattr(x, '_as_tuple') and not isinstance(x, type):
+        tup = x._as_tuple()
+        return tup[0], tup[1:]
     for d in registry:
         if d['objvalid'](x):
             return d['op'](x), d['args'](x)
