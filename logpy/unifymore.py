@@ -1,4 +1,4 @@
-from logpy.unify import (unify_seq, unify_dict, reify_dict, reify_tuple,
+from logpy.unification import (unify_seq, unify_dict, reify_dict, reify_tuple,
         unify_dispatch, reify_dispatch)
 from functools import partial
 

@@ -97,7 +97,7 @@ def test_assocsized():
             set((((add, 1, 2, 3),),))
 
 def test_objects():
-    from logpy.unify import reify
+    from logpy.unification import reify
     from logpy.variables import variables
     from logpy import assoccomm
 

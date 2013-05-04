@@ -1,10 +1,10 @@
 from logpy.unifymore import (unify_object, reify_object, reify_slice,
         unify_slice, reify_object_attrs, unify_object_attrs)
 from logpy import var, run, eq
-from logpy.unify import unify, reify
+from logpy.unification import unify, reify
 from logpy.variables import variables
-from logpy.unify import (unify_dispatch, reify_dispatch, unify_isinstance_list,
-        reify_isinstance_list, seq_registry)
+from logpy.unification import (unify_dispatch, reify_dispatch,
+        unify_isinstance_list, reify_isinstance_list, seq_registry)
 
 class Foo(object):
         def __init__(self, a, b):
@@ -75,7 +75,7 @@ def test_objects_as_tuple():
     assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
 
 def test_list_1():
-    from logpy.unify import unify_dispatch, reify_dispatch
+    from logpy.unification import unify_dispatch, reify_dispatch
     unify_dispatch[(Foo, Foo)] = unify_object
     reify_dispatch[Foo] = reify_object
 

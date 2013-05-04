@@ -29,7 +29,7 @@ reify_isinstance_list = []
 def reify(e, s):
     """ Replace variables of expression with substitution
 
-    >>> from logpy.unify import reify, var
+    >>> from logpy.unification import reify, var
     >>> x, y = var(), var()
     >>> e = (1, x, (3, y))
     >>> s = {x: 2, y: 4}
@@ -91,7 +91,7 @@ seq_registry = []
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
-    >>> from logpy.unify import unify, var
+    >>> from logpy.unification import unify, var
     >>> x = var('x')
     >>> unify((1, x), (1, 2), {})
     {~x: 2}

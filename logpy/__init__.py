@@ -6,5 +6,6 @@ from core import run, eq, conde, membero
 from variables import var, isvar
 from goals import seteq, goalify
 from facts import Relation, fact, facts
+from unification import unify, reify
 
 __version__ = '0.1.10'

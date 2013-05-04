@@ -1,11 +1,11 @@
 import itertools as it
-from util import transitive_get as walk
-from util import deep_transitive_get as walkstar
+from logpy.util import transitive_get as walk
+from logpy.util import deep_transitive_get as walkstar
 from util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index, multihash)
 
 from variables import var, isvar
-from unify import reify, unify
+from unification import reify, unify
 
 
 #########
@@ -146,6 +146,9 @@ def condeseq(goalseqs):
 # User level execution #
 ########################
 
+def debug(s):
+    return s
+
 def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
@@ -160,7 +163,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    results = (reify(x, s) for s in goaleval(lallearly(*goals))({}))
+    results = (reify(x, debug(s)) for s in goaleval(lallearly(*goals))({}))
     return take(n, unique(results, key=multihash))
 
 ###################
