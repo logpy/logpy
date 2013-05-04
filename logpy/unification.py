@@ -1,7 +1,7 @@
 import functools
 from util import transitive_get as walk
 from util import assoc
-from logpy.variables import Var, var, isvar
+from variable import Var, var, isvar
 
 ################
 # Reificiation #

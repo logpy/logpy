@@ -2,7 +2,7 @@ from logpy.unifymore import (unify_object, reify_object, reify_slice,
         unify_slice, reify_object_attrs, unify_object_attrs)
 from logpy import var, run, eq
 from logpy.unification import unify, reify
-from logpy.variables import variables
+from logpy import variables
 from logpy.unification import (unify_dispatch, reify_dispatch,
         unify_isinstance_list, reify_isinstance_list, seq_registry)
 

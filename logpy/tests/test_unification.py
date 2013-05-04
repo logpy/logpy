@@ -1,6 +1,6 @@
 from logpy.unification import (unify, unify_dict, unify_seq, reify_dict,
         reify_list, reify)
-from logpy.variables import var
+from logpy import var
 
 def test_reify():
     x, y, z = var(), var(), var()
