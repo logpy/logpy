@@ -146,9 +146,6 @@ def condeseq(goalseqs):
 # User level execution #
 ########################
 
-def debug(s):
-    return s
-
 def run(n, x, *goals, **kwargs):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
@@ -163,7 +160,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    results = (reify(x, debug(s)) for s in goaleval(lallearly(*goals))({}))
+    results = (reify(x, s) for s in goaleval(lallearly(*goals))({}))
     return take(n, unique(results, key=multihash))
 
 ###################
