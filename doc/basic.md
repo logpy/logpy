@@ -117,6 +117,18 @@ Two important logical goal combinators are logical all `lall` and logical any `l
     {~x: 3}
     {~x: 4}
 
+
+### Laziness
+
+Goals produce a stream of substitutions.  This stream is computed lazily, returning values only as they are needed.  LogPy depends on standard Python generators to maintain the necessary state and control flow.
+
+    >>> stream = g({})
+    >>> stream
+    <generator object unique at 0x2e13690>
+    >>> next(stream)
+    {~x: 1}
+
+
 ### User interface
 
 Traditionally programs are run with the `run` function
