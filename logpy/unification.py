@@ -43,8 +43,8 @@ def reify(e, s):
     """
     if isvar(e):
         return reify(s[e], s) if e in s else e
-    if hasattr(e, '_from_tuple') and not isinstance(e, type):
-        return e._from_tuple(reify(e._as_tuple(), s))
+    if hasattr(e, '_from_logpy') and not isinstance(e, type):
+        return e._from_logpy(reify(e._as_logpy(), s))
     if type(e) in reify_dispatch:
         return reify_dispatch[type(e)](e, s)
     for typ, reify_fn in reify_isinstance_list:
@@ -107,9 +107,9 @@ def unify(u, v, s):  # no check at the moment
     types = (type(u), type(v))
     if types in unify_dispatch:
         return unify_dispatch[types](u, v, s)
-    if (hasattr(u, '_as_tuple') and not isinstance(u, type) and
-        hasattr(v, '_as_tuple') and not isinstance(v, type)):
-        return unify_seq(u._as_tuple(), v._as_tuple(), s)
+    if (hasattr(u, '_as_logpy') and not isinstance(u, type) and
+        hasattr(v, '_as_logpy') and not isinstance(v, type)):
+        return unify_seq(u._as_logpy(), v._as_logpy(), s)
     for (typu, typv), unify_fn in unify_isinstance_list:
         if isinstance(u, typu) and isinstance(v, typv):
             return unify_fn(u, v, s)

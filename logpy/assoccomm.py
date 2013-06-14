@@ -229,8 +229,8 @@ def op_args(x, registry=op_registry):
     """ Break apart x into an operation and tuple of args """
     if isvar(x):
         return None, None
-    if hasattr(x, '_as_tuple') and not isinstance(x, type):
-        tup = x._as_tuple()
+    if hasattr(x, '_as_logpy') and not isinstance(x, type):
+        tup = x._as_logpy()
         return tup[0], tup[1:]
     for d in registry:
         if d['objvalid'](x):

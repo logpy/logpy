@@ -62,14 +62,14 @@ def test_objects_full():
     del unify_dispatch[(Bar, Bar)]
 
 class Foo2(Foo):
-    def _as_tuple(self):
+    def _as_logpy(self):
         return (type(self), self.a, self.b)
 
     @staticmethod
-    def _from_tuple((typ, a, b)):
+    def _from_logpy((typ, a, b)):
         return typ(a, b)
 
-def test_objects_as_tuple():
+def test_objects_as_logpy():
     x = var()
     assert unify(Foo2(1, x), Foo2(1, 2), {}) == {x: 2}
     assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
