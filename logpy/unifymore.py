@@ -172,6 +172,18 @@ def _from_logpy((typ, attrs)):
     obj.__dict__.update(attrs)
     return obj
 
+def _as_logpy_slot(self):
+    attrs = dict((attr, getattr(self, attr)) for attr in self.__slots__
+                                             if hasattr(self, attr))
+    return (type(self), attrs)
+
+def _from_logpy_slot((typ, attrs)):
+    obj = object.__new__(typ)
+    for attr, val in attrs.items():
+        setattr(obj, attr, val)
+    return obj
+
+
 def logify(cls):
     """ Alter a class so that it interacts well with LogPy
 
@@ -196,5 +208,9 @@ def logify(cls):
     >>> run(1, x, eq(a, b))
     (2,)
     """
-    cls._as_logpy = _as_logpy
-    cls._from_logpy = staticmethod(_from_logpy)
+    if hasattr(cls, '__slots__'):
+        cls._as_logpy = _as_logpy_slot
+        cls._from_logpy = staticmethod(_from_logpy_slot)
+    else:
+        cls._as_logpy = _as_logpy
+        cls._from_logpy = staticmethod(_from_logpy)

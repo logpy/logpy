@@ -167,3 +167,21 @@ def test_logify():
     g = A(1, x)
     assert unify(f, g, {}) == {x: 2}
     assert reify(g, {x: 2}) == f
+
+class Aslot(object):
+    __slots__ = ['a', 'b']
+    def __eq__(self, other):
+        return (self.a, self.b) == (other.a, other.b)
+
+logify(Aslot)
+
+def test_logify_slots():
+    x = var('x')
+    f = Aslot()
+    f.a = 1
+    f.b = 2
+    g = Aslot()
+    g.a = 1
+    g.b = x
+    assert unify(f, g, {}) == {x: 2}
+    assert reify(g, {x: 2}) == f
