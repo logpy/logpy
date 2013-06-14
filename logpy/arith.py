@@ -21,29 +21,26 @@ def lor(*goalconsts):
 gte = lor(gt, eq)
 lte = lor(lt, eq)
 
-def add(x, y, z):
-    """ x + y == z """
-    if not isvar(x) and not isvar(y):
-        return eq(x+y, z)
-    if not isvar(y) and not isvar(z):
-        return eq(x, z-y)
-    if not isvar(x) and not isvar(z):
-        return eq(y, z-x)
-    raise EarlyGoalError()
+import operator
+
+def binop(op, revop=None):
+    def goal(x, y, z):
+        if not isvar(x) and not isvar(y):
+            return eq(op(x, y), z)
+        if not isvar(y) and not isvar(z) and revop:
+            return eq(x, revop(z, y))
+        if not isvar(x) and not isvar(z) and revop:
+            return eq(y, revop(z, x))
+        raise EarlyGoalError()
+    return goal
+
+add = binop(operator.add, operator.sub)
+mul = binop(operator.mul, operator.div)
+mod = binop(operator.mod)
 
 def sub(x, y, z):
     """ x - y == z """
     return add(y, z, x)
-
-def mul(x, y, z):
-    """ x * y == z """
-    if not isvar(x) and not isvar(y):
-        return eq(x*y, z)
-    if not isvar(y) and not isvar(z):
-        return eq(x, z/y)
-    if not isvar(x) and not isvar(z):
-        return eq(y, z/x)
-    raise EarlyGoalError()
 
 def div(x, y, z):
     """ x / y == z """
