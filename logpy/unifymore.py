@@ -163,3 +163,38 @@ def register_unify_object_attrs(cls, attrs):
 def register_object_attrs(cls, attrs):
     register_unify_object_attrs(cls, attrs)
     register_reify_object_attrs(cls, attrs)
+
+def _as_logpy(self):
+    return (type(self), self.__dict__)
+
+def _from_logpy((typ, attrs)):
+    obj = object.__new__(typ)
+    obj.__dict__.update(attrs)
+    return obj
+
+def logify(cls):
+    """ Alter a class so that it interacts well with LogPy
+
+    The __class__ and __dict__ attributes are used to define the LogPy term
+
+    See Also:
+        _as_logpy
+        _from_logpy
+
+
+    >>> from logpy import logify, run, var, eq
+    >>> class A(object):
+    ...     def __init__(self, a, b):
+    ...         self.a = a
+    ...         self.b = b
+    >>> logify(A)
+
+    >>> x = var('x')
+    >>> a = A(1, 2)
+    >>> b = A(1, x)
+
+    >>> run(1, x, eq(a, b))
+    (2,)
+    """
+    cls._as_logpy = _as_logpy
+    cls._from_logpy = staticmethod(_from_logpy)

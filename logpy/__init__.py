@@ -7,5 +7,6 @@ from variable import var, isvar, variables, Var
 from goals import seteq, goalify
 from facts import Relation, fact, facts
 from unification import unify, reify
+from unifymore import logify
 
 __version__ = '0.1.10'

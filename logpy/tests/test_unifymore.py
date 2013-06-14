@@ -1,5 +1,5 @@
 from logpy.unifymore import (unify_object, reify_object, reify_slice,
-        unify_slice, reify_object_attrs, unify_object_attrs)
+        unify_slice, reify_object_attrs, unify_object_attrs, logify)
 from logpy import var, run, eq
 from logpy.unification import unify, reify
 from logpy import variables
@@ -143,3 +143,27 @@ def test_seq_registry():
     assert unify(f, g, {}) == {x: 1, y: 2}
 
     seq_registry.pop()
+
+class A(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+class B(A):
+    def __init__(self, a, b, c):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.data = {'a': a, 'b': b, 'c': c}
+
+logify(A)
+
+def test_logify():
+    x = var('x')
+    f = A(1, 2)
+    g = A(1, x)
+    assert unify(f, g, {}) == {x: 2}
+    assert reify(g, {x: 2}) == f
