@@ -1,7 +1,8 @@
 from logpy import var
-from logpy.arith import lt, gt, lte, gte, add, sub, mul
+from logpy.arith import lt, gt, lte, gte, add, sub, mul, mod
 
 x = var('x')
+y = var('y')
 def results(g):
     return list(g({}))
 
@@ -45,3 +46,17 @@ def test_mul():
     assert results(mul(2, 3, x)) == [{x: 6}]
     assert results(mul(2, x, 6)) == [{x: 3}]
     assert results(mul(x, 3, 6)) == [{x: 2}]
+
+def test_mod():
+    assert results(mod(5, 3, 2))
+
+def test_complex():
+    from logpy import run, membero
+    numbers = tuple(range(10))
+    results = set(run(0, x, (sub, y, x, 1),
+                            (membero, y, numbers),
+                            (mod, y, 2, 0),
+                            (membero, x, numbers)))
+    expected = set((1, 3, 5, 7))
+    print results
+    assert results == expected
