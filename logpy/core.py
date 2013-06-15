@@ -225,5 +225,7 @@ def goaleval(goal):
         return goal
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
         egoal = goalexpand(goal)
+        # from logpy.util import pprint
+        # print pprint(egoal)
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
