@@ -51,6 +51,7 @@ def binop(op, revop=None):
         if not isvar(x) and not isvar(z) and revop:
             return eq(y, revop(z, x))
         raise EarlyGoalError()
+    goal.__name__ = op.__name__
     return goal
 
 add = binop(operator.add, operator.sub)

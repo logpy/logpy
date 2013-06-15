@@ -47,6 +47,8 @@ def test_mul():
     assert results(mul(2, x, 6)) == [{x: 3}]
     assert results(mul(x, 3, 6)) == [{x: 2}]
 
+    assert mul.__name__ == 'mul'
+
 def test_mod():
     assert results(mod(5, 3, 2))
 
