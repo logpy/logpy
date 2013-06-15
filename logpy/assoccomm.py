@@ -218,8 +218,7 @@ def buildo(op, args, obj, op_registry=op_registry):
 
 def build(op, args, registry=op_registry):
     if hasattr(op, '_from_logpy'):
-        tup = (op,) + tuple(args)
-        return op._from_logpy(tup)
+        return op._from_logpy((op, args))
     for d in registry:
         if d['opvalid'](op):
             return d['build'](op, args)
@@ -230,8 +229,7 @@ def op_args(x, registry=op_registry):
     if isvar(x):
         return None, None
     if hasattr(x, '_as_logpy') and not isinstance(x, type):
-        tup = x._as_logpy()
-        return tup[0], tup[1:]
+        return x._as_logpy()
     for d in registry:
         if d['objvalid'](x):
             return d['op'](x), d['args'](x)
