@@ -217,9 +217,9 @@ def buildo(op, args, obj, op_registry=op_registry):
     raise EarlyGoalError()
 
 def build(op, args, registry=op_registry):
-    if hasattr(op, '_from_tuple'):
+    if hasattr(op, '_from_logpy'):
         tup = (op,) + tuple(args)
-        return op._from_tuple(tup)
+        return op._from_logpy(tup)
     for d in registry:
         if d['opvalid'](op):
             return d['build'](op, args)
