@@ -154,18 +154,26 @@ def conde(*goalseqs, **kwargs):
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
+
 def lanyseq(goals):
-    """ Logical any with possibly infinite number of goals """
+    """ Logical any with possibly infinite number of goals
+
+    Note:  If using lanyseq with a generator you must call lanyseq, not include
+    it in a tuple
+    """
     def anygoal(s):
-        reifiedgoals = (reify(goal, s) for goal in goals)
+        anygoal.goals, local_goals = it.tee(anygoal.goals)
         def f(goals):
             for goal in goals:
                 try:
-                    yield goaleval(goal)(s)
+                    yield goaleval(reify(goal, s))(s)
                 except EarlyGoalError:
                     pass
-        return unique(interleave(f(reifiedgoals), [EarlyGoalError]),
+
+        return unique(interleave(f(local_goals), [EarlyGoalError]),
                       key=dicthash)
+    anygoal.goals = goals
+
     return anygoal
 
 def condeseq(goalseqs):
