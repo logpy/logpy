@@ -32,7 +32,7 @@ be used in the computer algebra systems SymPy and Theano.
 from logpy.core import (isvar, assoc, unify,
         conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, goaleval)
-from logpy.goals import heado, seteq, conso, tailo
+from logpy.goals import heado, permuteq, conso, tailo
 from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
@@ -183,7 +183,7 @@ def eq_comm(u, v, eq=None):
     return (conde, ((core.eq, u, v),),
                    ((commutative, uop),
                     (buildo, uop, vtail, v),
-                    (seteq, uargs, vtail, eq)))
+                    (permuteq, uargs, vtail, eq)))
 
 def build_tuple(op, args):
     try:
