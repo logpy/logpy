@@ -64,6 +64,33 @@ def lall(*goals):
                       key=dicthash)
     return allgoal
 
+def lallfirst(*goals):
+    """ Logical all - Run goals one at a time
+
+    >>> from logpy.core import lall, membero
+    >>> x = var('x')
+    >>> g = lall(membero(x, (1,2,3)), membero(x, (2,3,4)))
+    >>> tuple(g({}))
+    ({~x: 2}, {~x: 3})
+    """
+    if not goals:
+        return success
+    if len(goals) == 1:
+        return goals[0]
+    def allgoal(s):
+        for i, g in enumerate(goals):
+            try:
+                goal = goaleval(reify(g, s))
+            except EarlyGoalError:
+                continue
+            other_goals = tuple(goals[:i] + goals[i+1:])
+            return unique(interleave(goaleval(
+                reify((lallfirst,) + other_goals, ss))(ss)
+                for ss in goal(s)), key=dicthash)
+        else:
+            raise EarlyGoalError()
+    return allgoal
+
 def lany(*goals):
     """ Logical any
 
