@@ -1,9 +1,8 @@
 from logpy.core import (walk, walkstar, isvar, var, run,
-        membero, evalt, fail, success, reify, eq, conde,
+        membero, evalt, fail, success, eq, conde,
         condeseq, goaleval, lany, lall,
         goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
 import itertools
-from unittest import expectedFailure as FAIL
 from logpy.util import raises
 
 w, x, y, z = 'wxyz'
