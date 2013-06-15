@@ -1,4 +1,5 @@
-from logpy.goals import tailo, heado, appendo, seteq, conso, typo, isinstanceo
+from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
+        isinstanceo, permuteq)
 from logpy.core import var, run, eq, EarlyGoalError, goaleval, membero
 from logpy.util import raises
 
@@ -40,6 +41,16 @@ def test_seteq():
 
     assert run(0, (x, y), seteq((1, 2, x), (2, 3, y)))[0] == (3, 1)
     assert not run(0, (x, y), seteq((4, 5, x), (2, 3, y)))
+
+def test_permuteq():
+    x = var('x')
+    assert results(permuteq((1,2,2), (2,1,2)))
+    assert not results(permuteq((1,2), (2,1,2)))
+    assert not results(permuteq((1,2,3), (2,1,2)))
+    assert not results(permuteq((1,2,1), (2,1,2)))
+
+    assert set(run(0, x, permuteq(x, (1,2,2)))) == set(
+            ((1,2,2), (2,1,2), (2,2,1)))
 
 def test_typo():
     x = var('x')
