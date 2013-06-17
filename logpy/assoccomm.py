@@ -258,8 +258,11 @@ def eq_assoccomm(u, v):
     >>> run(0, x, eq(e1, e2))
     (('add', 2, 3), ('add', 3, 2))
     """
-    uop, uargs = op_args(u)
-    vop, vargs = op_args(v)
+    try:
+        uop, uargs = op_args(u)
+        vop, vargs = op_args(v)
+    except ValueError:
+        return (eq, u, v)
 
     if uop and not vop and not isvar(v):
         return fail

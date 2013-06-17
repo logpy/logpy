@@ -43,6 +43,8 @@ def test_eq_assoccomm():
     ac = 'commassoc_op'
     fact(commutative, ac)
     fact(associative, ac)
+    assert results(eqac(1, 1))
+    assert results(eqac((1,), (1,)))
     assert results(eqac((ac, (ac, 1, x), y), (ac, 2, (ac, 3, 1))))
     assert results((eqac, 1, 1))
     assert results(eqac((a, (a, 1, 2), 3), (a, 1, 2, 3)))
