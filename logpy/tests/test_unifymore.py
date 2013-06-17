@@ -1,10 +1,10 @@
 from logpy.unifymore import (unify_object, reify_object, reify_slice,
-        unify_slice, reify_object_attrs, unify_object_attrs)
+        unify_slice, reify_object_attrs, unify_object_attrs, logify)
 from logpy import var, run, eq
-from logpy.unify import unify, reify
-from logpy.variables import variables
-from logpy.unify import (unify_dispatch, reify_dispatch, unify_isinstance_list,
-        reify_isinstance_list, seq_registry)
+from logpy.unification import unify, reify
+from logpy import variables
+from logpy.unification import (unify_dispatch, reify_dispatch,
+        unify_isinstance_list, reify_isinstance_list, seq_registry)
 
 class Foo(object):
         def __init__(self, a, b):
@@ -61,9 +61,21 @@ def test_objects_full():
     del unify_dispatch[(Foo, Foo)]
     del unify_dispatch[(Bar, Bar)]
 
+class Foo2(Foo):
+    def _as_logpy(self):
+        return (type(self), self.a, self.b)
+
+    @staticmethod
+    def _from_logpy((typ, a, b)):
+        return typ(a, b)
+
+def test_objects_as_logpy():
+    x = var()
+    assert unify(Foo2(1, x), Foo2(1, 2), {}) == {x: 2}
+    assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
 
 def test_list_1():
-    from logpy.unify import unify_dispatch, reify_dispatch
+    from logpy.unification import unify_dispatch, reify_dispatch
     unify_dispatch[(Foo, Foo)] = unify_object
     reify_dispatch[Foo] = reify_object
 
@@ -121,7 +133,7 @@ def test_unify_isinstance_list():
     unify_isinstance_list.pop()
     reify_isinstance_list.pop()
 
-def test_unify_seq_registry():
+def test_seq_registry():
     seq_registry.append((Foo, lambda x: (type(x), x.a, x.b)))
 
     x = var('x')
@@ -131,3 +143,45 @@ def test_unify_seq_registry():
     assert unify(f, g, {}) == {x: 1, y: 2}
 
     seq_registry.pop()
+
+class A(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+class B(A):
+    def __init__(self, a, b, c):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.data = {'a': a, 'b': b, 'c': c}
+
+logify(A)
+
+def test_logify():
+    x = var('x')
+    f = A(1, 2)
+    g = A(1, x)
+    assert unify(f, g, {}) == {x: 2}
+    assert reify(g, {x: 2}) == f
+
+class Aslot(object):
+    __slots__ = ['a', 'b']
+    def __eq__(self, other):
+        return (self.a, self.b) == (other.a, other.b)
+
+logify(Aslot)
+
+def test_logify_slots():
+    x = var('x')
+    f = Aslot()
+    f.a = 1
+    f.b = 2
+    g = Aslot()
+    g.a = 1
+    g.b = x
+    assert unify(f, g, {}) == {x: 2}
+    assert reify(g, {x: 2}) == f

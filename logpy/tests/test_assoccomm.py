@@ -2,7 +2,7 @@ from logpy.core import var, run, eq, goaleval, EarlyGoalError
 from logpy.facts import fact
 from logpy.assoccomm import (associative, commutative, conde,
         groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
-        eq_assoccomm, assocsized)
+        eq_assoccomm, assocsized, buildo, op_args)
 from logpy.util import raises
 
 a = 'assoc_op'
@@ -43,6 +43,8 @@ def test_eq_assoccomm():
     ac = 'commassoc_op'
     fact(commutative, ac)
     fact(associative, ac)
+    assert results(eqac(1, 1))
+    assert results(eqac((1,), (1,)))
     assert results(eqac((ac, (ac, 1, x), y), (ac, 2, (ac, 3, 1))))
     assert results((eqac, 1, 1))
     assert results(eqac((a, (a, 1, 2), 3), (a, 1, 2, 3)))
@@ -97,28 +99,31 @@ def test_assocsized():
             set((((add, 1, 2, 3),),))
 
 def test_objects():
-    from logpy.unify import seq_registry, reify
-    class add(object):
-        def __init__(self, *args):
-            self.args = tuple(args)
-    def seq_add(x):
-        return (type(x),) + x.args
-    seq_registry.append((add, seq_add))
+    from logpy import variables, reify, assoccomm
 
-    assert seq_add(add(1, 2, 3)) == (add, 1, 2, 3)
-    assert goaleval(eq_assoccomm(add(1, 2, 3), add(3, 1, 2)))({})
-
-    x = var('x')
-
-    assert tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(1, 2, x)))({})) == ({x: 3},)
+    assoccomm.op_registry.extend(op_registry)
 
     fact(commutative, add)
     fact(associative, add)
+    assert tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(3, 1, 2)))({}))
+    assert tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(3, 1, 2)))({}))
+
+    x = var('x')
+
+    print tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(1, 2, x)))({}))
+    assert reify(x, tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(1, 2,
+        x)))({}))[0]) == 3
+
     assert reify(x, next(goaleval(eq_assoccomm(add(1, 2, 3), add(x, 2,
         1)))({}))) == 3
 
-    seq_registry.pop()
+    v = add(1,2,3)
+    with variables(v):
+        x = add(5, 6)
+        print reify(v, next(goaleval(eq_assoccomm(v, x))({})))
+        assert reify(v, next(goaleval(eq_assoccomm(v, x))({}))) == x
 
+    del assoccomm.op_registry[-1]
 
 """
 Failing test.  This would work if we flattened first
@@ -129,3 +134,39 @@ def test_deep_associativity():
     print tuple(unify_assoc(expr1, expr2, {}))
     assert tuple(unify_assoc(expr1, expr2, {})) == result
 """
+
+def test_buildo():
+    x = var('x')
+    assert results(buildo('add', (1,2,3), x), {}) == ({x: ('add', 1, 2, 3)},)
+    assert results(buildo(x, (1,2,3), ('add', 1,2,3)), {}) == ({x: 'add'},)
+    assert results(buildo('add', x, ('add', 1,2,3)), {}) == ({x: (1,2,3)},)
+
+class operator(object):
+    def __init__(self, *args):
+        self.args = args
+    def __eq__(self, other):
+        return (type(self) == type(other) and self.args == other.args)
+class add(operator): pass
+class mul(operator): pass
+
+op_registry = [
+        {'opvalid': lambda x: isinstance(x, type) and issubclass(x, operator),
+         'objvalid': lambda x: isinstance(x, operator),
+         'op': type,
+         'args': lambda o: o.args,
+         'build': lambda op, args: op(*args)}]
+
+def test_op_args():
+    print op_args(add(1,2,3), op_registry)
+    assert op_args(add(1,2,3), op_registry) == (add, (1,2,3))
+    assert op_args('foo') == (None, None)
+
+def test_buildo_object():
+    x = var('x')
+    assert results(buildo(add, (1,2,3), x, op_registry), {}) == \
+            ({x: add(1, 2, 3)},)
+    print results(buildo(x, (1,2,3), add(1,2,3), op_registry), {})
+    assert results(buildo(x, (1,2,3), add(1,2,3), op_registry), {}) == \
+            ({x: add},)
+    assert results(buildo(add, x, add(1,2,3), op_registry), {}) == \
+            ({x: (1,2,3)},)

@@ -1,11 +1,11 @@
 import itertools as it
-from util import transitive_get as walk
-from util import deep_transitive_get as walkstar
-from util import (assoc, unique, dicthash, interleave, take, evalt,
+from logpy.util import transitive_get as walk
+from logpy.util import deep_transitive_get as walkstar
+from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index, multihash)
 
-from variables import var, isvar
-from unify import reify, unify
+from logpy.variable import var, isvar
+from logpy.unification import reify, unify
 
 
 #########
@@ -31,10 +31,13 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    try:
+    if not isvar(x) and not isvar(coll):
+        if x in coll:
+            return success
         return (lany,) + tuple((eq, x, item) for item in coll)
-    except TypeError:
-        raise EarlyGoalError()
+    if isvar(x) and not isvar(coll):
+        return (lany,) + tuple((eq, x, item) for item in coll)
+    raise EarlyGoalError()
 
 ################################
 # Logical combination of goals #
@@ -59,6 +62,33 @@ def lall(*goals):
                         goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
                         for ss in g(s)),
                       key=dicthash)
+    return allgoal
+
+def lallfirst(*goals):
+    """ Logical all - Run goals one at a time
+
+    >>> from logpy.core import lall, membero
+    >>> x = var('x')
+    >>> g = lall(membero(x, (1,2,3)), membero(x, (2,3,4)))
+    >>> tuple(g({}))
+    ({~x: 2}, {~x: 3})
+    """
+    if not goals:
+        return success
+    if len(goals) == 1:
+        return goals[0]
+    def allgoal(s):
+        for i, g in enumerate(goals):
+            try:
+                goal = goaleval(reify(g, s))
+            except EarlyGoalError:
+                continue
+            other_goals = tuple(goals[:i] + goals[i+1:])
+            return unique(interleave(goaleval(
+                reify((lallfirst,) + other_goals, ss))(ss)
+                for ss in goal(s)), key=dicthash)
+        else:
+            raise EarlyGoalError()
     return allgoal
 
 def lany(*goals):
@@ -124,18 +154,26 @@ def conde(*goalseqs, **kwargs):
     """
     return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
 
+
 def lanyseq(goals):
-    """ Logical any with possibly infinite number of goals """
+    """ Logical any with possibly infinite number of goals
+
+    Note:  If using lanyseq with a generator you must call lanyseq, not include
+    it in a tuple
+    """
     def anygoal(s):
-        reifiedgoals = (reify(goal, s) for goal in goals)
+        anygoal.goals, local_goals = it.tee(anygoal.goals)
         def f(goals):
             for goal in goals:
                 try:
-                    yield goaleval(goal)(s)
+                    yield goaleval(reify(goal, s))(s)
                 except EarlyGoalError:
                     pass
-        return unique(interleave(f(reifiedgoals), [EarlyGoalError]),
+
+        return unique(interleave(f(local_goals), [EarlyGoalError]),
                       key=dicthash)
+    anygoal.goals = goals
+
     return anygoal
 
 def condeseq(goalseqs):
@@ -222,5 +260,7 @@ def goaleval(goal):
         return goal
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
         egoal = goalexpand(goal)
+        # from logpy.util import pprint
+        # print pprint(egoal)
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")

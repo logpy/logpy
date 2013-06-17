@@ -1,4 +1,4 @@
-from logpy.variables import isvar, var, vars, variables
+from logpy.variable import isvar, var, vars, variables
 
 def test_isvar():
     assert not isvar(3)

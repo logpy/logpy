@@ -1,4 +1,4 @@
-from logpy.unify import (unify_seq, unify_dict, reify_dict, reify_tuple,
+from logpy.unification import (unify_seq, unify_dict, reify_dict, reify_tuple,
         unify_dispatch, reify_dispatch)
 from functools import partial
 
@@ -123,7 +123,7 @@ def unify_object_attrs(u, v, s, attrs):
     >>> y = var('y')
     >>> f = Foo(x, y)
     >>> g = Foo(1, 2)
-    >>> print unify_object_attrs(f, g, {}, ['a', 'b'])
+    >>> print unify_object_attrs(f, g, {}, ['a', 'b'])  #doctest: +SKIP
     {~x: 1, ~y: 2}
     >>> print unify_object_attrs(f, g, {}, ['a'])
     {~x: 1}
@@ -163,3 +163,54 @@ def register_unify_object_attrs(cls, attrs):
 def register_object_attrs(cls, attrs):
     register_unify_object_attrs(cls, attrs)
     register_reify_object_attrs(cls, attrs)
+
+def _as_logpy(self):
+    return (type(self), self.__dict__)
+
+def _from_logpy((typ, attrs)):
+    obj = object.__new__(typ)
+    obj.__dict__.update(attrs)
+    return obj
+
+def _as_logpy_slot(self):
+    attrs = dict((attr, getattr(self, attr)) for attr in self.__slots__
+                                             if hasattr(self, attr))
+    return (type(self), attrs)
+
+def _from_logpy_slot((typ, attrs)):
+    obj = object.__new__(typ)
+    for attr, val in attrs.items():
+        setattr(obj, attr, val)
+    return obj
+
+
+def logify(cls):
+    """ Alter a class so that it interacts well with LogPy
+
+    The __class__ and __dict__ attributes are used to define the LogPy term
+
+    See Also:
+        _as_logpy
+        _from_logpy
+
+
+    >>> from logpy import logify, run, var, eq
+    >>> class A(object):
+    ...     def __init__(self, a, b):
+    ...         self.a = a
+    ...         self.b = b
+    >>> logify(A)
+
+    >>> x = var('x')
+    >>> a = A(1, 2)
+    >>> b = A(1, x)
+
+    >>> run(1, x, eq(a, b))
+    (2,)
+    """
+    if hasattr(cls, '__slots__'):
+        cls._as_logpy = _as_logpy_slot
+        cls._from_logpy = staticmethod(_from_logpy_slot)
+    else:
+        cls._as_logpy = _as_logpy
+        cls._from_logpy = staticmethod(_from_logpy)

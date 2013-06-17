@@ -39,7 +39,7 @@ def variables(*variables):
     """ Context manager for logic variables
 
     >>> from __future__ import with_statement
-    >>> from logpy.variables import variables, var, isvar
+    >>> from logpy import variables, var, isvar
     >>> with variables(1):
     ...     print isvar(1)
     True

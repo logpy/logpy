@@ -1,7 +1,7 @@
 import functools
 from util import transitive_get as walk
 from util import assoc
-from logpy.variables import Var, var, isvar
+from variable import Var, var, isvar
 
 ################
 # Reificiation #
@@ -29,7 +29,7 @@ reify_isinstance_list = []
 def reify(e, s):
     """ Replace variables of expression with substitution
 
-    >>> from logpy.unify import reify, var
+    >>> from logpy.unification import reify, var
     >>> x, y = var(), var()
     >>> e = (1, x, (3, y))
     >>> s = {x: 2, y: 4}
@@ -43,6 +43,8 @@ def reify(e, s):
     """
     if isvar(e):
         return reify(s[e], s) if e in s else e
+    if hasattr(e, '_from_logpy') and not isinstance(e, type):
+        return e._from_logpy(reify(e._as_logpy(), s))
     if type(e) in reify_dispatch:
         return reify_dispatch[type(e)](e, s)
     for typ, reify_fn in reify_isinstance_list:
@@ -89,7 +91,7 @@ seq_registry = []
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
-    >>> from logpy.unify import unify, var
+    >>> from logpy.unification import unify, var
     >>> x = var('x')
     >>> unify((1, x), (1, 2), {})
     {~x: 2}
@@ -105,17 +107,15 @@ def unify(u, v, s):  # no check at the moment
     types = (type(u), type(v))
     if types in unify_dispatch:
         return unify_dispatch[types](u, v, s)
+    if (hasattr(u, '_as_logpy') and not isinstance(u, type) and
+        hasattr(v, '_as_logpy') and not isinstance(v, type)):
+        return unify_seq(u._as_logpy(), v._as_logpy(), s)
     for (typu, typv), unify_fn in unify_isinstance_list:
         if isinstance(u, typu) and isinstance(v, typv):
             return unify_fn(u, v, s)
     for typ, fn in seq_registry:
-        action = False
-        if isinstance(u, typ):
-            u = fn(u); action=True
-        if isinstance(v, typ):
-            v = fn(v); action=True
-        if action:
-            return unify(u, v, s)
+        if isinstance(u, typ) and isinstance(v, typ):
+            return unify_seq(fn(u), fn(v), s)
 
     else:
         return False
