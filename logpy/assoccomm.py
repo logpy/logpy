@@ -29,16 +29,15 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from logpy.core import (isvar, assoc, walk, unify,
+from logpy.core import (isvar, assoc, unify,
         conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, goaleval)
-from logpy.goals import heado, seteq, conso, tailo
+from logpy.goals import heado, permuteq, conso, tailo
 from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
-from logpy.unify import seq_registry
+from logpy.util import transitive_get as walk
 
-__all__ = ['associative', 'commutative', 'eq_assoccomm']
 
 associative = Relation('associative')
 commutative = Relation('commutative')
@@ -49,34 +48,34 @@ def assocunify(u, v, s, eq=core.eq, n=None):
     See Also:
         eq_assoccomm
     """
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
 
-    if not isinstance(u, tuple) and not isinstance(v, tuple):
+    if not uop and not vop:
         res = unify(u, v, s)
         if res is not False:
             return (res,)  # TODO: iterate through all possibilities
 
-    if isinstance(u, tuple) and isinstance(v, tuple):
-        uop, u = u[0], u[1:]
-        vop, v = v[0], v[1:]
+    if uop and vop:
         s = unify(uop, vop, s)
         if s is False:
             raise StopIteration()
         op = walk(uop, s)
 
-        sm, lg = (u, v) if len(u) <= len(v) else (v, u)
+        sm, lg = (uargs, vargs) if len(uargs) <= len(vargs) else (vargs, uargs)
         ops = assocsized(op, lg, len(sm))
         goal = condeseq([(eq, a, b) for a, b, in zip(sm, lg2)] for lg2 in ops)
         return goaleval(goal)(s)
 
-    if isinstance(u, tuple):
-        a, b = u, v
-    if isinstance(v, tuple):
-        a, b = v, u
+    if uop:
+        op, tail = uop, uargs
+        b = v
+    if vop:
+        op, tail = vop, vargs
+        b = u
 
-    op, tail = a[0], a[1:]
-
-    ns = [n] if n else range(2, len(a))
-    knowns = (((op,) + x) for n in ns for x in assocsized(op, tail, n))
+    ns = [n] if n else range(2, len(tail)+1)
+    knowns = (build(op, x) for n in ns for x in assocsized(op, tail, n))
 
     goal = condeseq([(core.eq, b, k)] for k in knowns)
     return goaleval(goal)(s)
@@ -94,7 +93,7 @@ def makeops(op, lists):
     >>> makeops('add', [(1, 2), (3, 4, 5)])
     (('add', 1, 2), ('add', 3, 4, 5))
     """
-    return tuple(l[0] if len(l) == 1 else (op,) + tuple(l) for l in lists)
+    return tuple(l[0] if len(l) == 1 else build(op, l) for l in lists)
 
 def partition(tup, part):
     """ Partition a tuple
@@ -134,20 +133,24 @@ def eq_assoc(u, v, eq=core.eq, n=None):
     >>> run(0, x, eq(('add', 1, 2, 3), ('add', 1, x)))
     (('add', 2, 3),)
     """
-    op = var()
-    if isinstance(u, tuple) and isinstance(v, tuple):
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
+    if uop and vop:
         return conde([(core.eq, u, v)],
-                     [(heado, op, u), (heado, op, v), (associative, op),
+                     [(eq, uop, vop), (associative, uop),
                       lambda s: assocunify(u, v, s, eq, n)])
 
-    if isinstance(u, tuple) or isinstance(v, tuple):
-        if isinstance(v, tuple):
+    if uop or vop:
+        if vop:
+            uop, vop = vop, uop
+            uargs, vargs = vargs, uargs
             v, u = u, v
         return conde([(core.eq, u, v)],
-                     [(heado, op, u), (associative, op),
+                     [(associative, uop),
                       lambda s: assocunify(u, v, s, eq, n)])
 
     return (core.eq, u, v)
+
 
 def eq_comm(u, v, eq=None):
     """ Goal for commutative equality
@@ -170,14 +173,67 @@ def eq_comm(u, v, eq=None):
     if isvar(u) and isvar(v):
         return (core.eq, u, v)
         raise EarlyGoalError()
-    if isinstance(v, tuple) and not isinstance(u, tuple):
-        u, v = v, u
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
+    if not uop and not vop:
+        return (core.eq, u, v)
+    if vop and not uop:
+        uop, uargs = vop, vargs
+        v, u = u, v
     return (conde, ((core.eq, u, v),),
-                   ((heado, op, u),
-                    (commutative, op),
-                    (tailo, utail, u),
-                    (conso, op, vtail, v),
-                    (seteq, utail, vtail, eq)))
+                   ((commutative, uop),
+                    (buildo, uop, vtail, v),
+                    (permuteq, uargs, vtail, eq)))
+
+def build_tuple(op, args):
+    try:
+        return (op,) + args
+    except TypeError:
+        raise EarlyGoalError()
+
+op_registry = [{'opvalid': lambda x: isinstance(x, (str, object)),
+               'objvalid': lambda x: isinstance(x, tuple),
+               'op': lambda t: t and t[0],
+               'args': lambda t: t and t[1:],
+               'build': build_tuple}]
+
+
+
+def buildo(op, args, obj, op_registry=op_registry):
+    """ obj is composed of op on args
+
+    Example: in add(1,2,3) ``add`` is the op and (1,2,3) are the args
+
+    Checks op_regsitry for functions to define op/arg relationships
+    """
+    if not isvar(obj):
+        oop, oargs = op_args(obj, op_registry)
+        return lall((eq, op, oop), (eq, args, oargs))
+    else:
+        try:
+            return eq(obj, build(op, args, op_registry))
+        except TypeError:
+            raise EarlyGoalError()
+    raise EarlyGoalError()
+
+def build(op, args, registry=op_registry):
+    if hasattr(op, '_from_logpy'):
+        return op._from_logpy((op, args))
+    for d in registry:
+        if d['opvalid'](op):
+            return d['build'](op, args)
+    return None
+
+def op_args(x, registry=op_registry):
+    """ Break apart x into an operation and tuple of args """
+    if isvar(x):
+        return None, None
+    if hasattr(x, '_as_logpy') and not isinstance(x, type):
+        return x._as_logpy()
+    for d in registry:
+        if d['objvalid'](x):
+            return d['op'](x), d['args'](x)
+    return None, None
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
@@ -202,30 +258,30 @@ def eq_assoccomm(u, v):
     >>> run(0, x, eq(e1, e2))
     (('add', 2, 3), ('add', 3, 2))
     """
-    for typ, fn in seq_registry:
-        if isinstance(u, typ):
-            u = fn(u)
-        if isinstance(v, typ):
-            v = fn(v)
-    if isinstance(u, tuple) and not isinstance(v, tuple) and not isvar(v):
-        return fail
-    if isinstance(v, tuple) and not isinstance(u, tuple) and not isvar(u):
-        return fail
-    if isinstance(u, tuple) and isinstance(v, tuple) and not u[0] == v[0]:
-        return fail
-    if isinstance(u, tuple) and not (u[0],) in associative.facts:
-        return (eq, u, v)
-    if isinstance(v, tuple) and not (v[0],) in associative.facts:
+    try:
+        uop, uargs = op_args(u)
+        vop, vargs = op_args(v)
+    except ValueError:
         return (eq, u, v)
 
-    if isinstance(u, tuple) and isinstance(v, tuple):
-        u, v = (u, v) if len(u) >= len(v) else (v, u)
-        n = len(v)-1  # length of shorter tail
+    if uop and not vop and not isvar(v):
+        return fail
+    if vop and not uop and not isvar(u):
+        return fail
+    if uop and vop and not uop == vop:
+        return fail
+    if uop and not (uop,) in associative.facts:
+        return (eq, u, v)
+    if vop and not (vop,) in associative.facts:
+        return (eq, u, v)
+
+    if uop and vop:
+        u, v = (u, v) if len(uargs) >= len(vargs) else (v, u)
+        n = min(map(len, (uargs, vargs)))  # length of shorter tail
     else:
         n = None
-    if isinstance(v, tuple) and not isinstance(u, tuple):
+    if vop and not uop:
         u, v = v, u
     w = var()
-    return lall((eq_assoc, u, w, eq_assoccomm, n),
-                (eq_comm, v, w, eq_assoccomm))
-
+    return (lall, (eq_assoc, u, w, eq_assoccomm, n),
+                  (eq_comm, v, w, eq_assoccomm))

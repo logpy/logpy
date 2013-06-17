@@ -1,6 +1,6 @@
 from logpy.core import (walk, walkstar, isvar, var, run,
         membero, evalt, fail, success, eq, conde,
-        condeseq, goaleval, lany, lall,
+        condeseq, goaleval, lany, lall, lanyseq,
         goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
 import itertools
 from logpy.util import raises
@@ -87,7 +87,20 @@ def test_membero():
     x = var('x')
     assert set(run(5, x, membero(x, (1,2,3)),
                          membero(x, (2,3,4)))) == set((2,3))
+
     assert run(5, x, membero(2, (1, x, 3))) == (2,)
+
+def test_lanyseq():
+    x = var('x')
+    g = lanyseq(((eq, x, i) for i in range(3)))
+    assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
+    assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
+
+def test_membero_can_be_reused():
+    x = var('x')
+    g = membero(x, (0, 1, 2))
+    assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
+    assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
 
 def test_evalt():
     add = lambda x, y: x + y
@@ -117,8 +130,6 @@ def test_goalexpand():
 
     g = (growing_goal, 2)
     assert goalexpand(g) == (growing_goal, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2)
-    t = goalexpand((membero, x, (1,2,3)))
-    assert t == (lany, (eq, x, 1), (eq, x, 2), (eq, x, 3))
 
 def test_early():
     x, y = var(), var()

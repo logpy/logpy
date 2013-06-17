@@ -1,5 +1,6 @@
 from core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
         lallearly, fail, success)
+from util import unique
 import itertools as it
 
 def heado(x, coll):
@@ -42,6 +43,47 @@ def conso(h, t, l):
     else:
         raise EarlyGoalError()
 
+def permuteq(a, b, eq2=eq):
+    """ Equality under permutation
+
+    For example (1, 2, 2) equates to (2, 1, 2) under permutation
+    >>> from logpy import var, run, permuteq
+    >>> x = var()
+    >>> run(0, x, permuteq(x, (1, 2)))
+    ((1, 2), (2, 1))
+
+    >>> run(0, x, permuteq((2, 1, x), (2, 1, 2)))
+    (2,)
+    """
+    if isinstance(a, tuple) and isinstance(b, tuple):
+        if len(a) != len(b):
+            return fail
+        elif set(a) == set(b) and len(set(a)) == len(a):
+            return success
+        else:
+            c, d = a, b
+            try:
+                c, d = tuple(sorted(c)), tuple(sorted(d))
+            except:
+                pass
+            if len(c) == 1:
+                return (eq2, c[0], d[0])
+            return condeseq((
+                   ((eq2, c[i], d[0]), (permuteq, c[0:i] + c[i+1:], d[1:], eq2))
+                        for i in range(len(c))))
+
+    if isvar(a) and isvar(b):
+        raise EarlyGoalError()
+
+    if isvar(a) or isvar(b):
+        if isinstance(b, tuple):
+            c, d = a, b
+        elif isinstance(a, tuple):
+            c, d = b, a
+
+        return (condeseq, ([eq(c, perm)]
+                           for perm in unique(it.permutations(d, len(d)))))
+
 def seteq(a, b, eq2=eq):
     """ Set Equality
 
@@ -55,28 +97,17 @@ def seteq(a, b, eq2=eq):
     >>> run(0, x, seteq((2, 1, x), (3, 1, 2)))
     (3,)
     """
-    if isinstance(a, tuple) and isinstance(b, tuple):
-        if set(a) == set(b):
-            return success
-        elif len(a) != len(b):
-            return fail
-        else:
-            c, d = tuple(sorted(a)), tuple(sorted(b))
-            if len(c) == 1:
-                return (eq2, c[0], d[0])
-            return condeseq((
-                    ((eq2, c[i], d[0]), (seteq, c[0:i] + c[i+1:], d[1:], eq2))
-                        for i in range(len(c))))
+    ts = lambda x: tuple(set(x))
+    if not isvar(a) and not isvar(b):
+        return permuteq(ts(a), ts(b), eq2)
+    elif not isvar(a):
+        return permuteq(ts(a), b, eq2)
+    elif not isvar(b):
+        return permuteq(a, ts(b), eq2)
+    else:
+        return permuteq(a, b, eq2)
 
-    if isvar(a) and isvar(b):
-        raise EarlyGoalError()
-
-    if isvar(a) and isinstance(b, tuple):
-        c, d = a, b
-    if isvar(b) and isinstance(a, tuple):
-        c, d = b, a
-
-    return (condeseq, ([eq(c, perm)] for perm in it.permutations(d, len(d))))
+    raise Exception()
 
 
 def goalify(func):
