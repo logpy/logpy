@@ -55,8 +55,11 @@ def binop(op, revop=None):
     return goal
 
 add = binop(operator.add, operator.sub)
+add.__doc__ = """ x + y == z """
 mul = binop(operator.mul, operator.div)
+mul.__doc__ = """ x * y == z """
 mod = binop(operator.mod)
+mod.__doc__ = """ x % y == z """
 
 def sub(x, y, z):
     """ x - y == z """
