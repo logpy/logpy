@@ -1,4 +1,5 @@
 import itertools as it
+from functools import partial
 from logpy.util import transitive_get as walk
 from logpy.util import deep_transitive_get as walkstar
 from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
@@ -198,7 +199,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    results = (reify(x, s) for s in goaleval(lallearly(*goals))({}))
+    results = it.imap(partial(reify, x), goaleval(lallearly(*goals))({}))
     return take(n, unique(results, key=multihash))
 
 ###################
