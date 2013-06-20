@@ -1,14 +1,16 @@
-import functools
+from functools import partial
 from util import transitive_get as walk
 from util import assoc
 from variable import Var, var, isvar
+import itertools as it
 
 ################
 # Reificiation #
 ################
 
 def reify_generator(t, s):
-    return (reify(arg, s) for arg in t)
+    return it.imap(partial(reify, s=s), t)
+    # return (reify(arg, s) for arg in t)
 def reify_tuple(*args):
     return tuple(reify_generator(*args))
 def reify_list(*args):
