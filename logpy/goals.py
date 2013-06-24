@@ -79,7 +79,6 @@ def permuteq(a, b, eq2=eq):
         if isvar(b):
             a, b = b, a
 
-        print a, b
         return (condeseq, ([eq(a, perm)]
                            for perm in unique(it.permutations(b, len(b)))))
 
