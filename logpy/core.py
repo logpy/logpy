@@ -5,8 +5,7 @@ from logpy.util import deep_transitive_get as walkstar
 from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index, multihash)
 
-from term.variable import var, isvar
-from term.unification import reify, unify
+from term import var, isvar, reify, unify
 
 
 #########
