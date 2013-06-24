@@ -75,14 +75,13 @@ def permuteq(a, b, eq2=eq):
     if isvar(a) and isvar(b):
         raise EarlyGoalError()
 
-    if isvar(a) or isvar(b):
-        if isinstance(b, tuple):
-            c, d = a, b
-        elif isinstance(a, tuple):
-            c, d = b, a
+    if isvar(b) or isvar(b):
+        if isvar(b):
+            a, b = b, a
 
-        return (condeseq, ([eq(c, perm)]
-                           for perm in unique(it.permutations(d, len(d)))))
+        print a, b
+        return (condeseq, ([eq(a, perm)]
+                           for perm in unique(it.permutations(b, len(b)))))
 
 def seteq(a, b, eq2=eq):
     """ Set Equality
