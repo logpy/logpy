@@ -5,8 +5,8 @@ from logpy.util import deep_transitive_get as walkstar
 from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index, multihash)
 
-from logpy.variable import var, isvar
-from logpy.unification import reify, unify
+from term.variable import var, isvar
+from term.unification import reify, unify
 
 
 #########
@@ -22,7 +22,7 @@ def eq(u, v):
     """ Goal such that u == v
 
     See also:
-        unify
+        term.unify
     """
     def goal_eq(s):
         result = unify(u, v, s)
