@@ -38,6 +38,7 @@ from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
 from logpy.util import transitive_get as walk
+from term import new, op, args, isleaf
 
 
 associative = Relation('associative')
@@ -218,8 +219,8 @@ def buildo(op, args, obj, op_registry=op_registry):
     raise EarlyGoalError()
 
 def build(op, args, registry=op_registry):
-    if hasattr(op, '_from_logpy'):
-        return op._from_logpy((op, args))
+    if hasattr(op, '_term_new'):
+        return new(op, args)
     for d in registry:
         if d['opvalid'](op):
             return d['build'](op, args)
@@ -229,8 +230,8 @@ def op_args(x, registry=op_registry):
     """ Break apart x into an operation and tuple of args """
     if isvar(x):
         return None, None
-    if hasattr(x, '_as_logpy') and not isinstance(x, type):
-        return x._as_logpy()
+    if hasattr(x, '_term_op') and not isinstance(x, type):
+        return op(x), args(x)
     for d in registry:
         if d['objvalid'](x):
             return d['op'](x), d['args'](x)
