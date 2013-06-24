@@ -92,6 +92,13 @@ Data Structures
 
 LogPy depends on functions, tuples, dicts, and generators.  There are almost no new data structures/classes in LogPy so it should be simple to integrate into preexisting code.
 
+Dependencies
+------------
+
+Python 2.5, 2.6, or 2.7
+
+The [Term](http://github.com/mrocklin/term) library.
+
 Install
 -------
 
