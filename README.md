@@ -95,7 +95,7 @@ LogPy depends on functions, tuples, dicts, and generators.  There are almost no 
 Dependencies
 ------------
 
-Python 2.5, 2.6, or 2.7
+Python 2.x for `x >= 6`
 
 *   [TermPy](http://github.com/logpy/termpy/)
 *   [Toolz](http://github.com/pytoolz/toolz/)
