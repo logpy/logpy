@@ -29,7 +29,7 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from term import unify, var
+from termpy import unify, var
 from logpy.core import (isvar, assoc,
         conde, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, goaleval)
@@ -38,7 +38,7 @@ from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
 from logpy.util import transitive_get as walk
-from term import new, op, args, isleaf
+from termpy import new, op, args, isleaf
 
 
 associative = Relation('associative')

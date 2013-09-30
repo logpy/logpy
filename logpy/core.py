@@ -5,7 +5,7 @@ from logpy.util import deep_transitive_get as walkstar
 from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
         groupby, index, multihash)
 
-from term import var, isvar, reify, unify
+from termpy import var, isvar, reify, unify
 
 
 #########
@@ -21,7 +21,7 @@ def eq(u, v):
     """ Goal such that u == v
 
     See also:
-        term.unify
+        termpy.unify
     """
     def goal_eq(s):
         result = unify(u, v, s)
