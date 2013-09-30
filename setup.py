@@ -10,7 +10,8 @@ setup(name='logic',
       license='BSD',
       packages=['logpy'],
       install_requires = [
-          'termpy>=0.1'
+          'termpy>=0.1',
+          'toolz>=0.2'
           ]
       long_description=open('README.md').read() if exists("README.md") else "",
       zip_safe=False)

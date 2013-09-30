@@ -2,10 +2,10 @@ import itertools as it
 from functools import partial
 from logpy.util import transitive_get as walk
 from logpy.util import deep_transitive_get as walkstar
-from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
-        groupby, index, multihash)
+from logpy.util import dicthash, evalt, multihash, take, unique
 
 from termpy import var, isvar, reify, unify
+from toolz import assoc, interleave, groupby
 
 
 #########

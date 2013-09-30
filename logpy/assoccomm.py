@@ -36,8 +36,9 @@ from logpy.core import (isvar, assoc,
 from logpy.goals import heado, permuteq, conso, tailo
 from logpy.facts import Relation
 from logpy import core
-from logpy.util import groupsizes, index
+from logpy.util import groupsizes
 from logpy.util import transitive_get as walk
+from toolz import get
 from termpy import new, op, args, isleaf
 
 
@@ -104,7 +105,7 @@ def partition(tup, part):
     >>> partition("abcde", [[0,1], [4,3,2]])
     [('a', 'b'), ('e', 'd', 'c')]
     """
-    return [index(tup, ind) for ind in part]
+    return [get(ind, tup) for ind in part]
 
 def groupsizes_to_partition(*gsizes):
     """

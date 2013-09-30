@@ -97,7 +97,8 @@ Dependencies
 
 Python 2.5, 2.6, or 2.7
 
-The [TermPy](http://github.com/mrocklin/termpy) library.
+*   [TermPy](http://github.com/logpy/termpy/)
+*   [Toolz](http://github.com/pytoolz/toolz/)
 
 Install
 -------

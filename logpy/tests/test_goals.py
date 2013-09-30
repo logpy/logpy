@@ -1,7 +1,7 @@
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
         isinstanceo, permuteq)
 from logpy.core import var, run, eq, EarlyGoalError, goaleval, membero
-from logpy.util import raises
+from toolz.utils import raises
 
 def results(g, s={}):
     return tuple(goaleval(g)(s))

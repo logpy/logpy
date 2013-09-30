@@ -8,4 +8,4 @@ from goals import seteq, permuteq, goalify
 from facts import Relation, fact, facts
 from termpy import unify, reify, termify
 
-__version__ = '0.1.10'
+__version__ = '0.2'

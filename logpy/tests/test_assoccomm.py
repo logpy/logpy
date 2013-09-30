@@ -3,7 +3,7 @@ from logpy.facts import fact
 from logpy.assoccomm import (associative, commutative, conde,
         groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
         eq_assoccomm, assocsized, buildo, op_args)
-from logpy.util import raises
+from toolz.utils import raises
 
 a = 'assoc_op'
 c = 'comm_op'
