@@ -38,11 +38,6 @@ def deep_transitive_get(key, d):
     else:
         return key
 
-def assoc(dict, key, value):
-    d = dict.copy()
-    d[key] = value
-    return d
-
 def dicthash(d):
     return hash(frozenset(d.items()))
 
@@ -58,44 +53,12 @@ def multihash(x):
             return hash((x.start, x.stop, x.step))
         raise TypeError('Hashing not covered for ' + str(x))
 
-def unique(seq, key=lambda x: x):
-    seen = set()
-    for item in seq:
-        try:
-            if key(item) not in seen:
-                seen.add(key(item))
-                yield item
-        except TypeError:   # item probably isn't hashable
-            yield item      # Just return it and hope for the best
-
-def interleave(seqs, pass_exceptions=()):
-    iters = it.imap(iter, seqs)
-    while iters:
-        newiters = []
-        for itr in iters:
-            try:
-                yield next(itr)
-                newiters.append(itr)
-            except (StopIteration,) + tuple(pass_exceptions):
-                pass
-        iters = newiters
-
 def take(n, seq):
     if n is None:
         return seq
     if n == 0:
         return tuple(seq)
     return tuple(it.islice(seq, 0, n))
-
-def groupby(f, coll):
-    d = dict()
-    for item in coll:
-        key = f(item)
-        if key not in d:
-            d[key] = []
-        d[key].append(item)
-    return d
-
 
 def evalt(t):
     """ Evaluate tuple if unevaluated
@@ -113,10 +76,6 @@ def evalt(t):
     else:
         return t
 
-def intersection(*seqs):
-    return (item for item in seqs[0]
-                 if all(item in seq for seq in seqs[1:]))
-
 def groupsizes(total, len):
     """ Groups of length len that add up to total
 
@@ -131,13 +90,6 @@ def groupsizes(total, len):
             for perm in groupsizes(total - i, len - 1):
                 yield (i,) + perm
 
-def raises(err, lamda):
-    try:
-        lamda()
-        raise Exception("Did not raise %s"%err)
-    except err:
-        pass
-
 def pprint(g):
     """ Pretty print a tree of goals """
     if callable(g) and hasattr(g, 'func_name'):
@@ -148,9 +100,13 @@ def pprint(g):
         return "(" + ', '.join(map(pprint, g)) + ")"
     return str(g)
 
-def index(tup, ind):
-    """ Fancy indexing with tuples """
-    return tuple(tup[i] for i in ind)
 
-def merge(*dicts):
-    return dict(item for dict in dicts for item in dict.iteritems())
+def unique(seq, key=lambda x: x):
+    seen = set()
+    for item in seq:
+        try:
+            if key(item) not in seen:
+                seen.add(key(item))
+                yield item
+        except TypeError:   # item probably isn't hashable
+            yield item      # Just return it and hope for the best

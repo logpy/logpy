@@ -1,4 +1,4 @@
-from util import intersection, index, merge
+from toolz import intersection, get, merge
 from core import conde, reify, isvar
 
 class Relation(object):
@@ -38,13 +38,13 @@ class Relation(object):
                 facts = self.facts
             varinds = [i for i, arg in enumerate(args2) if isvar(arg)]
             valinds = [i for i, arg in enumerate(args2) if not isvar(arg)]
-            vars = index(args2, varinds)
-            vals = index(args2, valinds)
+            vars = get(varinds, args2)
+            vals = get(valinds, args2)
             assert not any(var in s for var in vars)
 
-            return (merge(dict(zip(vars, index(fact, varinds))), s)
+            return (merge(dict(zip(vars, get(varinds, fact))), s)
                               for fact in self.facts
-                              if vals == index(fact, valinds))
+                              if vals == get(valinds, fact))
         return f
 
     def __str__(self):

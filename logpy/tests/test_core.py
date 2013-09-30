@@ -3,7 +3,7 @@ from logpy.core import (walk, walkstar, isvar, var, run,
         condeseq, goaleval, lany, lall, lanyseq,
         goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
 import itertools
-from logpy.util import raises
+from toolz.utils import raises
 
 w, x, y, z = 'wxyz'
 
