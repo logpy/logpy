@@ -10,11 +10,14 @@ class Foo(object):
             self.b = b
         def __eq__(self, other):
             return (self.a, self.b) == (other.a, other.b)
+
+
 class Bar(object):
         def __init__(self, c):
             self.c = c
         def __eq__(self, other):
             return self.c == other.c
+
 
 def test_run_objects_with_context_manager():
     f = Foo(1, 1234)
@@ -41,6 +44,7 @@ def test_reify_object():
     f = Foo(1, 2)
     assert reify_object(f, {}) is f
 
+
 def test_objects_full():
     _unify.add((Foo, Foo, dict), unify_object)
     _unify.add((Bar, Bar, dict), unify_object)
@@ -55,11 +59,13 @@ def test_objects_full():
 class Foo2(Foo):
     pass
 
+
 def test_objects_as_logpy():
     logify(Foo2)
     x = var()
     assert unify(Foo2(1, x), Foo2(1, 2), {}) == {x: 2}
     assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
+
 
 def test_list_1():
     _unify.add((Foo, Foo, dict), unify_object)
@@ -82,9 +88,11 @@ def test_unify_slice():
     assert unify(slice(1, 2, 3), x, {}) == {x: slice(1, 2, 3)}
     assert unify(slice(1, 2, None), slice(x, y), {}) == {x: 1, y: 2}
 
+
 def test_reify_slice():
     x = var('x')
     assert reify(slice(1, var(2), 3), {var(2): 10}) == slice(1, 10, 3)
+
 
 def test_unify_object_attrs():
     x, y = var('x'), var('y')
@@ -92,6 +100,7 @@ def test_unify_object_attrs():
     assert unify_object_attrs(f, g, {}, ['a']) == {x: 1}
     assert unify_object_attrs(f, g, {}, ['b']) == {y: 2}
     assert unify_object_attrs(f, g, {}, []) == {}
+
 
 def test_reify_object_attrs():
     x, y = var('x'), var('y')
@@ -101,6 +110,7 @@ def test_reify_object_attrs():
     assert reify_object_attrs(g, s, ['a']) ==  Foo(1, y)
     assert reify_object_attrs(g, s, ['b']) ==  Foo(x, 2)
     assert reify_object_attrs(g, s, []) is g
+
 
 def test_unify_isinstance_list():
     class Foo2(Foo): pass
@@ -115,6 +125,7 @@ def test_unify_isinstance_list():
     assert reify(g, {x: 1, y: 2}) == f
 
 
+@logify
 class A(object):
     def __init__(self, a, b):
         self.a = a
@@ -123,6 +134,7 @@ class A(object):
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+
 class B(A):
     def __init__(self, a, b, c):
         self.a = a
@@ -130,7 +142,6 @@ class B(A):
         self.c = c
         self.data = {'a': a, 'b': b, 'c': c}
 
-logify(A)
 
 def test_logify():
     x = var('x')

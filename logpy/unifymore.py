@@ -223,6 +223,7 @@ def logify(cls):
     ...         self.a = a
     ...         self.b = b
     >>> logify(A)
+    <class 'logpy.unifymore.A'>
 
     >>> x = var('x')
     >>> a = A(1, 2)
@@ -240,6 +241,8 @@ def logify(cls):
 
     _reify.add((cls, dict), reify_term)
     _unify.add((cls, cls, dict), unify_term)
+
+    return cls
 
 
 @dispatch((tuple, list))
