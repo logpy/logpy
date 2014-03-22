@@ -6,10 +6,12 @@ from multipledispatch import dispatch
 # Reify #
 #########
 
+
 @dispatch(slice, dict)
 def _reify(o, s):
     """ Reify a Python ``slice`` object """
     return slice(*reify((o.start, o.stop, o.step), s))
+
 
 def reify_object(o, s):
     """ Reify a Python object with a substitution
@@ -152,32 +154,52 @@ def register_reify_object_attrs(cls, attrs):
 def register_unify_object(cls):
     _unify.add((cls, cls, dict), unify_object)
 
+
 def register_unify_object_attrs(cls, attrs):
     _unify.add((cls, cls, dict), partial(unify_object_attrs, attrs=attrs))
+
 
 def register_object_attrs(cls, attrs):
     register_unify_object_attrs(cls, attrs)
     register_reify_object_attrs(cls, attrs)
 
-def _as_logpy(self):
-    return (type(self), self.__dict__)
 
-def _from_logpy((typ, attrs)):
-    obj = object.__new__(typ)
-    obj.__dict__.update(attrs)
-    return obj
-
-def _as_logpy_slot(self):
-    attrs = dict((attr, getattr(self, attr)) for attr in self.__slots__
-                                             if hasattr(self, attr))
-    return (type(self), attrs)
-
-def _from_logpy_slot((typ, attrs)):
-    obj = object.__new__(typ)
-    for attr, val in attrs.items():
+def term_slot(op, args):
+    obj = object.__new__(op)
+    for attr, val in args.items():
         setattr(obj, attr, val)
     return obj
 
+
+def term_dict(op, args):
+    obj = object.__new__(op)
+    obj.__dict__.update(args)
+    return obj
+
+
+def arguments_dict(obj):
+    return obj.__dict__
+
+
+def arguments_slot(obj):
+    return dict((attr, getattr(obj, attr)) for attr in obj.__slots__
+                                            if hasattr(obj, attr))
+
+operator_slot = operator_dict = type
+
+def reify_term(obj, s):
+    op, args = operator(obj), arguments(obj)
+    op = reify(op, s)
+    args = reify(args, s)
+    new = term(op, args)
+    return new
+
+def unify_term(u, v, s):
+    u_op, u_args = operator(u), arguments(u)
+    v_op, v_args = operator(v), arguments(v)
+    s = unify(u_op, v_op, s)
+    s = unify(u_args, v_args, s)
+    return s
 
 def logify(cls):
     """ Alter a class so that it interacts well with LogPy
@@ -204,8 +226,33 @@ def logify(cls):
     (2,)
     """
     if hasattr(cls, '__slots__'):
-        cls._as_logpy = _as_logpy_slot
-        cls._from_logpy = staticmethod(_from_logpy_slot)
+        operator.add((cls,), operator_slot)
+        arguments.add((cls,), arguments_slot)
     else:
-        cls._as_logpy = _as_logpy
-        cls._from_logpy = staticmethod(_from_logpy)
+        operator.add((cls,), operator_dict)
+        arguments.add((cls,), arguments_dict)
+
+    _reify.add((cls, dict), reify_term)
+    _unify.add((cls, cls, dict), unify_term)
+
+
+@dispatch((tuple, list))
+def operator(seq):
+    return seq[0]
+
+
+@dispatch((tuple, list))
+def arguments(seq):
+    return seq[1:]
+
+
+@dispatch(object, (tuple, list))
+def term(op, args):
+    return (op,) + tuple(args)
+
+@dispatch(object, dict)
+def term(op, args):
+    if hasattr(op, '__slots__'):
+        return term_slot(op, args)
+    else:
+        return term_dict(op, args)

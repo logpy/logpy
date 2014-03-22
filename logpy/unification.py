@@ -51,8 +51,6 @@ def reify(e, s):
     """
     if isvar(e):
         return reify(s[e], s) if e in s else e
-    if hasattr(e, '_from_logpy') and not isinstance(e, type):
-        return e._from_logpy(reify(e._as_logpy(), s))
     return _reify(e, s)
 
 ###############
@@ -108,7 +106,4 @@ def unify(u, v, s):  # no check at the moment
         return assoc(s, u, v)
     if isvar(v):
         return assoc(s, v, u)
-    if (hasattr(u, '_as_logpy') and not isinstance(u, type) and
-        hasattr(v, '_as_logpy') and not isinstance(v, type)):
-        return unify(u._as_logpy(), v._as_logpy(), s)
     return _unify(u, v, s)

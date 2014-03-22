@@ -55,14 +55,10 @@ def test_objects_full():
 
 
 class Foo2(Foo):
-    def _as_logpy(self):
-        return (type(self), self.a, self.b)
-
-    @staticmethod
-    def _from_logpy((typ, a, b)):
-        return typ(a, b)
+    pass
 
 def test_objects_as_logpy():
+    logify(Foo2)
     x = var()
     assert unify(Foo2(1, x), Foo2(1, 2), {}) == {x: 2}
     assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
