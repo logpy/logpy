@@ -3,8 +3,6 @@ from logpy.unifymore import (unify_object, reify_object,
 from logpy import var, run, eq
 from logpy.unification import unify, reify, _unify, _reify
 from logpy import variables
-from logpy.unification import (reify, _reify,
-        reify_isinstance_list, seq_registry)
 
 class Foo(object):
         def __init__(self, a, b):
@@ -116,17 +114,6 @@ def test_unify_isinstance_list():
     assert unify(f, g, {})
     assert reify(g, {x: 1, y: 2}) == f
 
-
-def test_seq_registry():
-    seq_registry.append((Foo, lambda x: (type(x), x.a, x.b)))
-
-    x = var('x')
-    y = var('y')
-    f, g = Foo(1, 2), Foo(x, y)
-
-    assert unify(f, g, {}) == {x: 1, y: 2}
-
-    seq_registry.pop()
 
 class A(object):
     def __init__(self, a, b):

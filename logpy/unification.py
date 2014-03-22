@@ -25,14 +25,12 @@ def _reify(t, s):
 
 @dispatch(dict, dict)
 def _reify(d, s):
-    # assert isinstance(d, dict)
     return dict((k, reify(v, s)) for k, v in d.items())
 
 @dispatch(object, dict)
 def _reify(o, s):
-    return o
+    return o  # catch all, just return the object
 
-reify_isinstance_list = []
 
 def reify(e, s):
     """ Replace variables of expression with substitution
@@ -47,7 +45,6 @@ def reify(e, s):
     >>> e = {1: x, 3: (y, 5)}
     >>> reify(e, s)
     {1: 2, 3: (4, 5)}
-
     """
     if isvar(e):
         return reify(s[e], s) if e in s else e
@@ -70,6 +67,7 @@ def _unify(u, v, s):
             return False
     return s
 
+
 @dispatch(dict, dict, dict)
 def _unify(u, v, s):
     # assert isinstance(u, dict) and isinstance(v, dict)
@@ -86,9 +84,7 @@ def _unify(u, v, s):
 
 @dispatch(object, object, dict)
 def _unify(u, v, s):
-    return False
-
-seq_registry = []
+    return False  # catch all
 
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s

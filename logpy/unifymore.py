@@ -40,6 +40,7 @@ def reify_object(o, s):
     obj.__dict__.update(d)
     return obj
 
+
 def reify_object_attrs(o, s, attrs):
     """ Reify only certain attributes of a Python object
 
@@ -112,6 +113,7 @@ def unify_object(u, v, s):
         return False
     return unify(u.__dict__, v.__dict__, s)
 
+
 def unify_object_attrs(u, v, s, attrs):
     """ Unify only certain attributes of two Python objects
 
@@ -140,9 +142,9 @@ def unify_object_attrs(u, v, s, attrs):
 
     attrs contains the list of attributes which participate in reificiation
     """
-    gu = lambda a: getattr(u, a)
-    gv = lambda a: getattr(v, a)
-    return unify(map(gu, attrs), map(gv, attrs), s)
+    return unify([getattr(u, a) for a in attrs],
+                 [getattr(v, a) for a in attrs],
+                 s)
 
 
 # Registration
@@ -185,7 +187,9 @@ def arguments_slot(obj):
     return dict((attr, getattr(obj, attr)) for attr in obj.__slots__
                                             if hasattr(obj, attr))
 
+
 operator_slot = operator_dict = type
+
 
 def reify_term(obj, s):
     op, args = operator(obj), arguments(obj)
@@ -194,12 +198,14 @@ def reify_term(obj, s):
     new = term(op, args)
     return new
 
+
 def unify_term(u, v, s):
     u_op, u_args = operator(u), arguments(u)
     v_op, v_args = operator(v), arguments(v)
     s = unify(u_op, v_op, s)
     s = unify(u_args, v_args, s)
     return s
+
 
 def logify(cls):
     """ Alter a class so that it interacts well with LogPy
