@@ -1,5 +1,5 @@
 from logpy.unifymore import (unify_object, reify_object,
-        reify_object_attrs, unify_object_attrs, logify)
+        reify_object_attrs, unify_object_attrs)
 from logpy import var, run, eq
 from logpy.unification import unify, reify, _unify, _reify
 from logpy import variables
@@ -54,17 +54,6 @@ def test_objects_full():
     assert unify_object(Foo(1, Bar(2)), Foo(1, Bar(var(3))), {}) == {var(3): 2}
     assert reify(Foo(var('a'), Bar(Foo(var('b'), 3))),
                  {var('a'): 1, var('b'): 2}) == Foo(1, Bar(Foo(2, 3)))
-
-
-class Foo2(Foo):
-    pass
-
-
-def test_objects_as_logpy():
-    logify(Foo2)
-    x = var()
-    assert unify(Foo2(1, x), Foo2(1, 2), {}) == {x: 2}
-    assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
 
 
 def test_list_1():
@@ -125,45 +114,3 @@ def test_unify_isinstance_list():
     assert reify(g, {x: 1, y: 2}) == f
 
 
-@logify
-class A(object):
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-
-class B(A):
-    def __init__(self, a, b, c):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.data = {'a': a, 'b': b, 'c': c}
-
-
-def test_logify():
-    x = var('x')
-    f = A(1, 2)
-    g = A(1, x)
-    assert unify(f, g, {}) == {x: 2}
-    assert reify(g, {x: 2}) == f
-
-class Aslot(object):
-    __slots__ = ['a', 'b']
-    def __eq__(self, other):
-        return (self.a, self.b) == (other.a, other.b)
-
-logify(Aslot)
-
-def test_logify_slots():
-    x = var('x')
-    f = Aslot()
-    f.a = 1
-    f.b = 2
-    g = Aslot()
-    g.a = 1
-    g.b = x
-    assert unify(f, g, {}) == {x: 2}
-    assert reify(g, {x: 2}) == f

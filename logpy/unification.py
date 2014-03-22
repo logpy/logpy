@@ -86,6 +86,7 @@ def _unify(u, v, s):
 def _unify(u, v, s):
     return False  # catch all
 
+
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
