@@ -1,5 +1,4 @@
-from logpy.unification import (unify_seq, unify_dict,
-        unify_dispatch, reify)
+from logpy.unification import unify, reify
 from functools import partial
 from multipledispatch import dispatch
 
@@ -81,9 +80,11 @@ def reify_object_attrs(o, s, attrs):
 # Unify #
 #########
 
-def unify_slice(u, v, s):
+@dispatch(slice, slice, dict)
+def _unify(u, v, s):
     """ Unify a Python ``slice`` object """
-    return unify_seq((u.start, u.stop, u.step), (v.start, v.stop, v.step), s)
+    return unify((u.start, u.stop, u.step), (v.start, v.stop, v.step), s)
+
 
 def unify_object(u, v, s):
     """ Unify two Python objects
@@ -107,7 +108,7 @@ def unify_object(u, v, s):
     """
     if type(u) != type(v):
         return False
-    return unify_dict(u.__dict__, v.__dict__, s)
+    return unify(u.__dict__, v.__dict__, s)
 
 def unify_object_attrs(u, v, s, attrs):
     """ Unify only certain attributes of two Python objects
@@ -139,24 +140,20 @@ def unify_object_attrs(u, v, s, attrs):
     """
     gu = lambda a: getattr(u, a)
     gv = lambda a: getattr(v, a)
-    return unify_seq(map(gu, attrs), map(gv, attrs), s)
+    return unify(map(gu, attrs), map(gv, attrs), s)
 
 
 # Registration
-
-more_unify_dispatch = {
-        (slice, slice): unify_slice,
-        }
 
 def register_reify_object_attrs(cls, attrs):
     _reify.add((cls,), partial(reify_object_attrs, attrs=attrs))
 
 
 def register_unify_object(cls):
-    unify_dispatch[(cls, cls)] = unify_object
+    _unify.add((cls, cls, dict), unify_object)
 
 def register_unify_object_attrs(cls, attrs):
-    unify_dispatch[(cls, cls)] = partial(unify_object_attrs, attrs=attrs)
+    _unify.add((cls, cls, dict), partial(unify_object_attrs, attrs=attrs))
 
 def register_object_attrs(cls, attrs):
     register_unify_object_attrs(cls, attrs)

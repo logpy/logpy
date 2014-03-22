@@ -59,7 +59,10 @@ def reify(e, s):
 # Unification #
 ###############
 
-def unify_seq(u, v, s):
+seq = tuple, list, Iterator
+
+@dispatch(seq, seq, dict)
+def _unify(u, v, s):
     # assert isinstance(u, tuple) and isinstance(v, tuple)
     if len(u) != len(v):
         return False
@@ -69,7 +72,8 @@ def unify_seq(u, v, s):
             return False
     return s
 
-def unify_dict(u, v, s):
+@dispatch(dict, dict, dict)
+def _unify(u, v, s):
     # assert isinstance(u, dict) and isinstance(v, dict)
     if len(u) != len(v):
         return False
@@ -81,13 +85,11 @@ def unify_dict(u, v, s):
             return False
     return s
 
-unify_dispatch = {
-        (tuple, tuple): unify_seq,
-        (list, list):   unify_seq,
-        (dict, dict):   unify_dict,
-        }
 
-unify_isinstance_list = []
+@dispatch(object, object, dict)
+def _unify(u, v, s):
+    return False
+
 seq_registry = []
 
 def unify(u, v, s):  # no check at the moment
@@ -106,18 +108,7 @@ def unify(u, v, s):  # no check at the moment
         return assoc(s, u, v)
     if isvar(v):
         return assoc(s, v, u)
-    types = (type(u), type(v))
-    if types in unify_dispatch:
-        return unify_dispatch[types](u, v, s)
     if (hasattr(u, '_as_logpy') and not isinstance(u, type) and
         hasattr(v, '_as_logpy') and not isinstance(v, type)):
-        return unify_seq(u._as_logpy(), v._as_logpy(), s)
-    for (typu, typv), unify_fn in unify_isinstance_list:
-        if isinstance(u, typu) and isinstance(v, typv):
-            return unify_fn(u, v, s)
-    for typ, fn in seq_registry:
-        if isinstance(u, typ) and isinstance(v, typ):
-            return unify_seq(fn(u), fn(v), s)
-
-    else:
-        return False
+        return unify(u._as_logpy(), v._as_logpy(), s)
+    return _unify(u, v, s)

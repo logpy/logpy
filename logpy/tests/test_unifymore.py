@@ -1,10 +1,10 @@
 from logpy.unifymore import (unify_object, reify_object,
-        unify_slice, reify_object_attrs, unify_object_attrs, logify)
+        reify_object_attrs, unify_object_attrs, logify)
 from logpy import var, run, eq
-from logpy.unification import unify, reify
+from logpy.unification import unify, reify, _unify, _reify
 from logpy import variables
-from logpy.unification import (unify_dispatch, reify, _reify,
-        unify_isinstance_list, reify_isinstance_list, seq_registry)
+from logpy.unification import (reify, _reify,
+        reify_isinstance_list, seq_registry)
 
 class Foo(object):
         def __init__(self, a, b):
@@ -21,14 +21,13 @@ class Bar(object):
 def test_run_objects_with_context_manager():
     f = Foo(1, 1234)
     g = Foo(1, 2)
-    unify_dispatch[(Foo, Foo)] = unify_object
+    _unify.add((Foo, Foo, dict), unify_object)
     _reify.add((Foo, dict), reify_object)
     with variables(1234):
         assert unify_object(f, g, {})
         assert run(1, 1234, (eq, f, g)) == (2,)
         assert run(1, Foo(1234, 1234), (eq, f, g)) == (Foo(2, 2),)
 
-    del unify_dispatch[(Foo, Foo)]
 
 def test_unify_object():
     assert unify_object(Foo(1, 2), Foo(1, 2), {}) == {}
@@ -45,8 +44,8 @@ def test_reify_object():
     assert reify_object(f, {}) is f
 
 def test_objects_full():
-    unify_dispatch[(Foo, Foo)] = unify_object
-    unify_dispatch[(Bar, Bar)] = unify_object
+    _unify.add((Foo, Foo, dict), unify_object)
+    _unify.add((Bar, Bar, dict), unify_object)
     _reify.add((Foo, dict), reify_object)
     _reify.add((Bar, dict), reify_object)
 
@@ -54,9 +53,6 @@ def test_objects_full():
     assert reify(Foo(var('a'), Bar(Foo(var('b'), 3))),
                  {var('a'): 1, var('b'): 2}) == Foo(1, Bar(Foo(2, 3)))
 
-
-    del unify_dispatch[(Foo, Foo)]
-    del unify_dispatch[(Bar, Bar)]
 
 class Foo2(Foo):
     def _as_logpy(self):
@@ -72,8 +68,7 @@ def test_objects_as_logpy():
     assert reify(Foo2(1, x), {x: 2}) == Foo2(1, 2)
 
 def test_list_1():
-    from logpy.unification import unify_dispatch
-    unify_dispatch[(Foo, Foo)] = unify_object
+    _unify.add((Foo, Foo, dict), unify_object)
     _reify.add((Foo, dict), reify_object)
 
     x = var('x')
@@ -84,15 +79,14 @@ def test_list_1():
     rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, y)))
     assert rval == ((1, [2]),)
 
-    del unify_dispatch[(Foo, Foo)]
 
 def test_unify_slice():
     x = var('x')
     y = var('y')
 
-    assert unify_slice(slice(1), slice(1), {}) == {}
+    assert unify(slice(1), slice(1), {}) == {}
     assert unify(slice(1, 2, 3), x, {}) == {x: slice(1, 2, 3)}
-    assert unify_slice(slice(1, 2, None), slice(x, y), {}) == {x: 1, y: 2}
+    assert unify(slice(1, 2, None), slice(x, y), {}) == {x: 1, y: 2}
 
 def test_reify_slice():
     x = var('x')
@@ -120,14 +114,12 @@ def test_unify_isinstance_list():
     y = var('y')
     f, g = Foo2(1, 2), Foo2(x, y)
 
-    unify_isinstance_list.append(((Foo, Foo), unify_object))
-    reify_isinstance_list.append((Foo, reify_object))
+    _unify.add((Foo, Foo, dict), unify_object)
+    _reify.add((Foo, dict), reify_object)
 
     assert unify(f, g, {})
     assert reify(g, {x: 1, y: 2}) == f
 
-    unify_isinstance_list.pop()
-    reify_isinstance_list.pop()
 
 def test_seq_registry():
     seq_registry.append((Foo, lambda x: (type(x), x.a, x.b)))

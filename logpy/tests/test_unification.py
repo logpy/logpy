@@ -1,5 +1,4 @@
-from logpy.unification import (unify, unify_dict, unify_seq,
-        reify)
+from logpy.unification import unify, reify, _unify, _reify
 from logpy import var
 
 def test_reify():
@@ -37,17 +36,17 @@ def test_unify():
     assert unify(2, var(1), {}) == {var(1): 2}
 
 def test_unify_seq():
-    assert unify_seq((1, 2), (1, 2), {}) == {}
-    assert unify_seq([1, 2], [1, 2], {}) == {}
-    assert unify_seq((1, 2), (1, 2, 3), {}) == False
-    assert unify_seq((1, var(1)), (1, 2), {}) == {var(1): 2}
-    assert unify_seq((1, var(1)), (1, 2), {var(1): 3}) == False
+    assert unify((1, 2), (1, 2), {}) == {}
+    assert unify([1, 2], [1, 2], {}) == {}
+    assert unify((1, 2), (1, 2, 3), {}) == False
+    assert unify((1, var(1)), (1, 2), {}) == {var(1): 2}
+    assert unify((1, var(1)), (1, 2), {var(1): 3}) == False
 
 def test_unify_dict():
-    assert unify_dict({1: 2}, {1: 2}, {}) == {}
-    assert unify_dict({1: 2}, {1: 3}, {}) == False
-    assert unify_dict({2: 2}, {1: 2}, {}) == False
-    assert unify_dict({1: var(5)}, {1: 2}, {}) == {var(5): 2}
+    assert unify({1: 2}, {1: 2}, {}) == {}
+    assert unify({1: 2}, {1: 3}, {}) == False
+    assert unify({2: 2}, {1: 2}, {}) == False
+    assert unify({1: var(5)}, {1: 2}, {}) == {var(5): 2}
 
 def test_unify_complex():
     assert unify((1, {2: 3}), (1, {2: 3}), {}) == {}
