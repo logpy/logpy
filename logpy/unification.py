@@ -3,28 +3,34 @@ from util import transitive_get as walk
 from util import assoc
 from variable import Var, var, isvar
 import itertools as it
+from multipledispatch import dispatch
+from collections import Iterator
 
 ################
 # Reificiation #
 ################
 
-def reify_generator(t, s):
+@dispatch(Iterator, dict)
+def _reify(t, s):
     return it.imap(partial(reify, s=s), t)
     # return (reify(arg, s) for arg in t)
-def reify_tuple(*args):
-    return tuple(reify_generator(*args))
-def reify_list(*args):
-    return list(reify_generator(*args))
 
-def reify_dict(d, s):
+@dispatch(tuple, dict)
+def _reify(t, s):
+    return tuple(reify(iter(t), s))
+
+@dispatch(list, dict)
+def _reify(t, s):
+    return list(reify(iter(t), s))
+
+@dispatch(dict, dict)
+def _reify(d, s):
     # assert isinstance(d, dict)
     return dict((k, reify(v, s)) for k, v in d.items())
 
-reify_dispatch = {
-        tuple: reify_tuple,
-        list:  reify_list,
-        dict:  reify_dict,
-        }
+@dispatch(object, dict)
+def _reify(o, s):
+    return o
 
 reify_isinstance_list = []
 
@@ -47,13 +53,7 @@ def reify(e, s):
         return reify(s[e], s) if e in s else e
     if hasattr(e, '_from_logpy') and not isinstance(e, type):
         return e._from_logpy(reify(e._as_logpy(), s))
-    if type(e) in reify_dispatch:
-        return reify_dispatch[type(e)](e, s)
-    for typ, reify_fn in reify_isinstance_list:
-        if isinstance(e, typ):
-            return reify_fn(e, s)
-    else:
-        return e
+    return _reify(e, s)
 
 ###############
 # Unification #

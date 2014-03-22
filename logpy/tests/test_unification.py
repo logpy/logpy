@@ -1,5 +1,5 @@
-from logpy.unification import (unify, unify_dict, unify_seq, reify_dict,
-        reify_list, reify)
+from logpy.unification import (unify, unify_dict, unify_seq,
+        reify)
 from logpy import var
 
 def test_reify():
@@ -15,13 +15,13 @@ def test_reify_dict():
     x, y = var(), var()
     s = {x: 2, y: 4}
     e = {1: x, 3: {5: y}}
-    assert reify_dict(e, s) == {1: 2, 3: {5: 4}}
+    assert reify(e, s) == {1: 2, 3: {5: 4}}
 
 def test_reify_list():
     x, y = var(), var()
     s = {x: 2, y: 4}
     e = [1, [x, 3], y]
-    assert reify_list(e, s) == [1, [2, 3], 4]
+    assert reify(e, s) == [1, [2, 3], 4]
 
 def test_reify_complex():
     x, y = var(), var()

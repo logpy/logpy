@@ -1,14 +1,16 @@
-from logpy.unification import (unify_seq, unify_dict, reify_dict, reify_tuple,
-        unify_dispatch, reify_dispatch)
+from logpy.unification import (unify_seq, unify_dict,
+        unify_dispatch, reify)
 from functools import partial
+from multipledispatch import dispatch
 
 #########
 # Reify #
 #########
 
-def reify_slice(o, s):
+@dispatch(slice, dict)
+def _reify(o, s):
     """ Reify a Python ``slice`` object """
-    return slice(*reify_tuple((o.start, o.stop, o.step), s))
+    return slice(*reify((o.start, o.stop, o.step), s))
 
 def reify_object(o, s):
     """ Reify a Python object with a substitution
@@ -31,7 +33,7 @@ def reify_object(o, s):
     """
 
     obj = object.__new__(type(o))
-    d = reify_dict(o.__dict__, s)
+    d = reify(o.__dict__, s)
     if d == o.__dict__:
         return o
     obj.__dict__.update(d)
@@ -68,7 +70,7 @@ def reify_object_attrs(o, s, attrs):
     """
     obj = object.__new__(type(o))
     d = dict(zip(attrs, map(o.__dict__.get, attrs)))  # dict with attrs
-    d2 = reify_dict(d, s)                             # reified attr dict
+    d2 = reify(d, s)                             # reified attr dict
     if d2 == d:
         return o
     obj.__dict__.update(o.__dict__)                   # old dict
@@ -142,16 +144,12 @@ def unify_object_attrs(u, v, s, attrs):
 
 # Registration
 
-more_reify_dispatch = {
-        slice: reify_slice,
-        }
-
 more_unify_dispatch = {
         (slice, slice): unify_slice,
         }
 
 def register_reify_object_attrs(cls, attrs):
-    reify_dispatch[cls] = partial(reify_object_attrs, attrs=attrs)
+    _reify.add((cls,), partial(reify_object_attrs, attrs=attrs))
 
 
 def register_unify_object(cls):
