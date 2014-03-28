@@ -10,4 +10,4 @@ from .unification import unify, reify
 from .unifymore import unifiable
 from .term import arguments, operator, term, unifiable_with_term
 
-__version__ = '0.1.10'
+__version__ = '0.2.0'
