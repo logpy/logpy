@@ -1,5 +1,6 @@
 from contextlib import contextmanager
-from logpy.util import hashable
+from .util import hashable
+from .dispatch import dispatch
 
 _global_logic_variables = set()
 _glv = _global_logic_variables
@@ -31,8 +32,17 @@ class Var(object):
 
 var = lambda *args: Var(*args)
 vars = lambda n: [var() for i in range(n)]
-isvar = lambda t: (isinstance(t, Var) or
-                   (not not _glv and hashable(t) and t in _glv))
+
+
+@dispatch(Var)
+def isvar(v):
+    return True
+
+
+@dispatch(object)
+def isvar(o):
+    return not not _glv and hashable(o) and o in _glv
+
 
 @contextmanager
 def variables(*variables):
