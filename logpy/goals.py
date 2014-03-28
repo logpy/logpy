@@ -1,6 +1,6 @@
-from core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
+from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
         lallearly, fail, success)
-from util import unique
+from .util import unique
 import itertools as it
 
 def heado(x, coll):

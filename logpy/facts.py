@@ -1,5 +1,5 @@
-from util import intersection, index, merge
-from core import conde, reify, isvar
+from .util import intersection, index, merge
+from .core import conde, reify, isvar
 
 class Relation(object):
     _id = 0

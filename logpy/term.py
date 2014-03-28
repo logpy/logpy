@@ -1,5 +1,5 @@
 from multipledispatch import dispatch
-from logpy.unification import unify, reify, _reify, _unify
+from .unification import unify, reify, _reify, _unify
 
 
 @dispatch((tuple, list))
