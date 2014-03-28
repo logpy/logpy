@@ -31,7 +31,8 @@ def test_intersection():
 def test_take():
     assert take(2, range(5)) == (0, 1)
     assert take(0, range(5)) == (0, 1, 2, 3, 4)
-    assert take(None, range(5)) == range(5)
+    seq = range(5)
+    assert take(None, seq) == seq
 
 def test_interleave():
     assert ''.join(interleave(('ABC', '123'))) == 'A1B2C3'
