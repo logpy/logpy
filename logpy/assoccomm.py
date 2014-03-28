@@ -29,12 +29,12 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from .core import (isvar, assoc, unify,
+from logpy.core import (isvar, assoc, unify,
         conde, var, eq, fail, goaleval, lall, EarlyGoalError,
         condeseq, goaleval)
 from .goals import heado, permuteq, conso, tailo
 from .facts import Relation
-import .core
+from logpy import core
 from .util import groupsizes, index
 from .util import transitive_get as walk
 from .term import term, arguments, operator

@@ -141,8 +141,8 @@ def raises(err, lamda):
 
 def pprint(g):
     """ Pretty print a tree of goals """
-    if callable(g) and hasattr(g, 'func_name'):
-        return g.func_name
+    if callable(g) and hasattr(g, '__name__'):
+        return g.__name__
     if isinstance(g, type):
         return g.__name__
     if isinstance(g, tuple):

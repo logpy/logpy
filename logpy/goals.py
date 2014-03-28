@@ -2,7 +2,6 @@ from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
         lallearly, fail, success)
 from .util import unique
 import itertools as it
-from toolz.compatibility import map
 
 def heado(x, coll):
     """ x is the head of coll
@@ -123,8 +122,9 @@ def goalify(func):
     Goals go both ways.  Here are all of the types in the collection
 
     >>> typ = var('typ')
-    >>> run(0, typ, membero(x, (1, 'cat', 'hat', 2)), (typo, x, typ))
-    (<type 'int'>, <type 'str'>)
+    >>> results = run(0, typ, membero(x, (1, 'cat', 'hat', 2)), (typo, x, typ))
+    >>> print([result.__name__ for result in results])
+    ['int', 'str']
     """
     def funco(inputs, out):
         if isvar(inputs):
