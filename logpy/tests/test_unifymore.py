@@ -1,5 +1,5 @@
 from logpy.unifymore import (unify_object, reify_object,
-        reify_object_attrs, unify_object_attrs)
+        reify_object_attrs, unify_object_attrs, unifiable)
 from logpy import var, run, eq
 from logpy.unification import unify, reify, _unify, _reify
 from logpy import variables
@@ -114,3 +114,38 @@ def test_unify_isinstance_list():
     assert reify(g, {x: 1, y: 2}) == f
 
 
+@unifiable
+class A(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
+def test_unifiable():
+    x = var('x')
+    f = A(1, 2)
+    g = A(1, x)
+    assert unify(f, g, {}) == {x: 2}
+    assert reify(g, {x: 2}) == f
+
+
+@unifiable
+class Aslot(object):
+    slots = 'a', 'b'
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
+def test_unifiable():
+    x = var('x')
+    f = Aslot(1, 2)
+    g = Aslot(1, x)
+    assert unify(f, g, {}) == {x: 2}
+    assert reify(g, {x: 2}) == f

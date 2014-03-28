@@ -41,6 +41,32 @@ def reify_object(o, s):
     return obj
 
 
+def reify_object_slots(o, s):
+    """
+    >>> from logpy.unifymore import reify_object_slots
+    >>> from logpy import var
+    >>> class Foo(object):
+    ...     __slots__ = 'a', 'b'
+    ...     def __init__(self, a, b):
+    ...         self.a = a
+    ...         self.b = b
+    ...     def __str__(self):
+    ...         return "Foo(%s, %s)"%(str(self.a), str(self.b))
+    >>> x = var('x')
+    >>> print reify_object_slots(Foo(x, 2), {x: 1})
+    Foo(1, 2)
+    """
+    attrs = [getattr(o, attr) for attr in o.__slots__]
+    new_attrs = reify(attrs, s)
+    if attrs == new_attrs:
+        return o
+    else:
+        newobj = object.__new__(type(o))
+        for slot, attr in zip(o.__slots__, new_attrs):
+            setattr(newobj, slot, attr)
+        return newobj
+
+
 def reify_object_attrs(o, s, attrs):
     """ Reify only certain attributes of a Python object
 
@@ -115,6 +141,8 @@ def unify_object(u, v, s):
     return unify(u.__dict__, v.__dict__, s)
 
 
+
+
 def unify_object_attrs(u, v, s, attrs):
     """ Unify only certain attributes of two Python objects
 
@@ -165,3 +193,37 @@ def register_unify_object_attrs(cls, attrs):
 def register_object_attrs(cls, attrs):
     register_unify_object_attrs(cls, attrs)
     register_reify_object_attrs(cls, attrs)
+
+
+def unifiable(cls):
+    """ Register standard unify and reify operations on class
+
+    This uses the type and __dict__ or __slots__ attributes to define the
+    nature of the term
+
+    See Also:
+
+    >>> from logpy import run, var, eq
+    >>> from logpy.unifymore import unifiable
+    >>> class A(object):
+    ...     def __init__(self, a, b):
+    ...         self.a = a
+    ...         self.b = b
+    >>> unifiable(A)
+    <class 'logpy.unifymore.A'>
+
+    >>> x = var('x')
+    >>> a = A(1, 2)
+    >>> b = A(1, x)
+
+    >>> run(1, x, eq(a, b))
+    (2,)
+    """
+    if hasattr(cls, '__slots__'):
+        _reify.add((cls, dict), reify_object_slots)
+        _unify.add((cls, cls, dict), unify_object_slots)
+    else:
+        _reify.add((cls, dict), reify_object)
+        _unify.add((cls, cls, dict), unify_object)
+
+    return cls
