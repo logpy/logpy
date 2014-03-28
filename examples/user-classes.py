@@ -1,9 +1,9 @@
 from account import Account
-from logpy import logify, run, var, eq, membero, variables
+from logpy import unifiable, run, var, eq, membero, variables
 from logpy.core import lall
 from logpy.arith import add, gt, sub
 
-logify(Account)  # Mutation
+unifiable(Account)  # Register Account class
 
 accounts = (Account('Adam', 'Smith', 1, 20),
             Account('Carl', 'Marx', 2, 3),
