@@ -1,11 +1,12 @@
 import itertools as it
-from logpy.util import transitive_get as walk
-from logpy.util import deep_transitive_get as walkstar
-from logpy.util import (assoc, unique, dicthash, interleave, take, evalt,
-        groupby, index, multihash)
+from functools import partial
+from .util import transitive_get as walk
+from .util import deep_transitive_get as walkstar
+from .util import (dicthash, interleave, take, evalt, index, multihash, unique)
+from toolz import assoc, groupby
 
-from logpy.variable import var, isvar
-from logpy.unification import reify, unify
+from .variable import var, isvar
+from .unification import reify, unify
 
 
 #########
@@ -198,7 +199,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    results = (reify(x, s) for s in goaleval(lallearly(*goals))({}))
+    results = map(partial(reify, x), goaleval(lallearly(*goals))({}))
     return take(n, unique(results, key=multihash))
 
 ###################
@@ -238,7 +239,7 @@ def goalexpand(goalt):
     >>> from logpy.util import pprint
     >>> x = var('x')
     >>> goal = (membero, x, (1, 2, 3))
-    >>> print pprint(goalexpand(goal))
+    >>> print(pprint(goalexpand(goal)))
     (lany, (eq, ~x, 1), (eq, ~x, 2), (eq, ~x, 3))
     """
     tmp = goalt
@@ -261,6 +262,6 @@ def goaleval(goal):
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
         egoal = goalexpand(goal)
         # from logpy.util import pprint
-        # print pprint(egoal)
+        # print(pprint(egoal))
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")

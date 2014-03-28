@@ -1,30 +1,37 @@
-import functools
-from util import transitive_get as walk
-from util import assoc
-from variable import Var, var, isvar
+from functools import partial
+from .util import transitive_get as walk
+from .variable import Var, var, isvar
+import itertools as it
+from .dispatch import dispatch
+from collections import Iterator
+from toolz.compatibility import iteritems, map
+from toolz import assoc
 
 ################
 # Reificiation #
 ################
 
-def reify_generator(t, s):
-    return (reify(arg, s) for arg in t)
-def reify_tuple(*args):
-    return tuple(reify_generator(*args))
-def reify_list(*args):
-    return list(reify_generator(*args))
+@dispatch(Iterator, dict)
+def _reify(t, s):
+    return map(partial(reify, s=s), t)
+    # return (reify(arg, s) for arg in t)
 
-def reify_dict(d, s):
-    # assert isinstance(d, dict)
+@dispatch(tuple, dict)
+def _reify(t, s):
+    return tuple(reify(iter(t), s))
+
+@dispatch(list, dict)
+def _reify(t, s):
+    return list(reify(iter(t), s))
+
+@dispatch(dict, dict)
+def _reify(d, s):
     return dict((k, reify(v, s)) for k, v in d.items())
 
-reify_dispatch = {
-        tuple: reify_tuple,
-        list:  reify_list,
-        dict:  reify_dict,
-        }
+@dispatch(object, dict)
+def _reify(o, s):
+    return o  # catch all, just return the object
 
-reify_isinstance_list = []
 
 def reify(e, s):
     """ Replace variables of expression with substitution
@@ -39,25 +46,19 @@ def reify(e, s):
     >>> e = {1: x, 3: (y, 5)}
     >>> reify(e, s)
     {1: 2, 3: (4, 5)}
-
     """
     if isvar(e):
         return reify(s[e], s) if e in s else e
-    if hasattr(e, '_from_logpy') and not isinstance(e, type):
-        return e._from_logpy(reify(e._as_logpy(), s))
-    if type(e) in reify_dispatch:
-        return reify_dispatch[type(e)](e, s)
-    for typ, reify_fn in reify_isinstance_list:
-        if isinstance(e, typ):
-            return reify_fn(e, s)
-    else:
-        return e
+    return _reify(e, s)
 
 ###############
 # Unification #
 ###############
 
-def unify_seq(u, v, s):
+seq = tuple, list, Iterator
+
+@dispatch(seq, seq, dict)
+def _unify(u, v, s):
     # assert isinstance(u, tuple) and isinstance(v, tuple)
     if len(u) != len(v):
         return False
@@ -67,11 +68,13 @@ def unify_seq(u, v, s):
             return False
     return s
 
-def unify_dict(u, v, s):
+
+@dispatch(dict, dict, dict)
+def _unify(u, v, s):
     # assert isinstance(u, dict) and isinstance(v, dict)
     if len(u) != len(v):
         return False
-    for key, uval in u.iteritems():
+    for key, uval in iteritems(u):
         if key not in v:
             return False
         s = unify(uval, v[key], s)
@@ -79,14 +82,11 @@ def unify_dict(u, v, s):
             return False
     return s
 
-unify_dispatch = {
-        (tuple, tuple): unify_seq,
-        (list, list):   unify_seq,
-        (dict, dict):   unify_dict,
-        }
 
-unify_isinstance_list = []
-seq_registry = []
+@dispatch(object, object, dict)
+def _unify(u, v, s):
+    return False  # catch all
+
 
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
@@ -104,18 +104,4 @@ def unify(u, v, s):  # no check at the moment
         return assoc(s, u, v)
     if isvar(v):
         return assoc(s, v, u)
-    types = (type(u), type(v))
-    if types in unify_dispatch:
-        return unify_dispatch[types](u, v, s)
-    if (hasattr(u, '_as_logpy') and not isinstance(u, type) and
-        hasattr(v, '_as_logpy') and not isinstance(v, type)):
-        return unify_seq(u._as_logpy(), v._as_logpy(), s)
-    for (typu, typv), unify_fn in unify_isinstance_list:
-        if isinstance(u, typu) and isinstance(v, typv):
-            return unify_fn(u, v, s)
-    for typ, fn in seq_registry:
-        if isinstance(u, typ) and isinstance(v, typ):
-            return unify_seq(fn(u), fn(v), s)
-
-    else:
-        return False
+    return _unify(u, v, s)

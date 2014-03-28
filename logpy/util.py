@@ -1,4 +1,5 @@
 import itertools as it
+from toolz.compatibility import range, map, iteritems
 
 def hashable(x):
     try:
@@ -38,11 +39,6 @@ def deep_transitive_get(key, d):
     else:
         return key
 
-def assoc(dict, key, value):
-    d = dict.copy()
-    d[key] = value
-    return d
-
 def dicthash(d):
     return hash(frozenset(d.items()))
 
@@ -69,7 +65,7 @@ def unique(seq, key=lambda x: x):
             yield item      # Just return it and hope for the best
 
 def interleave(seqs, pass_exceptions=()):
-    iters = it.imap(iter, seqs)
+    iters = map(iter, seqs)
     while iters:
         newiters = []
         for itr in iters:
@@ -86,15 +82,6 @@ def take(n, seq):
     if n == 0:
         return tuple(seq)
     return tuple(it.islice(seq, 0, n))
-
-def groupby(f, coll):
-    d = dict()
-    for item in coll:
-        key = f(item)
-        if key not in d:
-            d[key] = []
-        d[key].append(item)
-    return d
 
 
 def evalt(t):
@@ -127,7 +114,7 @@ def groupsizes(total, len):
     if len == 1:
         yield (total,)
     else:
-        for i in xrange(1, total - len + 1 + 1):
+        for i in range(1, total - len + 1 + 1):
             for perm in groupsizes(total - i, len - 1):
                 yield (i,) + perm
 
@@ -140,8 +127,8 @@ def raises(err, lamda):
 
 def pprint(g):
     """ Pretty print a tree of goals """
-    if callable(g) and hasattr(g, 'func_name'):
-        return g.func_name
+    if callable(g) and hasattr(g, '__name__'):
+        return g.__name__
     if isinstance(g, type):
         return g.__name__
     if isinstance(g, tuple):
@@ -151,6 +138,3 @@ def pprint(g):
 def index(tup, ind):
     """ Fancy indexing with tuples """
     return tuple(tup[i] for i in ind)
-
-def merge(*dicts):
-    return dict(item for dict in dicts for item in dict.iteritems())

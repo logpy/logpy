@@ -1,5 +1,5 @@
 from logpy.util import (take, unique, interleave, intersection,
-        groupsizes, raises, groupby, merge, dicthash, hashable, multihash)
+        groupsizes, raises, dicthash, hashable, multihash)
 import itertools
 
 def test_hashable():
@@ -31,7 +31,8 @@ def test_intersection():
 def test_take():
     assert take(2, range(5)) == (0, 1)
     assert take(0, range(5)) == (0, 1, 2, 3, 4)
-    assert take(None, range(5)) == range(5)
+    seq = range(5)
+    assert take(None, seq) == seq
 
 def test_interleave():
     assert ''.join(interleave(('ABC', '123'))) == 'A1B2C3'
@@ -45,12 +46,3 @@ def test_groupsizes():
 
 def test_raises():
     raises(ZeroDivisionError, lambda: 1/0)
-
-def test_groupby():
-    d = groupby(lambda x: x%2, range(10))
-    assert set(d.keys()) == set((0, 1))
-    assert set(d[0]) == set((0, 2, 4, 6, 8))
-    assert set(d[1]) == set((1, 3, 5, 7, 9))
-
-def test_merge():
-    assert merge({1: 2}, {3: 4}, {5: 6}) == {1: 2, 3: 4, 5: 6}

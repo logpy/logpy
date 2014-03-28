@@ -80,7 +80,7 @@ def test_appendo():
 """
 Failing test
 def test_appendo2():
-    print run(5, x, appendo((1,2,3), (4,5), x))
+    print(run(5, x, appendo((1,2,3), (4,5), x)))
     assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
     assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
 """

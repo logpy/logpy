@@ -1,14 +1,17 @@
-from logpy.unification import (unify_seq, unify_dict, reify_dict, reify_tuple,
-        unify_dispatch, reify_dispatch)
+from logpy.unification import unify, reify
 from functools import partial
+from .dispatch import dispatch
 
 #########
 # Reify #
 #########
 
-def reify_slice(o, s):
+
+@dispatch(slice, dict)
+def _reify(o, s):
     """ Reify a Python ``slice`` object """
-    return slice(*reify_tuple((o.start, o.stop, o.step), s))
+    return slice(*reify((o.start, o.stop, o.step), s))
+
 
 def reify_object(o, s):
     """ Reify a Python object with a substitution
@@ -24,18 +27,45 @@ def reify_object(o, s):
 
     >>> x = var('x')
     >>> f = Foo(1, x)
-    >>> print f
+    >>> print(f)
     Foo(1, ~x)
-    >>> print reify_object(f, {x: 2})
+    >>> print(reify_object(f, {x: 2}))
     Foo(1, 2)
     """
 
     obj = object.__new__(type(o))
-    d = reify_dict(o.__dict__, s)
+    d = reify(o.__dict__, s)
     if d == o.__dict__:
         return o
     obj.__dict__.update(d)
     return obj
+
+
+def reify_object_slots(o, s):
+    """
+    >>> from logpy.unifymore import reify_object_slots
+    >>> from logpy import var
+    >>> class Foo(object):
+    ...     __slots__ = 'a', 'b'
+    ...     def __init__(self, a, b):
+    ...         self.a = a
+    ...         self.b = b
+    ...     def __str__(self):
+    ...         return "Foo(%s, %s)"%(str(self.a), str(self.b))
+    >>> x = var('x')
+    >>> print(reify_object_slots(Foo(x, 2), {x: 1}))
+    Foo(1, 2)
+    """
+    attrs = [getattr(o, attr) for attr in o.__slots__]
+    new_attrs = reify(attrs, s)
+    if attrs == new_attrs:
+        return o
+    else:
+        newobj = object.__new__(type(o))
+        for slot, attr in zip(o.__slots__, new_attrs):
+            setattr(newobj, slot, attr)
+        return newobj
+
 
 def reify_object_attrs(o, s, attrs):
     """ Reify only certain attributes of a Python object
@@ -52,11 +82,11 @@ def reify_object_attrs(o, s, attrs):
     >>> x = var('x')
     >>> y = var('y')
     >>> f = Foo(x, y)
-    >>> print f
+    >>> print(f)
     Foo(~x, ~y)
-    >>> print reify_object_attrs(f, {x: 1, y: 2}, ['a', 'b'])
+    >>> print(reify_object_attrs(f, {x: 1, y: 2}, ['a', 'b']))
     Foo(1, 2)
-    >>> print reify_object_attrs(f, {x: 1, y: 2}, ['a'])
+    >>> print(reify_object_attrs(f, {x: 1, y: 2}, ['a']))
     Foo(1, ~y)
 
     This function is meant to be partially specialized
@@ -67,10 +97,11 @@ def reify_object_attrs(o, s, attrs):
     attrs contains the list of attributes which participate in reificiation
     """
     obj = object.__new__(type(o))
-    d = dict(zip(attrs, map(o.__dict__.get, attrs)))  # dict with attrs
-    d2 = reify_dict(d, s)                             # reified attr dict
+    d = dict(zip(attrs, [getattr(o, attr) for attr in attrs]))
+    d2 = reify(d, s)                             # reified attr dict
     if d2 == d:
         return o
+
     obj.__dict__.update(o.__dict__)                   # old dict
     obj.__dict__.update(d2)                           # update w/ reified vals
     return obj
@@ -79,9 +110,11 @@ def reify_object_attrs(o, s, attrs):
 # Unify #
 #########
 
-def unify_slice(u, v, s):
+@dispatch(slice, slice, dict)
+def _unify(u, v, s):
     """ Unify a Python ``slice`` object """
-    return unify_seq((u.start, u.stop, u.step), (v.start, v.stop, v.step), s)
+    return unify((u.start, u.stop, u.step), (v.start, v.stop, v.step), s)
+
 
 def unify_object(u, v, s):
     """ Unify two Python objects
@@ -105,7 +138,10 @@ def unify_object(u, v, s):
     """
     if type(u) != type(v):
         return False
-    return unify_dict(u.__dict__, v.__dict__, s)
+    return unify(u.__dict__, v.__dict__, s)
+
+
+
 
 def unify_object_attrs(u, v, s, attrs):
     """ Unify only certain attributes of two Python objects
@@ -123,9 +159,9 @@ def unify_object_attrs(u, v, s, attrs):
     >>> y = var('y')
     >>> f = Foo(x, y)
     >>> g = Foo(1, 2)
-    >>> print unify_object_attrs(f, g, {}, ['a', 'b'])  #doctest: +SKIP
+    >>> print(unify_object_attrs(f, g, {}, ['a', 'b']))  #doctest: +SKIP
     {~x: 1, ~y: 2}
-    >>> print unify_object_attrs(f, g, {}, ['a'])
+    >>> print(unify_object_attrs(f, g, {}, ['a']))
     {~x: 1}
 
     This function is meant to be partially specialized
@@ -135,71 +171,46 @@ def unify_object_attrs(u, v, s, attrs):
 
     attrs contains the list of attributes which participate in reificiation
     """
-    gu = lambda a: getattr(u, a)
-    gv = lambda a: getattr(v, a)
-    return unify_seq(map(gu, attrs), map(gv, attrs), s)
+    return unify([getattr(u, a) for a in attrs],
+                 [getattr(v, a) for a in attrs],
+                 s)
 
 
 # Registration
 
-more_reify_dispatch = {
-        slice: reify_slice,
-        }
-
-more_unify_dispatch = {
-        (slice, slice): unify_slice,
-        }
-
 def register_reify_object_attrs(cls, attrs):
-    reify_dispatch[cls] = partial(reify_object_attrs, attrs=attrs)
+    _reify.add((cls,), partial(reify_object_attrs, attrs=attrs))
 
 
 def register_unify_object(cls):
-    unify_dispatch[(cls, cls)] = unify_object
+    _unify.add((cls, cls, dict), unify_object)
+
 
 def register_unify_object_attrs(cls, attrs):
-    unify_dispatch[(cls, cls)] = partial(unify_object_attrs, attrs=attrs)
+    _unify.add((cls, cls, dict), partial(unify_object_attrs, attrs=attrs))
+
 
 def register_object_attrs(cls, attrs):
     register_unify_object_attrs(cls, attrs)
     register_reify_object_attrs(cls, attrs)
 
-def _as_logpy(self):
-    return (type(self), self.__dict__)
 
-def _from_logpy((typ, attrs)):
-    obj = object.__new__(typ)
-    obj.__dict__.update(attrs)
-    return obj
+def unifiable(cls):
+    """ Register standard unify and reify operations on class
 
-def _as_logpy_slot(self):
-    attrs = dict((attr, getattr(self, attr)) for attr in self.__slots__
-                                             if hasattr(self, attr))
-    return (type(self), attrs)
-
-def _from_logpy_slot((typ, attrs)):
-    obj = object.__new__(typ)
-    for attr, val in attrs.items():
-        setattr(obj, attr, val)
-    return obj
-
-
-def logify(cls):
-    """ Alter a class so that it interacts well with LogPy
-
-    The __class__ and __dict__ attributes are used to define the LogPy term
+    This uses the type and __dict__ or __slots__ attributes to define the
+    nature of the term
 
     See Also:
-        _as_logpy
-        _from_logpy
 
-
-    >>> from logpy import logify, run, var, eq
+    >>> from logpy import run, var, eq
+    >>> from logpy.unifymore import unifiable
     >>> class A(object):
     ...     def __init__(self, a, b):
     ...         self.a = a
     ...         self.b = b
-    >>> logify(A)
+    >>> unifiable(A)
+    <class 'logpy.unifymore.A'>
 
     >>> x = var('x')
     >>> a = A(1, 2)
@@ -209,8 +220,10 @@ def logify(cls):
     (2,)
     """
     if hasattr(cls, '__slots__'):
-        cls._as_logpy = _as_logpy_slot
-        cls._from_logpy = staticmethod(_from_logpy_slot)
+        _reify.add((cls, dict), reify_object_slots)
+        _unify.add((cls, cls, dict), unify_object_slots)
     else:
-        cls._as_logpy = _as_logpy
-        cls._from_logpy = staticmethod(_from_logpy)
+        _reify.add((cls, dict), reify_object)
+        _unify.add((cls, cls, dict), unify_object)
+
+    return cls

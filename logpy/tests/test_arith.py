@@ -60,5 +60,5 @@ def test_complex():
                             (mod, y, 2, 0),
                             (membero, x, numbers)))
     expected = set((1, 3, 5, 7))
-    print results
+    print(results)
     assert results == expected
