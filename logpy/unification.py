@@ -3,7 +3,7 @@ from .util import transitive_get as walk
 from .util import assoc
 from .variable import Var, var, isvar
 import itertools as it
-from multipledispatch import dispatch
+from .dispatch import dispatch
 from collections import Iterator
 from toolz.compatibility import iteritems, map
 

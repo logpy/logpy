@@ -1,4 +1,4 @@
-from multipledispatch import dispatch
+from .dispatch import dispatch
 from .unification import unify, reify, _reify, _unify
 
 

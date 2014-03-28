@@ -1,6 +1,6 @@
 from logpy.term import term, operator, arguments, unifiable_with_term
 from logpy import var, unify, reify
-from multipledispatch import dispatch
+from logpy.dispatch import dispatch
 
 def test_arguments():
     assert arguments(('add', 1, 2, 3)) == (1, 2, 3)

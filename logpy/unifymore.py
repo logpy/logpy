@@ -1,6 +1,6 @@
 from logpy.unification import unify, reify
 from functools import partial
-from multipledispatch import dispatch
+from .dispatch import dispatch
 
 #########
 # Reify #
