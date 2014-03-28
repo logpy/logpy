@@ -132,6 +132,17 @@ False
 ~~~~~~~~~~~~
 
 
+Alternatively just decorate your classes with the `@unifiable` class decorator
+
+~~~~~~~~~~~~Python
+from logpy import unifiable
+
+@unifiable
+class Account(object):
+    ...
+~~~~~~~~~~~~
+
+
 Install
 -------
 
