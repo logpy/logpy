@@ -110,13 +110,14 @@ class Account(object):
     def __str__(self):
         return "%s: $%d" % (self.name, self.account)
 
-x = var('x')
+>>> x = var('x')
 
-unify(Account('Alice', 100), Account(x, 100), {})
-# {x: 'Alice'}
+>>> unify(Account('Alice', 100), Account(x, 100), {})
+{x: 'Alice'}
 
-unify(Account('Alice', 100), Account(x, 200), {})
-# False , doesn't match
+>>> unify(Account('Alice', 100), Account(x, 200), {})
+False
+~~~~~~~~~~~~Python
 
 
 Install
