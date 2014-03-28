@@ -1,4 +1,3 @@
-
 from logpy.core import (isvar, var, run, membero, eq, EarlyGoalError, lany)
 
 def gt(x, y):
@@ -56,7 +55,7 @@ def binop(op, revop=None):
 
 add = binop(operator.add, operator.sub)
 add.__doc__ = """ x + y == z """
-mul = binop(operator.mul, operator.div)
+mul = binop(operator.mul, operator.truediv)
 mul.__doc__ = """ x * y == z """
 mod = binop(operator.mod)
 mod.__doc__ = """ x % y == z """
