@@ -1,0 +1,12 @@
+New in version 0.2
+
+*   Python 3 support
+*   Dictionary unification
+*   Use multiple dispatch to extend unify, reify, isvar
+*   Add convenience class decorator `unifiable` to facilitate trivial 
+    unification of user classes
+*   Add term operations term, arguments, operator, also multiply dispatched
+*   Depend on the toolz library
+*   Performance degredation as a result of multiple dispatch
+*   Arithmetic goals
+*   Improved set matching performance
