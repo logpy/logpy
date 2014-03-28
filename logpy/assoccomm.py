@@ -37,6 +37,7 @@ from logpy.facts import Relation
 from logpy import core
 from logpy.util import groupsizes, index
 from logpy.util import transitive_get as walk
+from logpy.term import term, arguments, operator
 
 
 associative = Relation('associative')
@@ -187,19 +188,13 @@ def eq_comm(u, v, eq=None):
 
 def build_tuple(op, args):
     try:
-        return (op,) + args
+        return term(op, args)
     except TypeError:
+        print "OPARGS: ", op, args
         raise EarlyGoalError()
 
-op_registry = [{'opvalid': lambda x: isinstance(x, (str, object)),
-               'objvalid': lambda x: isinstance(x, tuple),
-               'op': lambda t: t and t[0],
-               'args': lambda t: t and t[1:],
-               'build': build_tuple}]
 
-
-
-def buildo(op, args, obj, op_registry=op_registry):
+def buildo(op, args, obj):
     """ obj is composed of op on args
 
     Example: in add(1,2,3) ``add`` is the op and (1,2,3) are the args
@@ -207,33 +202,30 @@ def buildo(op, args, obj, op_registry=op_registry):
     Checks op_regsitry for functions to define op/arg relationships
     """
     if not isvar(obj):
-        oop, oargs = op_args(obj, op_registry)
+        oop, oargs = op_args(obj)
         return lall((eq, op, oop), (eq, args, oargs))
     else:
         try:
-            return eq(obj, build(op, args, op_registry))
+            return eq(obj, build(op, args))
         except TypeError:
             raise EarlyGoalError()
     raise EarlyGoalError()
 
-def build(op, args, registry=op_registry):
-    if hasattr(op, '_from_logpy'):
-        return op._from_logpy((op, args))
-    for d in registry:
-        if d['opvalid'](op):
-            return d['build'](op, args)
-    return None
+def build(op, args):
+    try:
+        return term(op, args)
+    except NotImplementedError:
+        raise EarlyGoalError()
 
-def op_args(x, registry=op_registry):
+
+def op_args(x):
     """ Break apart x into an operation and tuple of args """
     if isvar(x):
         return None, None
-    if hasattr(x, '_as_logpy') and not isinstance(x, type):
-        return x._as_logpy()
-    for d in registry:
-        if d['objvalid'](x):
-            return d['op'](x), d['args'](x)
-    return None, None
+    try:
+        return operator(x), arguments(x)
+    except NotImplementedError:
+        return None, None
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
