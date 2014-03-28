@@ -92,6 +92,33 @@ Data Structures
 
 LogPy depends on functions, tuples, dicts, and generators.  There are almost no new data structures/classes in LogPy so it should be simple to integrate into preexisting code.
 
+
+Extending LogPy to other Types
+------------------------------
+
+LogPy uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) to
+support pattern matching on user defined types.
+
+~~~~~~~~~~~~Python
+from logpy import unifiable, unify, var
+
+@unifiable
+class Account(object):
+    def __init__(self, name, amount):
+        self.name = name
+        self.amount = amount
+    def __str__(self):
+        return "%s: $%d" % (self.name, self.account)
+
+x = var('x')
+
+unify(Account('Alice', 100), Account(x, 100), {})
+# {x: 'Alice'}
+
+unify(Account('Alice', 100), Account(x, 200), {})
+# False , doesn't match
+
+
 Install
 -------
 
