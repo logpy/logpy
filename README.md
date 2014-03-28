@@ -102,15 +102,25 @@ LogPy uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) to
 support pattern matching on user defined types.
 
 ~~~~~~~~~~~~Python
-from logpy import unifiable, unify, var
+from logpy import unify, var
+from logpy.dispatch import dispatch
 
-@unifiable
 class Account(object):
     def __init__(self, name, amount):
         self.name = name
         self.amount = amount
     def __str__(self):
         return "%s: $%d" % (self.name, self.account)
+
+
+@dispatch(Account, Account, dict)
+def _unify(u, v, s):
+    """ Unify accounts by unifying a tuple of their type, name and amount """
+    uu = (type(u), u.name, u.amount)
+    vv = (type(v), v.name, v.amount)
+
+    return unify(uu, vv, s)
+
 
 >>> x = var('x')
 
