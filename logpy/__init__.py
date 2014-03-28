@@ -7,6 +7,6 @@ from variable import var, isvar, variables, Var
 from goals import seteq, permuteq, goalify
 from facts import Relation, fact, facts
 from unification import unify, reify
-from term import arguments, operator, term, termify
+from term import arguments, operator, term, unifiable_with_term
 
 __version__ = '0.1.10'

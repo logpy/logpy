@@ -1,72 +1,50 @@
-from logpy.term import termify, term, operator, arguments
+from logpy.term import term, operator, arguments, unifiable_with_term
 from logpy import var, unify, reify
-
-@termify
-class A(object):
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-
-def test_termify():
-    x = var('x')
-    f = A(1, 2)
-    g = A(1, x)
-    assert unify(f, g, {}) == {x: 2}
-    assert reify(g, {x: 2}) == f
-
+from multipledispatch import dispatch
 
 def test_arguments():
-    assert arguments(A(1, 2)) == {'a': 1, 'b': 2}
+    assert arguments(('add', 1, 2, 3)) == (1, 2, 3)
 
 
 def test_operator():
-    assert operator(A(1, 2)) == A
+    assert operator(('add', 1, 2, 3)) == 'add'
 
 
 def test_term():
-    assert term(A, {'a': 1, 'b': 2}) == A(1, 2)
+    assert term('add', (1, 2, 3)) == ('add', 1, 2, 3)
 
 
-def test_inheritance():
-    class B(A):
-        pass
+class Op(object):
+    def __init__(self, name):
+        self.name = name
 
-    x = var('x')
-    f = B(1, 2)
-    g = B(1, x)
-    assert unify(f, g, {}) == {x: 2}
-    assert reify(g, {x: 2}) == f
-
-
-@termify
-class Aslot(object):
-    __slots__ = ['a', 'b']
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
+@unifiable_with_term
+class MyTerm(object):
+    def __init__(self, op, arguments):
+        self.op = op
+        self.arguments = arguments
     def __eq__(self, other):
-        return (self.a, self.b) == (other.a, other.b)
+        return self.op == other.op and self.arguments == other.arguments
 
+@dispatch(MyTerm)
+def arguments(t):
+    return t.arguments
 
-def test_arguments_slot():
-    assert arguments(Aslot(1, 2)) == {'a': 1, 'b': 2}
+@dispatch(MyTerm)
+def operator(t):
+    return t.op
 
+@dispatch(Op, (list, tuple))
+def term(op, args):
+    return MyTerm(op, args)
 
-def test_operator_slot():
-    assert operator(Aslot(1, 2)) == Aslot
+def test_unifiable_with_term():
+    add = Op('add')
+    t = MyTerm(add, (1, 2))
+    assert arguments(t) == (1, 2)
+    assert operator(t) == add
+    assert term(operator(t), arguments(t)) == t
 
-
-def test_term_slot():
-    assert term(Aslot, {'a': 1, 'b': 2}) == Aslot(1, 2)
-
-
-def test_termify_slots():
     x = var('x')
-    f = Aslot(1, 2)
-    g = Aslot(1, x)
-    assert unify(f, g, {}) == {x: 2}
-    assert reify(g, {x: 2}) == f
+    assert unify(MyTerm(add, (1, x)), MyTerm(add, (1, 2)), {}) == {x: 2}
+
