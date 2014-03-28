@@ -129,7 +129,7 @@ def _unify(u, v, s):
 
 >>> unify(Account('Alice', 100), Account(x, 200), {})
 False
-~~~~~~~~~~~~Python
+~~~~~~~~~~~~
 
 
 Install
