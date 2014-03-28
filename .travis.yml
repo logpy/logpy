@@ -7,8 +7,7 @@ python:
     - "pypy"
 
 install:
-    - pip install coverage --use-mirrors
-    - pip install toolz
+    - pip install coverage toolz multipledispatch --use-mirrors
 
 script:
     - nosetests --with-doctest
