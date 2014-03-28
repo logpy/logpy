@@ -1,6 +1,8 @@
 LogPy
 =====
 
+[![](https://travis-ci.org/logpy/logpy.png)](https://travis-ci.org/logpy/logpy)
+
 Logic Programming in Python
 
 Examples
@@ -142,7 +144,7 @@ Dependencies
 
 ``LogPy`` supports Python 2.6+ and Python 3.2+ with a common codebase.
 It is pure Python and requires no dependencies beyond the standard
-library [`toolz`](http://github.com/pytoolz/toolz/) and
+library, [`toolz`](http://github.com/pytoolz/toolz/) and
 [`multipledispatch`](http://github.com/mrocklin/multipledispatch/).
 
 It is, in short, a light weight dependency.
