@@ -9,5 +9,6 @@ setup(name='logic',
       author_email='mrocklin@gmail.com',
       license='BSD',
       packages=['logpy'],
+      install_requires=open('dependencies.txt').read().split('\n'),
       long_description=open('README.md').read() if exists("README.md") else "",
       zip_safe=False)

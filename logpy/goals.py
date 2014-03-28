@@ -2,6 +2,7 @@ from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
         lallearly, fail, success)
 from .util import unique
 import itertools as it
+from toolz.compatibility import map
 
 def heado(x, coll):
     """ x is the head of coll

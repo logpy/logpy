@@ -1,4 +1,5 @@
 import itertools as it
+from toolz.compatibility import range, map, iteritems
 
 def hashable(x):
     try:
@@ -69,7 +70,7 @@ def unique(seq, key=lambda x: x):
             yield item      # Just return it and hope for the best
 
 def interleave(seqs, pass_exceptions=()):
-    iters = it.imap(iter, seqs)
+    iters = map(iter, seqs)
     while iters:
         newiters = []
         for itr in iters:
@@ -127,7 +128,7 @@ def groupsizes(total, len):
     if len == 1:
         yield (total,)
     else:
-        for i in xrange(1, total - len + 1 + 1):
+        for i in range(1, total - len + 1 + 1):
             for perm in groupsizes(total - i, len - 1):
                 yield (i,) + perm
 
@@ -153,4 +154,4 @@ def index(tup, ind):
     return tuple(tup[i] for i in ind)
 
 def merge(*dicts):
-    return dict(item for dict in dicts for item in dict.iteritems())
+    return dict(item for d in dicts for item in iteritems(d))

@@ -199,7 +199,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    results = it.imap(partial(reify, x), goaleval(lallearly(*goals))({}))
+    results = map(partial(reify, x), goaleval(lallearly(*goals))({}))
     return take(n, unique(results, key=multihash))
 
 ###################

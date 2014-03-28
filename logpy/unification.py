@@ -5,6 +5,7 @@ from .variable import Var, var, isvar
 import itertools as it
 from multipledispatch import dispatch
 from collections import Iterator
+from toolz.compatibility import iteritems, map
 
 ################
 # Reificiation #
@@ -12,7 +13,7 @@ from collections import Iterator
 
 @dispatch(Iterator, dict)
 def _reify(t, s):
-    return it.imap(partial(reify, s=s), t)
+    return map(partial(reify, s=s), t)
     # return (reify(arg, s) for arg in t)
 
 @dispatch(tuple, dict)
@@ -73,7 +74,7 @@ def _unify(u, v, s):
     # assert isinstance(u, dict) and isinstance(v, dict)
     if len(u) != len(v):
         return False
-    for key, uval in u.iteritems():
+    for key, uval in iteritems(u):
         if key not in v:
             return False
         s = unify(uval, v[key], s)
