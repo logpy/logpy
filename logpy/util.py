@@ -39,11 +39,6 @@ def deep_transitive_get(key, d):
     else:
         return key
 
-def assoc(dict, key, value):
-    d = dict.copy()
-    d[key] = value
-    return d
-
 def dicthash(d):
     return hash(frozenset(d.items()))
 
@@ -87,15 +82,6 @@ def take(n, seq):
     if n == 0:
         return tuple(seq)
     return tuple(it.islice(seq, 0, n))
-
-def groupby(f, coll):
-    d = dict()
-    for item in coll:
-        key = f(item)
-        if key not in d:
-            d[key] = []
-        d[key].append(item)
-    return d
 
 
 def evalt(t):
@@ -152,6 +138,3 @@ def pprint(g):
 def index(tup, ind):
     """ Fancy indexing with tuples """
     return tuple(tup[i] for i in ind)
-
-def merge(*dicts):
-    return dict(item for d in dicts for item in iteritems(d))

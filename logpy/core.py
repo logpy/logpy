@@ -2,8 +2,8 @@ import itertools as it
 from functools import partial
 from .util import transitive_get as walk
 from .util import deep_transitive_get as walkstar
-from .util import (assoc, unique, dicthash, interleave, take, evalt,
-        groupby, index, multihash)
+from .util import (dicthash, interleave, take, evalt, index, multihash, unique)
+from toolz import assoc, groupby
 
 from .variable import var, isvar
 from .unification import reify, unify
