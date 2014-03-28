@@ -41,10 +41,10 @@ def variables(*variables):
     >>> from __future__ import with_statement
     >>> from logpy import variables, var, isvar
     >>> with variables(1):
-    ...     print isvar(1)
+    ...     print(isvar(1))
     True
 
-    >>> print isvar(1)
+    >>> print(isvar(1))
     False
 
     Normal approach
@@ -56,7 +56,7 @@ def variables(*variables):
 
     Context Manager approach
     >>> with variables('x'):
-    ...     print run(1, 'x', eq('x', 2))
+    ...     print(run(1, 'x', eq('x', 2)))
     (2,)
     """
     old_global_logic_variables = _global_logic_variables.copy()

@@ -25,7 +25,7 @@ be used in the computer algebra systems SymPy and Theano.
 >>> pattern = (mul, (add, 1, x), y)                # (1 + x) * y
 >>> expr    = (mul, 2, (add, 3, 1))                # 2 * (3 + 1)
 
->>> print run(0, (x,y), eq(pattern, expr))
+>>> print(run(0, (x,y), eq(pattern, expr)))
 ((3, 2),)
 """
 
@@ -190,7 +190,6 @@ def build_tuple(op, args):
     try:
         return term(op, args)
     except TypeError:
-        print "OPARGS: ", op, args
         raise EarlyGoalError()
 
 

@@ -27,9 +27,9 @@ def reify_object(o, s):
 
     >>> x = var('x')
     >>> f = Foo(1, x)
-    >>> print f
+    >>> print(f)
     Foo(1, ~x)
-    >>> print reify_object(f, {x: 2})
+    >>> print(reify_object(f, {x: 2}))
     Foo(1, 2)
     """
 
@@ -53,7 +53,7 @@ def reify_object_slots(o, s):
     ...     def __str__(self):
     ...         return "Foo(%s, %s)"%(str(self.a), str(self.b))
     >>> x = var('x')
-    >>> print reify_object_slots(Foo(x, 2), {x: 1})
+    >>> print(reify_object_slots(Foo(x, 2), {x: 1}))
     Foo(1, 2)
     """
     attrs = [getattr(o, attr) for attr in o.__slots__]
@@ -82,11 +82,11 @@ def reify_object_attrs(o, s, attrs):
     >>> x = var('x')
     >>> y = var('y')
     >>> f = Foo(x, y)
-    >>> print f
+    >>> print(f)
     Foo(~x, ~y)
-    >>> print reify_object_attrs(f, {x: 1, y: 2}, ['a', 'b'])
+    >>> print(reify_object_attrs(f, {x: 1, y: 2}, ['a', 'b']))
     Foo(1, 2)
-    >>> print reify_object_attrs(f, {x: 1, y: 2}, ['a'])
+    >>> print(reify_object_attrs(f, {x: 1, y: 2}, ['a']))
     Foo(1, ~y)
 
     This function is meant to be partially specialized
@@ -159,9 +159,9 @@ def unify_object_attrs(u, v, s, attrs):
     >>> y = var('y')
     >>> f = Foo(x, y)
     >>> g = Foo(1, 2)
-    >>> print unify_object_attrs(f, g, {}, ['a', 'b'])  #doctest: +SKIP
+    >>> print(unify_object_attrs(f, g, {}, ['a', 'b']))  #doctest: +SKIP
     {~x: 1, ~y: 2}
-    >>> print unify_object_attrs(f, g, {}, ['a'])
+    >>> print(unify_object_attrs(f, g, {}, ['a']))
     {~x: 1}
 
     This function is meant to be partially specialized

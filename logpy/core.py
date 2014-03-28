@@ -239,7 +239,7 @@ def goalexpand(goalt):
     >>> from logpy.util import pprint
     >>> x = var('x')
     >>> goal = (membero, x, (1, 2, 3))
-    >>> print pprint(goalexpand(goal))
+    >>> print(pprint(goalexpand(goal)))
     (lany, (eq, ~x, 1), (eq, ~x, 2), (eq, ~x, 3))
     """
     tmp = goalt
@@ -262,6 +262,6 @@ def goaleval(goal):
     if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
         egoal = goalexpand(goal)
         # from logpy.util import pprint
-        # print pprint(egoal)
+        # print(pprint(egoal))
         return egoal[0](*egoal[1:])
     raise TypeError("Expected either function or tuple")
