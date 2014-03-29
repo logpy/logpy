@@ -189,7 +189,7 @@ References
 ----------
 
 *   [Logic Programming on wikipedia](http://en.wikipedia.org/wiki/Logic_programming)
-*   [miniKanren](http://kanren.sourceforge.net/), a Scheme library for relational programming on which this library is based.  More information can be found in the
+*   [miniKanren](http://minikanren.org/), a Scheme library for relational programming on which this library is based.  More information can be found in the
 [thesis of William
 Byrd](https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf).
 *   [core.logic](https://github.com/clojure/core.logic) a popular implementation of miniKanren in Clojure.
