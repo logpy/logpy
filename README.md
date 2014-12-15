@@ -99,7 +99,7 @@ Extending LogPy to other Types
 ------------------------------
 
 LogPy uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) to
-support pattern matching on user defined types.
+support pattern matching on user defined types.  (Also see [unification (wikipedia)](http://en.wikipedia.org/wiki/Unification_%28computer_science%29) and [logpy source](https://github.com/logpy/logpy/blob/master/logpy/unification.py#L60-L107))
 
 ~~~~~~~~~~~~Python
 from logpy import unify, var
