@@ -1,19 +1,22 @@
+sudo: false
 language: python
 python:
     - "2.6"
     - "2.7"
     - "3.2"
     - "3.3"
+    - "3.4"
+    - "3.5"
     - "pypy"
-
+    - "pypy3"
 install:
-    - pip install coverage toolz multipledispatch --use-mirrors
-
+    - pip install coverage toolz multipledispatch
 script:
     - nosetests --with-doctest
-
 after_success:
-    - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install coveralls --use-mirrors ; coveralls ; fi
-
+    - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then
+        pip install coveralls --use-mirrors;
+        coveralls;
+      fi
 notifications:
   email: false
