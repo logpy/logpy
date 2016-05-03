@@ -1,5 +1,5 @@
 from logpy import var
-from logpy.arith import lt, gt, lte, gte, add, sub, mul, mod
+from logpy.arith import lt, gt, lte, gte, add, sub, mul, mod, div
 
 x = var('x')
 y = var('y')
@@ -51,6 +51,11 @@ def test_mul():
 
 def test_mod():
     assert results(mod(5, 3, 2))
+
+def test_div():
+    assert results(div(6, 2, 3))
+    assert not results(div(6, 2, 2))
+    assert results(div(6, 2, x)) == [{x: 3}]
 
 def test_complex():
     from logpy import run, membero
