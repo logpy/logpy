@@ -1,6 +1,8 @@
-from .util import intersection, index
-from .core import conde, reify, isvar
+from .core import reify
+from .unification import unify
+from .util import intersection
 from toolz import merge
+
 
 class Relation(object):
     _id = 0
@@ -57,15 +59,12 @@ class Relation(object):
                 facts = intersection(*sorted(subsets, key=len))
             else:
                 facts = self.facts
-            varinds = [i for i, arg in enumerate(args2) if isvar(arg)]
-            valinds = [i for i, arg in enumerate(args2) if not isvar(arg)]
-            vars = index(args2, varinds)
-            vals = index(args2, valinds)
-            assert not any(var in s for var in vars)
 
-            return (merge(dict(zip(vars, index(fact, varinds))), s)
-                              for fact in facts
-                              if vals == index(fact, valinds))
+            for fact in facts:
+                unified = unify(fact, args2, substitution)
+                if unified != False:
+                    yield merge(unified, substitution)
+
         return goal
 
     def __str__(self):
