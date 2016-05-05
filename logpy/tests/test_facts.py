@@ -58,6 +58,6 @@ def test_unify_tuple():
     fact(valido, (1, 1))
     x = var()
     y = var()
-    assert set(run(0, x, valido((x, y)))) == {0, 1}
-    assert set(run(0, (x, y), valido((x, y)))) == {(0, 1), (1, 0), (1, 1)}
+    assert set(run(0, x, valido((x, y)))) == set([0, 1])
+    assert set(run(0, (x, y), valido((x, y)))) == set([(0, 1), (1, 0), (1, 1)])
     assert run(0,x, valido((x,x))) == (1,)
