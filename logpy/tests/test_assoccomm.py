@@ -1,9 +1,8 @@
-from logpy.core import var, run, eq, goaleval, EarlyGoalError
+from logpy.core import var, run, goaleval
 from logpy.facts import fact
-from logpy.assoccomm import (associative, commutative, conde,
+from logpy.assoccomm import (associative, commutative,
         groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
         eq_assoccomm, assocsized, buildo, op_args)
-from logpy.util import raises
 from logpy.dispatch import dispatch
 
 a = 'assoc_op'

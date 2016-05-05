@@ -1,9 +1,9 @@
-from logpy.core import (walk, walkstar, isvar, var, run,
-        membero, evalt, fail, success, eq, conde,
-        condeseq, goaleval, lany, lall, lanyseq,
+from pytest import raises
+
+from logpy.core import (walk, walkstar, var, run,
+        membero, evalt, fail, eq, conde,
+        goaleval, lany, lall, lanyseq,
         goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
-import itertools
-from logpy.util import raises
 
 w, x, y, z = 'wxyz'
 
@@ -118,7 +118,8 @@ def test_goaleval():
     g = eq(x, 2)
     assert goaleval(g) == g
     assert callable(goaleval((eq, x, 2)))
-    raises(EarlyGoalError, lambda: goaleval((membero, x, y)))
+    with raises(EarlyGoalError):
+        goaleval((membero, x, y))
     assert callable(goaleval((lall, (eq, x, 2))))
 
 def test_goalexpand():

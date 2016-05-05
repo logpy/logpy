@@ -118,13 +118,6 @@ def groupsizes(total, len):
             for perm in groupsizes(total - i, len - 1):
                 yield (i,) + perm
 
-def raises(err, lamda):
-    try:
-        lamda()
-        raise Exception("Did not raise %s"%err)
-    except err:
-        pass
-
 def pprint(g):
     """ Pretty print a tree of goals """
     if callable(g) and hasattr(g, '__name__'):
