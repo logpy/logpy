@@ -141,6 +141,11 @@ def unify_object(u, v, s):
     return unify(u.__dict__, v.__dict__, s)
 
 
+def unify_object_slots(u, v, s):
+    return unify(
+        tuple(getattr(u, a) for a in u.__slots__),
+        tuple(getattr(v, a) for a in v.__slots__),
+        s)
 
 
 def unify_object_attrs(u, v, s, attrs):
