@@ -1,6 +1,8 @@
-from .util import intersection, index
-from .core import conde, reify, isvar
+from .core import reify
+from .unification import unify
+from .util import intersection
 from toolz import merge
+
 
 class Relation(object):
     _id = 0
@@ -29,24 +31,41 @@ class Relation(object):
             self.index[key].add(fact)
 
     def __call__(self, *args):
-        def f(s):
-            args2 = reify(args, s)
+        """ Returns an evaluated (callable) goal, which returns a list of
+        substitutions which match args against a fact in the knowledge base.
+
+        *args: the goal to evaluate. This consists of vars and values to
+               match facts against.
+
+        >>> from logpy.facts import Relation
+        >>> from logpy.variable import var
+        >>>
+        >>> x, y = var('x'), var('y')
+        >>> r = Relation()
+        >>> r.add_fact(1, 2, 3)
+        >>> r.add_fact(4, 5, 6)
+        >>> list(r(x, y, 3)({})) == [{y: 2, x: 1}]
+        True
+        >>> list(r(x, 5, y)({})) == [{y: 6, x: 4}]
+        True
+        >>> list(r(x, 42, y)({}))
+        []
+        """
+        def goal(substitution):
+            args2 = reify(args, substitution)
             subsets = [self.index[key] for key in enumerate(args)
                                        if  key in self.index]
             if subsets:     # we are able to reduce the pool early
                 facts = intersection(*sorted(subsets, key=len))
             else:
                 facts = self.facts
-            varinds = [i for i, arg in enumerate(args2) if isvar(arg)]
-            valinds = [i for i, arg in enumerate(args2) if not isvar(arg)]
-            vars = index(args2, varinds)
-            vals = index(args2, valinds)
-            assert not any(var in s for var in vars)
 
-            return (merge(dict(zip(vars, index(fact, varinds))), s)
-                              for fact in self.facts
-                              if vals == index(fact, valinds))
-        return f
+            for fact in facts:
+                unified = unify(fact, args2, substitution)
+                if unified != False:
+                    yield merge(unified, substitution)
+
+        return goal
 
     def __str__(self):
         return "Rel: " + self.name
