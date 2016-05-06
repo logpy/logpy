@@ -1,9 +1,11 @@
-from logpy.core import (walk, walkstar, isvar, var, run,
-        membero, evalt, fail, success, eq, conde,
-        condeseq, goaleval, lany, lall, lanyseq,
-        goalexpand, earlyorder, EarlyGoalError, lallearly, earlysafe)
-import itertools
-from logpy.util import raises
+import pytest
+from pytest import raises
+
+from logpy.core import (walk, walkstar, var, run,
+                        membero, evalt, fail, eq, conde,
+                        goaleval, lany, lallgreedy, lanyseq,
+                        goalexpand, earlyorder, EarlyGoalError, lall, earlysafe,
+                        lallfirst)
 
 w, x, y, z = 'wxyz'
 
@@ -29,10 +31,25 @@ def test_lany():
     assert len(tuple(lany(eq(x, 2), eq(x, 3))({}))) == 2
     assert len(tuple(lany((eq, x, 2), (eq, x, 3))({}))) == 2
 
-def test_lall():
-    x = var('x')
-    assert results(lall((eq, x, 2))) == ({x: 2},)
-    assert results(lall((eq, x, 2), (eq, x, 3))) == ()
+
+# Test that all three implementations of lallgreedy behave identically for
+# correctly ordered goals.
+@pytest.mark.parametrize('lall_impl', [lallgreedy, lall, lallfirst])
+def test_lall(lall_impl):
+    x, y = var('x'), var('y')
+    assert results(lall_impl((eq, x, 2))) == ({x: 2},)
+    assert results(lall_impl((eq, x, 2), (eq, x, 3))) == ()
+    assert results(lall_impl()) == ({},)
+
+    assert run(0, x, lall_impl((eq, y, (1, 2)), (membero, x, y)))
+    assert run(0, x, lall_impl()) == (x,)
+    with pytest.raises(EarlyGoalError):
+        run(0, x, lall_impl(membero(x, y)))
+
+@pytest.mark.parametrize('lall_impl', [lall, lallfirst])
+def test_safe_reordering_lall(lall_impl):
+    x, y = var('x'), var('y')
+    assert run(0, x, lall_impl((membero, x, y), (eq, y, (1, 2)))) == (1, 2)
 
 def test_earlysafe():
     x, y = var('x'), var('y')
@@ -89,6 +106,9 @@ def test_membero():
                          membero(x, (2,3,4)))) == set((2,3))
 
     assert run(5, x, membero(2, (1, x, 3))) == (2,)
+    assert run(0, x, (membero, 1, (1, 2, 3))) == (x, )
+    assert run(0, x, (membero, 1, (2, 3))) == ()
+
 
 def test_lanyseq():
     x = var('x')
@@ -113,13 +133,15 @@ def test_uneval_membero():
     assert set(run(100, x, (membero, y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
            set((1,2,3,4,5,6))
 
+
 def test_goaleval():
     x, y = var('x'), var('y')
     g = eq(x, 2)
     assert goaleval(g) == g
     assert callable(goaleval((eq, x, 2)))
-    raises(EarlyGoalError, lambda: goaleval((membero, x, y)))
-    assert callable(goaleval((lall, (eq, x, 2))))
+    with raises(EarlyGoalError):
+        goaleval((membero, x, y))
+    assert callable(goaleval((lallgreedy, (eq, x, 2))))
 
 def test_goalexpand():
     def growing_goal(*args):
@@ -131,10 +153,6 @@ def test_goalexpand():
     g = (growing_goal, 2)
     assert goalexpand(g) == (growing_goal, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2)
 
-def test_early():
-    x, y = var(), var()
-    assert run(0, x, lallearly((eq, y, (1, 2)), (membero, x, y)))
-    assert run(0, x, lallearly((membero, x, y), (eq, y, (1, 2))))
 
 def test_lany_is_early_safe():
     x = var()

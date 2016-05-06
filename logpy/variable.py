@@ -7,18 +7,14 @@ _glv = _global_logic_variables
 
 class Var(object):
     """ Logic Variable """
+    __slots__ = ('token', )
 
     _id = 1
-    def __new__(cls, *token):
-        if len(token) == 0:
+    def __init__(self, token=None):
+        if token is None:
             token = "_%s" % Var._id
             Var._id += 1
-        elif len(token) == 1:
-            token = token[0]
-
-        obj = object.__new__(cls)
-        obj.token = token
-        return obj
+        self.token = token
 
     def __str__(self):
         return "~" + str(self.token)

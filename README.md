@@ -156,9 +156,9 @@ From source
     cd logpy
     python setup.py install
 
-Run tests with nose
+Run tests with tox
 
-    nosetests --with-doctest
+    tox
 
 Dependencies
 ------------

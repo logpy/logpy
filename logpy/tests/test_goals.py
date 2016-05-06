@@ -1,7 +1,8 @@
+from pytest import raises
+
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
         isinstanceo, permuteq)
 from logpy.core import var, run, eq, EarlyGoalError, goaleval, membero
-from logpy.util import raises
 
 def results(g, s={}):
     return tuple(goaleval(g)(s))
@@ -10,12 +11,17 @@ def test_heado():
     x, y = var('x'), var('y')
     assert results(heado(x, (1,2,3))) == ({x: 1},)
     assert results(heado(1, (x,2,3))) == ({x: 1},)
-    raises(EarlyGoalError, lambda: heado(x, y))
+    assert results(heado(x, ())) == ()
+    with raises(EarlyGoalError):
+        heado(x, y)
 
 def test_tailo():
     x, y = var('x'), var('y')
     assert results((tailo, x, (1,2,3))) == ({x: (2,3)},)
-    raises(EarlyGoalError, lambda: tailo(x, y))
+    assert results((tailo, x, (1, ))) == ({x: ()},)
+    assert results((tailo, x, ())) == ()
+    with raises(EarlyGoalError):
+        tailo(x, y)
 
 def test_conso():
     x = var()

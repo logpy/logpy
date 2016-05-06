@@ -45,13 +45,34 @@ def membero(x, coll):
 ################################
 
 def lall(*goals):
-    """ Logical all
+    """ Logical all with goal reordering to avoid EarlyGoalErrors
+
+    See also:
+        EarlyGoalError
+        earlyorder
 
     >>> from logpy.core import lall, membero
     >>> x = var('x')
-    >>> g = lall(membero(x, (1,2,3)), membero(x, (2,3,4)))
-    >>> tuple(g({}))
-    ({~x: 2}, {~x: 3})
+    >>> run(0, x, lall(membero(x, (1,2,3)), membero(x, (2,3,4))))
+    (2, 3)
+    """
+    return (lallgreedy,) + tuple(earlyorder(*goals))
+
+def lallgreedy(*goals):
+    """ Logical all that greedily evaluates each goals in the order provided.
+
+    Note that this may raise EarlyGoalError when the ordering of the
+    goals is incorrect. It is faster than lall, but should be used
+    with care.
+
+    >>> from logpy.core import lallgreedy, eq, run
+    >>> x, y = var('x'), var('y')
+    >>> run(0, x, lallgreedy((eq, y, set([1]))), (membero, x, y))
+    (1,)
+    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, set([1]))))  # doctest: +SKIP
+    Traceback (most recent call last):
+      ...
+    logpy.core.EarlyGoalError
     """
     if not goals:
         return success
@@ -60,7 +81,7 @@ def lall(*goals):
     def allgoal(s):
         g = goaleval(reify(goals[0], s))
         return unique(interleave(
-                        goaleval(reify((lall,) + tuple(goals[1:]), ss))(ss)
+                        goaleval(reify((lallgreedy,) + tuple(goals[1:]), ss))(ss)
                         for ss in g(s)),
                       key=dicthash)
     return allgoal
@@ -68,11 +89,13 @@ def lall(*goals):
 def lallfirst(*goals):
     """ Logical all - Run goals one at a time
 
-    >>> from logpy.core import lall, membero
+    >>> from logpy.core import lallfirst, membero
     >>> x = var('x')
-    >>> g = lall(membero(x, (1,2,3)), membero(x, (2,3,4)))
+    >>> g = lallfirst(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
     ({~x: 2}, {~x: 3})
+    >>> tuple(lallfirst()({}))
+    ({},)
     """
     if not goals:
         return success
@@ -105,15 +128,6 @@ def lany(*goals):
         return goals[0]
     return lanyseq(goals)
 
-def lallearly(*goals):
-    """ Logical all with goal reordering to avoid EarlyGoalErrors
-
-    See also:
-        EarlyGoalError
-        earlyorder
-    """
-    return (lall,) + tuple(earlyorder(*goals))
-
 def earlysafe(goal):
     """ Call goal be evaluated without raising an EarlyGoalError """
     try:
@@ -126,11 +140,13 @@ def earlyorder(*goals):
     """ Reorder goals to avoid EarlyGoalErrors
 
     All goals are evaluated.  Those that raise EarlyGoalErrors are placed at
-    the end in a lallearly
+    the end in a lall
 
     See also:
         EarlyGoalError
     """
+    if not goals:
+        return ()
     groups = groupby(earlysafe, goals)
     good = groups.get(True, [])
     bad  = groups.get(False, [])
@@ -140,20 +156,21 @@ def earlyorder(*goals):
     elif not bad:
         return tuple(good)
     else:
-        return tuple(good) + ((lallearly,) + tuple(bad),)
+        return tuple(good) + ((lall,) + tuple(bad),)
 
-def conde(*goalseqs, **kwargs):
+def conde(*goalseqs):
     """ Logical cond
 
     Goal constructor to provides logical AND and OR
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
+    Equivalent to the (A, B, C); (D, E) in Prolog.
 
     See Also:
         lall - logical all
         lany - logical any
     """
-    return (lany, ) + tuple((lallearly,) + tuple(gs) for gs in goalseqs)
+    return (lany, ) + tuple((lall,) + tuple(gs) for gs in goalseqs)
 
 
 def lanyseq(goals):
@@ -179,7 +196,7 @@ def lanyseq(goals):
 
 def condeseq(goalseqs):
     """ Like conde but supports generic (possibly infinite) iterator of goals"""
-    return (lanyseq, ((lallearly,) + tuple(gs) for gs in goalseqs))
+    return (lanyseq, ((lall,) + tuple(gs) for gs in goalseqs))
 
 ########################
 # User level execution #
@@ -199,7 +216,7 @@ def run(n, x, *goals, **kwargs):
     >>> run(1, x, eq(x, 1))
     (1,)
     """
-    results = map(partial(reify, x), goaleval(lallearly(*goals))({}))
+    results = map(partial(reify, x), goaleval(lall(*goals))({}))
     return take(n, unique(results, key=multihash))
 
 ###################
@@ -219,7 +236,7 @@ class EarlyGoalError(Exception):
     collections.  This is unproductive.  Rather than proceed, membero raises an
     EarlyGoalError, stating that this goal has been called early.
 
-    The goal constructor lallearly Logical-All-Early will reorder such goals to
+    The goal constructor lall Logical-All-Early will reorder such goals to
     the end so that the call becomes
 
     >>> run(0, x, (eq, coll, (1, 2, 3)), (membero, x, coll)) # doctest: +SKIP
@@ -228,7 +245,7 @@ class EarlyGoalError(Exception):
     all elements of coll, 1, then 2, then 3.
 
     See Also:
-        lallearly
+        lall
         earlyorder
     """
 

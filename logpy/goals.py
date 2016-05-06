@@ -1,5 +1,5 @@
-from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
-        lallearly, fail, success)
+from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lallgreedy,
+                   lall, fail, success)
 from .util import unique
 import itertools as it
 
@@ -7,7 +7,7 @@ def heado(x, coll):
     """ x is the head of coll
 
     See also:
-        heado
+        tailo
         conso
     """
     if not isinstance(coll, tuple):
@@ -102,12 +102,8 @@ def seteq(a, b, eq2=eq):
         return permuteq(ts(a), ts(b), eq2)
     elif not isvar(a):
         return permuteq(ts(a), b, eq2)
-    elif not isvar(b):
+    else:  # not isvar(b)
         return permuteq(a, ts(b), eq2)
-    else:
-        return permuteq(a, b, eq2)
-
-    raise Exception()
 
 
 def goalify(func):
@@ -151,5 +147,5 @@ isinstanceo = goalify(isinstance)
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var() for i in range(3)]
-    return (lany, (lall, (eq, l, ()), (eq, s, ls)),
-                  (lallearly, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
+    return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
+                  (lall, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))

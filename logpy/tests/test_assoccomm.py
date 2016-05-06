@@ -1,14 +1,13 @@
-from logpy.core import var, run, eq, goaleval, EarlyGoalError
+from logpy.core import var, run, goaleval
 from logpy.facts import fact
-from logpy.assoccomm import (associative, commutative, conde,
+from logpy.assoccomm import (associative, commutative,
         groupsizes_to_partition, assocunify, eq_comm, eq_assoc,
         eq_assoccomm, assocsized, buildo, op_args)
-from logpy.util import raises
 from logpy.dispatch import dispatch
 
 a = 'assoc_op'
 c = 'comm_op'
-x = var()
+x, y = var('x'), var('y')
 fact(associative, a)
 fact(commutative, c)
 
@@ -24,8 +23,7 @@ def test_eq_comm():
     assert not results(eq_comm((c, 1, 2, 1), (c, 1, 2, 3)))
     assert not results(eq_comm((a, 1, 2, 3), (c, 1, 2, 3)))
     assert len(results(eq_comm((c, 3, 2, 1), x))) >= 6
-
-
+    assert results(eq_comm(x, y)) == ({x: y},)
 
 
 def test_eq_assoc():
@@ -40,6 +38,10 @@ def test_eq_assoc():
     # See TODO in assocunify
     gen = results(eq_assoc((a, 1, 2, 3), x, n=2))
     assert set(g[x] for g in gen).issuperset(set([(a,(a,1,2),3), (a,1,(a,2,3))]))
+    gen = results(eq_assoc(x, (a, 1, 2, 3), n=2))
+    assert set(g[x] for g in gen).issuperset(
+        set([(a, (a, 1, 2), 3), (a, 1, (a, 2, 3))]))
+
 
 def test_eq_assoccomm():
     x, y = var(), var()
@@ -49,11 +51,14 @@ def test_eq_assoccomm():
     fact(associative, ac)
     assert results(eqac(1, 1))
     assert results(eqac((1,), (1,)))
+    assert results(eqac(x, (1,)))
+    assert results(eqac((1,), x))
     assert results(eqac((ac, (ac, 1, x), y), (ac, 2, (ac, 3, 1))))
     assert results((eqac, 1, 1))
     assert results(eqac((a, (a, 1, 2), 3), (a, 1, 2, 3)))
     assert results(eqac((ac, (ac, 1, 2), 3), (ac, 1, 2, 3)))
     assert results(eqac((ac, 3, (ac, 1, 2)), (ac, 1, 2, 3)))
+    assert not results(eqac((ac, 1, 1), ('other_op', 1, 1)))
     assert run(0, x, eqac((ac, 3, (ac, 1, 2)), (ac, 1, x, 3))) == (2,)
 
 def test_expr():
@@ -88,8 +93,14 @@ def test_assocunify():
     assert tuple(assocunify((a, 1, (a, 2, 3), 4), (a, 1, 2, 3, 4), {}))
     assert tuple(assocunify((a, 1, x, 4), (a, 1, 2, 3, 4), {})) == \
                 ({x: (a, 2, 3)},)
+    assert tuple(assocunify((a, 1, 1), ('other_op', 1, 1), {})) == ()
+
+    assert tuple(assocunify((a, 1, 1), (x, 1, 1), {})) == ({x: a}, )
+    assert tuple(assocunify((x, 1, 1), (a, 1, 1), {})) == ({x: a}, )
 
     gen = assocunify((a, 1, 2, 3), x, {}, n=2)
+    assert set(g[x] for g in gen) == set([(a,(a,1,2),3), (a,1,(a,2,3))])
+    gen = assocunify(x, (a, 1, 2, 3), {}, n=2)
     assert set(g[x] for g in gen) == set([(a,(a,1,2),3), (a,1,(a,2,3))])
 
     gen = assocunify((a, 1, 2, 3), x, {})
@@ -103,7 +114,7 @@ def test_assocsized():
             set((((add, 1, 2, 3),),))
 
 def test_objects():
-    from logpy import variables, reify, assoccomm
+    from logpy import variables, reify
 
     fact(commutative, Add)
     fact(associative, Add)

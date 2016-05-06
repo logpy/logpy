@@ -30,8 +30,8 @@ be used in the computer algebra systems SymPy and Theano.
 """
 
 from logpy.core import (isvar, assoc, unify,
-        conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq, goaleval)
+                        conde, var, eq, fail, goaleval, lallgreedy, EarlyGoalError,
+                        condeseq, goaleval)
 from .goals import heado, permuteq, conso, tailo
 from .facts import Relation
 from logpy import core
@@ -60,7 +60,7 @@ def assocunify(u, v, s, eq=core.eq, n=None):
     if uop and vop:
         s = unify(uop, vop, s)
         if s is False:
-            raise StopIteration()
+            return ().__iter__()
         op = walk(uop, s)
 
         sm, lg = (uargs, vargs) if len(uargs) <= len(vargs) else (vargs, uargs)
@@ -134,17 +134,17 @@ def eq_assoc(u, v, eq=core.eq, n=None):
     >>> run(0, x, eq(('add', 1, 2, 3), ('add', 1, x)))
     (('add', 2, 3),)
     """
-    uop, uargs = op_args(u)
-    vop, vargs = op_args(v)
+    uop, _ = op_args(u)
+    vop, _ = op_args(v)
     if uop and vop:
         return conde([(core.eq, u, v)],
                      [(eq, uop, vop), (associative, uop),
                       lambda s: assocunify(u, v, s, eq, n)])
 
     if uop or vop:
+
         if vop:
             uop, vop = vop, uop
-            uargs, vargs = vargs, uargs
             v, u = u, v
         return conde([(core.eq, u, v)],
                      [(associative, uop),
@@ -168,12 +168,9 @@ def eq_comm(u, v, eq=None):
     (3,)
     """
     eq = eq or eq_comm
-    op = var()
-    utail = var()
     vtail = var()
     if isvar(u) and isvar(v):
         return (core.eq, u, v)
-        raise EarlyGoalError()
     uop, uargs = op_args(u)
     vop, vargs = op_args(v)
     if not uop and not vop:
@@ -186,13 +183,6 @@ def eq_comm(u, v, eq=None):
                     (buildo, uop, vtail, v),
                     (permuteq, uargs, vtail, eq)))
 
-def build_tuple(op, args):
-    try:
-        return term(op, args)
-    except TypeError:
-        raise EarlyGoalError()
-
-
 def buildo(op, args, obj):
     """ obj is composed of op on args
 
@@ -202,7 +192,8 @@ def buildo(op, args, obj):
     """
     if not isvar(obj):
         oop, oargs = op_args(obj)
-        return lall((eq, op, oop), (eq, args, oargs))
+        # TODO: Is greedy correct?
+        return lallgreedy((eq, op, oop), (eq, args, oargs))
     else:
         try:
             return eq(obj, build(op, args))
@@ -249,17 +240,14 @@ def eq_assoccomm(u, v):
     >>> run(0, x, eq(e1, e2))
     (('add', 2, 3), ('add', 3, 2))
     """
-    try:
-        uop, uargs = op_args(u)
-        vop, vargs = op_args(v)
-    except ValueError:
-        return (eq, u, v)
+    uop, uargs = op_args(u)
+    vop, vargs = op_args(v)
 
     if uop and not vop and not isvar(v):
         return fail
     if vop and not uop and not isvar(u):
         return fail
-    if uop and vop and not uop == vop:
+    if uop and vop and uop != vop:
         return fail
     if uop and not (uop,) in associative.facts:
         return (eq, u, v)
@@ -274,5 +262,6 @@ def eq_assoccomm(u, v):
     if vop and not uop:
         u, v = v, u
     w = var()
-    return (lall, (eq_assoc, u, w, eq_assoccomm, n),
-                  (eq_comm, v, w, eq_assoccomm))
+    # TODO: Is greedy correct?
+    return (lallgreedy, (eq_assoc, u, w, eq_assoccomm, n),
+            (eq_comm, v, w, eq_assoccomm))
