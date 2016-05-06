@@ -69,7 +69,7 @@ def lallgreedy(*goals):
     >>> x, y = var('x'), var('y')
     >>> run(0, x, lallgreedy((eq, y, set([1]))), (membero, x, y))
     (1,)
-    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, set([1]))))
+    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, set([1]))))  # doctest: +SKIP
     Traceback (most recent call last):
       ...
     logpy.core.EarlyGoalError
