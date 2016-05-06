@@ -1,0 +1,16 @@
+[run]
+branch = True
+omit =
+    logpy/tests/*
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise EarlyGoalError
+    raise TypeError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    raise ValueError
+    assert False
+show_missing = 1

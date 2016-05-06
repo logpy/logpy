@@ -10,9 +10,9 @@ python:
     - "pypy"
     - "pypy3"
 install:
-    - pip install coverage toolz multipledispatch
+    - pip install coverage toolz multipledispatch pytest pytest-cov
 script:
-    - nosetests --with-doctest
+    - py.test --cov=logpy -vv logpy
 after_success:
     - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then
         pip install coveralls --use-mirrors;
