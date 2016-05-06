@@ -72,7 +72,7 @@ def lallgreedy(*goals):
     >>> run(0, x, lallgreedy((membero, x, y), (eq, y, set([1]))))
     Traceback (most recent call last):
       ...
-    EarlyGoalError
+    logpy.core.EarlyGoalError
     """
     if not goals:
         return success
