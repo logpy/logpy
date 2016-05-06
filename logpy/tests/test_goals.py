@@ -11,12 +11,15 @@ def test_heado():
     x, y = var('x'), var('y')
     assert results(heado(x, (1,2,3))) == ({x: 1},)
     assert results(heado(1, (x,2,3))) == ({x: 1},)
+    assert results(heado(x, ())) == ()
     with raises(EarlyGoalError):
         heado(x, y)
 
 def test_tailo():
     x, y = var('x'), var('y')
     assert results((tailo, x, (1,2,3))) == ({x: (2,3)},)
+    assert results((tailo, x, (1, ))) == ({x: ()},)
+    assert results((tailo, x, ())) == ()
     with raises(EarlyGoalError):
         tailo(x, y)
 

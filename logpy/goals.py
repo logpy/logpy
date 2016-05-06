@@ -7,7 +7,7 @@ def heado(x, coll):
     """ x is the head of coll
 
     See also:
-        heado
+        tailo
         conso
     """
     if not isinstance(coll, tuple):
@@ -102,12 +102,8 @@ def seteq(a, b, eq2=eq):
         return permuteq(ts(a), ts(b), eq2)
     elif not isvar(a):
         return permuteq(ts(a), b, eq2)
-    elif not isvar(b):
+    else:  # not isvar(b)
         return permuteq(a, ts(b), eq2)
-    else:
-        return permuteq(a, b, eq2)
-
-    raise Exception()
 
 
 def goalify(func):
