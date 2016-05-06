@@ -1,5 +1,5 @@
-from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lall,
-        lallearly, fail, success)
+from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lallgreedy,
+                   lall, fail, success)
 from .util import unique
 import itertools as it
 
@@ -147,5 +147,5 @@ isinstanceo = goalify(isinstance)
 def appendo(l, s, ls):
     """ Byrd thesis pg. 247 """
     a, d, res = [var() for i in range(3)]
-    return (lany, (lall, (eq, l, ()), (eq, s, ls)),
-                  (lallearly, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
+    return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
+                  (lall, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))

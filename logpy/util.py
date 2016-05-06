@@ -122,7 +122,7 @@ def pprint(g):
     """ Pretty print a tree of goals """
     if callable(g) and hasattr(g, '__name__'):
         return g.__name__
-    if isinstance(g, type):
+    if isinstance(g, type):  # pragma: no cover
         return g.__name__
     if isinstance(g, tuple):
         return "(" + ', '.join(map(pprint, g)) + ")"

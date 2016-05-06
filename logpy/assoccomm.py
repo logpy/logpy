@@ -30,8 +30,8 @@ be used in the computer algebra systems SymPy and Theano.
 """
 
 from logpy.core import (isvar, assoc, unify,
-        conde, var, eq, fail, goaleval, lall, EarlyGoalError,
-        condeseq, goaleval)
+                        conde, var, eq, fail, goaleval, lallgreedy, EarlyGoalError,
+                        condeseq, goaleval)
 from .goals import heado, permuteq, conso, tailo
 from .facts import Relation
 from logpy import core
@@ -202,7 +202,8 @@ def buildo(op, args, obj):
     """
     if not isvar(obj):
         oop, oargs = op_args(obj)
-        return lall((eq, op, oop), (eq, args, oargs))
+        # TODO: Is greedy correct?
+        return lallgreedy((eq, op, oop), (eq, args, oargs))
     else:
         try:
             return eq(obj, build(op, args))
@@ -274,5 +275,6 @@ def eq_assoccomm(u, v):
     if vop and not uop:
         u, v = v, u
     w = var()
-    return (lall, (eq_assoc, u, w, eq_assoccomm, n),
-                  (eq_comm, v, w, eq_assoccomm))
+    # TODO: Is greedy correct?
+    return (lallgreedy, (eq_assoc, u, w, eq_assoccomm, n),
+            (eq_comm, v, w, eq_assoccomm))
