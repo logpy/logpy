@@ -82,11 +82,5 @@ def test_appendo():
     assert results(appendo((), (1,2), (1))) == ()
     assert results(appendo((1,2), (3,4), (1,2,3,4)))
     assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
-
-"""
-Failing test
-def test_appendo2():
-    print(run(5, x, appendo((1,2,3), (4,5), x)))
-    assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
-    assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
-"""
+    assert run(5, x, appendo(x, (4, 5), (1, 2, 3, 4, 5))) == ((1, 2, 3),)
+    assert run(5, x, appendo((1, 2, 3), (4, 5), x)) == ((1, 2, 3, 4, 5),)

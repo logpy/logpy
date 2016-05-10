@@ -1,3 +1,5 @@
+import pytest
+
 from logpy.core import var, run, goaleval
 from logpy.facts import fact
 from logpy.assoccomm import (associative, commutative,
@@ -136,15 +138,16 @@ def test_objects():
         print(reify(v, next(goaleval(eq_assoccomm(v, x))({}))))
         assert reify(v, next(goaleval(eq_assoccomm(v, x))({}))) == x
 
-"""
-Failing test.  This would work if we flattened first
+
+@pytest.mark.xfail(reason="This would work if we flattened first.",
+                   strict=True)
 def test_deep_associativity():
     expr1 = (a, 1, 2, (a, x, 5, 6))
     expr2 = (a, (a, 1, 2), 3, 4, 5, 6)
     result = ({x: (a, 3, 4)})
-    print(tuple(unify_assoc(expr1, expr2, {})))
-    assert tuple(unify_assoc(expr1, expr2, {})) == result
-"""
+    print(tuple(assocunify(expr1, expr2, {})))
+    assert tuple(assocunify(expr1, expr2, {})) == result
+
 
 def test_buildo():
     x = var('x')

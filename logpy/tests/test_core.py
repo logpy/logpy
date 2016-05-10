@@ -1,3 +1,4 @@
+import itertools
 import pytest
 from pytest import raises
 
@@ -5,7 +6,7 @@ from logpy.core import (walk, walkstar, var, run,
                         membero, evalt, fail, eq, conde,
                         goaleval, lany, lallgreedy, lanyseq,
                         goalexpand, earlyorder, EarlyGoalError, lall, earlysafe,
-                        lallfirst)
+                        lallfirst, condeseq)
 
 w, x, y, z = 'wxyz'
 
@@ -69,15 +70,14 @@ def test_conde():
     assert results(conde([eq(x, 2)], [eq(x, 3)])) == ({x: 2}, {x: 3})
     assert results(conde([eq(x, 2), eq(x, 3)])) == ()
 
-"""
 def test_condeseq():
     x = var('x')
-    assert tuple(condeseq(([eq(x, 2)], [eq(x, 3)]))({})) == ({x: 2}, {x: 3})
-    assert tuple(condeseq([[eq(x, 2), eq(x, 3)]])({})) == ()
+    assert set(run(0, x, condeseq(([eq(x, 2)], [eq(x, 3)])))) == {2, 3}
+    assert set(run(0, x, condeseq([[eq(x, 2), eq(x, 3)]]))) == set()
 
     goals = ([eq(x, i)] for i in itertools.count()) # infinite number of goals
-    assert next(condeseq(goals)({})) == {x: 0}
-"""
+    assert run(1, x, condeseq(goals)) == (0, )
+    assert run(1, x, condeseq(goals)) == (1, )
 
 def test_short_circuit():
     def badgoal(s):
