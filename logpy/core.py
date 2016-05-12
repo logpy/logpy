@@ -32,12 +32,11 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    if not isvar(x) and not isvar(coll):
+    if not isvar(coll):
         if x in coll:
             return success
-        return (lany,) + tuple((eq, x, item) for item in coll)
-    if isvar(x) and not isvar(coll):
-        return (lany,) + tuple((eq, x, item) for item in coll)
+        else:
+            return (lany,) + tuple((eq, x, item) for item in coll)
     raise EarlyGoalError()
 
 ################################
