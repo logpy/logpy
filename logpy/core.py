@@ -3,7 +3,7 @@ from functools import partial
 from .util import transitive_get as walk
 from .util import deep_transitive_get as walkstar
 from .util import (dicthash, interleave, take, evalt, index, multihash, unique)
-from toolz import assoc, groupby
+from toolz import assoc, groupby, map
 
 from .variable import var, isvar
 from .unification import reify, unify
@@ -32,11 +32,7 @@ def eq(u, v):
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
-    if not isvar(x) and not isvar(coll):
-        if x in coll:
-            return success
-        return (lany,) + tuple((eq, x, item) for item in coll)
-    if isvar(x) and not isvar(coll):
+    if not isvar(coll):
         return (lany,) + tuple((eq, x, item) for item in coll)
     raise EarlyGoalError()
 
@@ -202,7 +198,7 @@ def condeseq(goalseqs):
 # User level execution #
 ########################
 
-def run(n, x, *goals, **kwargs):
+def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
     n     - number of desired solutions.  See ``take``

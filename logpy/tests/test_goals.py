@@ -77,16 +77,19 @@ def test_conso_early():
             == (1,))
 
 def test_appendo():
-    x = var('x')
+    x, y, z, w = var('x'), var('y'), var('z'), var('w')
     assert results(appendo((), (1,2), (1,2))) == ({},)
     assert results(appendo((), (1,2), (1))) == ()
     assert results(appendo((1,2), (3,4), (1,2,3,4)))
     assert run(5, x, appendo((1,2,3), x, (1,2,3,4,5))) == ((4,5),)
+    assert run(5, x, appendo(x, (4, 5), (1, 2, 3, 4, 5))) == ((1, 2, 3),)
+    assert run(5, x, appendo((1, 2, 3), (4, 5), x)) == ((1, 2, 3, 4, 5),)
 
-"""
-Failing test
-def test_appendo2():
-    print(run(5, x, appendo((1,2,3), (4,5), x)))
-    assert run(5, x, appendo(x, (4,5), (1,2,3,4,5))) == ((1,2,3),)
-    assert run(5, x, appendo((1,2,3), (4,5), x)) == ((1,2,3,4,5),)
-"""
+    for t in [tuple(range(i)) for i in range(5)]:
+        for xi, yi in run(0, (x, y), appendo(x, y, t)):
+            assert xi + yi == t
+
+        for xi, yi, zi in run(0, (x, y, z),
+                              appendo(x, y, w),
+                              appendo(w, z, t)):
+            assert xi + yi + zi == t

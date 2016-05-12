@@ -136,16 +136,13 @@ typo = goalify(type)
 isinstanceo = goalify(isinstance)
 
 
-"""
--This is an attempt to create appendo.  It does not currently work.
--As written in miniKanren, appendo uses LISP machinery not present in Python
--such as quoted expressions and macros for short circuiting.  I have gotten
--around some of these issues but not all.  appendo is a stress test for this
--implementation
-"""
-
 def appendo(l, s, ls):
-    """ Byrd thesis pg. 247 """
+    """
+    Goal that ls = l + s.
+
+    See Byrd thesis pg. 247
+    https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf
+    """
     a, d, res = [var() for i in range(3)]
     return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
                   (lall, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
