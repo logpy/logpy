@@ -3,7 +3,7 @@ from functools import partial
 from .util import transitive_get as walk
 from .util import deep_transitive_get as walkstar
 from .util import (dicthash, interleave, take, evalt, index, multihash, unique)
-from toolz import assoc, groupby
+from toolz import assoc, groupby, map
 
 from .variable import var, isvar
 from .unification import reify, unify
@@ -202,7 +202,7 @@ def condeseq(goalseqs):
 # User level execution #
 ########################
 
-def run(n, x, *goals, **kwargs):
+def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
 
     n     - number of desired solutions.  See ``take``
