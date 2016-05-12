@@ -1,6 +1,5 @@
 from logpy.util import (take, unique, interleave, intersection,
         groupsizes, dicthash, hashable, multihash)
-import itertools
 
 def test_hashable():
     assert hashable(2)
