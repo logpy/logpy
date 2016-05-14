@@ -1,8 +1,10 @@
+from itertools import permutations
+
+from unification import var, isvar
+
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
                    fail, success)
 from .util import unique
-from .variable import var, isvar
-import itertools as it
 
 
 def heado(x, coll):
@@ -86,7 +88,7 @@ def permuteq(a, b, eq2=eq):
             c, d = b, a
 
         return (condeseq, ([eq(c, perm)]
-                           for perm in unique(it.permutations(d, len(d)))))
+                           for perm in unique(permutations(d, len(d)))))
 
 
 def seteq(a, b, eq2=eq):

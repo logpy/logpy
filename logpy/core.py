@@ -3,9 +3,7 @@ from functools import partial
 from .util import (dicthash, interleave, take, multihash, unique)
 from toolz import groupby, map
 
-from .variable import var  # noqa
-from .variable import isvar
-from .unification import reify, unify
+from unification import reify, unify, isvar, var  # noqa
 
 #########
 # Goals #

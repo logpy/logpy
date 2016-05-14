@@ -1,5 +1,5 @@
-from .core import reify
-from .unification import unify
+from unification import unify, reify
+
 from .util import intersection
 from toolz import merge
 
@@ -39,7 +39,7 @@ class Relation(object):
                match facts against.
 
         >>> from logpy.facts import Relation
-        >>> from logpy.variable import var
+        >>> from unification import var
         >>>
         >>> x, y = var('x'), var('y')
         >>> r = Relation()
