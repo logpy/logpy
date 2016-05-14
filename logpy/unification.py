@@ -7,14 +7,13 @@ from collections import Iterator
 from toolz.compatibility import iteritems, map
 from toolz import assoc
 
-################
-# Reificiation #
-################
+###############
+# Reification #
+###############
 
 @dispatch(Iterator, dict)
 def _reify(t, s):
     return map(partial(reify, s=s), t)
-    # return (reify(arg, s) for arg in t)
 
 @dispatch(tuple, dict)
 def _reify(t, s):
