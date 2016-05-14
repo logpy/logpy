@@ -1,11 +1,10 @@
 import itertools as it
 from functools import partial
-from .util import transitive_get as walk
-from .util import deep_transitive_get as walkstar
-from .util import (dicthash, interleave, take, evalt, index, multihash, unique)
-from toolz import assoc, groupby, map
+from .util import (dicthash, interleave, take, multihash, unique)
+from toolz import groupby, map
 
-from .variable import var, isvar
+from .variable import var  # noqa
+from .variable import isvar
 from .unification import reify, unify
 
 #########
@@ -73,7 +72,7 @@ def lallgreedy(*goals):
     >>> x, y = var('x'), var('y')
     >>> run(0, x, lallgreedy((eq, y, set([1]))), (membero, x, y))
     (1,)
-    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, set([1]))))  # doctest: +SKIP
+    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, {1})))  # doctest: +SKIP
     Traceback (most recent call last):
       ...
     logpy.core.EarlyGoalError
@@ -215,7 +214,9 @@ def lanyseq(goals):
 
 
 def condeseq(goalseqs):
-    """ Like conde but supports generic (possibly infinite) iterator of goals"""
+    """
+    Like conde but supports generic (possibly infinite) iterator of goals
+    """
     return (lanyseq, ((lall, ) + tuple(gs) for gs in goalseqs))
 
 ########################

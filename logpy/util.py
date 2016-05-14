@@ -1,5 +1,5 @@
 import itertools as it
-from toolz.compatibility import range, map, iteritems
+from toolz.compatibility import range, map
 
 
 def hashable(x):

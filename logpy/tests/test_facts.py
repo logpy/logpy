@@ -1,5 +1,5 @@
 from logpy.facts import Relation, fact, facts
-from logpy.core import var, run, conde, reify
+from logpy.core import var, run, conde
 
 
 def test_relation():

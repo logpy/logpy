@@ -1,9 +1,10 @@
-from logpy.unification import unify, reify, _unify, _reify
+from logpy.unification import unify, reify
 from logpy import var
+
+x, y, z = var('x'), var('y'), var('z')
 
 
 def test_reify():
-    x, y, z = var(), var(), var()
     s = {x: 1, y: 2, z: (x, y)}
     assert reify(x, s) == 1
     assert reify(10, s) == 10
@@ -13,21 +14,18 @@ def test_reify():
 
 
 def test_reify_dict():
-    x, y = var(), var()
     s = {x: 2, y: 4}
     e = {1: x, 3: {5: y}}
     assert reify(e, s) == {1: 2, 3: {5: 4}}
 
 
 def test_reify_list():
-    x, y = var(), var()
     s = {x: 2, y: 4}
     e = [1, [x, 3], y]
     assert reify(e, s) == [1, [2, 3], 4]
 
 
 def test_reify_complex():
-    x, y = var(), var()
     s = {x: 2, y: 4}
     e = {1: [x], 3: (y, 5)}
 

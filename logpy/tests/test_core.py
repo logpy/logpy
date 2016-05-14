@@ -2,10 +2,14 @@ import itertools
 import pytest
 from pytest import raises
 
-from logpy.core import (walk, walkstar, var, run, membero, evalt, fail, eq,
+from logpy.core import (run, membero, fail, eq,
                         conde, goaleval, lany, lallgreedy, lanyseq, goalexpand,
                         earlyorder, EarlyGoalError, lall, earlysafe, lallfirst,
                         condeseq)
+from logpy.util import transitive_get as walk
+from logpy.util import deep_transitive_get as walkstar
+from logpy.util import evalt
+from logpy.variable import var
 
 w, x, y, z = 'wxyz'
 
@@ -144,8 +148,10 @@ def test_evalt():
 
 def test_uneval_membero():
     x, y = var('x'), var('y')
-    assert set(run(100, x, (membero, y, ((1,2,3),(4,5,6))), (membero, x, y))) == \
-           set((1,2,3,4,5,6))
+    assert set(run(100, x, (membero, y,
+                            ((1, 2, 3), (4, 5, 6))),
+                            (membero, x, y))) == \
+           set((1, 2, 3, 4, 5, 6))
 
 
 def test_goaleval():

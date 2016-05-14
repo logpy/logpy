@@ -103,7 +103,7 @@ def test_assocunify():
     assert tuple(assocunify((a, 1, (a, 2, 3)), (a, 1, 2, 3), {}))
     assert tuple(assocunify((a, 1, (a, 2, 3), 4), (a, 1, 2, 3, 4), {}))
     assert tuple(assocunify((a, 1, x, 4), (a, 1, 2, 3, 4), {})) == \
-                ({x: (a, 2, 3)},)
+                ({x: (a, 2, 3)}, )
     assert tuple(assocunify((a, 1, 1), ('other_op', 1, 1), {})) == ()
 
     assert tuple(assocunify((a, 1, 1), (x, 1, 1), {})) == ({x: a}, )
@@ -126,7 +126,7 @@ def test_assocsized():
     assert set(assocsized(add, (1, 2, 3), 2)) == \
             set((((add, 1, 2), 3), (1, (add, 2, 3))))
     assert set(assocsized(add, (1, 2, 3), 1)) == \
-            set((((add, 1, 2, 3),),))
+            set((((add, 1, 2, 3), ), ))
 
 
 def test_objects():
@@ -226,13 +226,13 @@ def test_op_args():
 
 def test_buildo_object():
     x = var('x')
-    assert results(buildo(Add, (1,2,3), x), {}) == \
-            ({x: add(1, 2, 3)},)
+    assert results(buildo(Add, (1, 2, 3), x), {}) == \
+            ({x: add(1, 2, 3)}, )
     print(results(buildo(x, (1, 2, 3), add(1, 2, 3)), {}))
-    assert results(buildo(x, (1,2,3), add(1,2,3)), {}) == \
-            ({x: Add},)
-    assert results(buildo(Add, x, add(1,2,3)), {}) == \
-            ({x: (1,2,3)},)
+    assert results(buildo(x, (1, 2, 3), add(1, 2, 3)), {}) == \
+            ({x: Add}, )
+    assert results(buildo(Add, x, add(1, 2, 3)), {}) == \
+            ({x: (1, 2, 3)}, )
 
 
 def test_eq_comm_object():

@@ -86,7 +86,6 @@ def test_unify_slice():
 
 
 def test_reify_slice():
-    x = var('x')
     assert reify(slice(1, var(2), 3), {var(2): 10}) == slice(1, 10, 3)
 
 
@@ -165,7 +164,7 @@ def test_unifiable():
 
 
 def test_reify_object_slots():
-    x, y, z = var('x'), var('y'), var('z')
+    x, y = var('x'), var('y')
     f, g = Aslot(1, 2), Aslot(x, y)
     assert reify_object_slots(g, {x: 1, y: 2}) == f
     assert reify_object_slots(g, {x: 1}) == Aslot(1, y)

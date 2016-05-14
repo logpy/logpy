@@ -1,5 +1,5 @@
 from logpy.term import term, operator, arguments, unifiable_with_term
-from logpy import var, unify, reify
+from logpy import var, unify
 from logpy.dispatch import dispatch
 
 

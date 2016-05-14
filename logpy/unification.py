@@ -1,7 +1,6 @@
 from functools import partial
 from .util import transitive_get as walk
-from .variable import Var, var, isvar
-import itertools as it
+from .variable import isvar
 from .dispatch import dispatch
 from collections import Iterator
 from toolz.compatibility import iteritems, map
@@ -40,7 +39,7 @@ def _reify(o, s):
 def reify(e, s):
     """ Replace variables of expression with substitution
 
-    >>> from logpy.unification import reify, var
+    >>> from logpy.variable import var
     >>> x, y = var(), var()
     >>> e = (1, x, (3, y))
     >>> s = {x: 2, y: 4}
@@ -96,7 +95,7 @@ def _unify(u, v, s):
 def unify(u, v, s):  # no check at the moment
     """ Find substitution so that u == v while satisfying s
 
-    >>> from logpy.unification import unify, var
+    >>> from logpy.variable import var
     >>> x = var('x')
     >>> unify((1, x), (1, 2), {})
     {~x: 2}

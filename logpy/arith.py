@@ -1,4 +1,6 @@
-from logpy.core import (isvar, var, run, membero, eq, EarlyGoalError, lany)
+import operator
+
+from logpy.core import (isvar, eq, EarlyGoalError, lany)
 
 
 def gt(x, y):
@@ -32,8 +34,6 @@ def lor(*goalconsts):
 
 gte = lor(gt, eq)
 lte = lor(lt, eq)
-
-import operator
 
 
 def binop(op, revop=None):

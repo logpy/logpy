@@ -1,6 +1,7 @@
-from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany,
+from .core import (eq, EarlyGoalError, conde, condeseq, lany,
                    lallgreedy, lall, fail, success)
 from .util import unique
+from .variable import var, isvar
 import itertools as it
 
 
