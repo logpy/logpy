@@ -1,6 +1,6 @@
 import itertools as it
 from functools import partial
-from .util import (dicthash, interleave, take, multihash, unique)
+from .util import (dicthash, interleave, take, multihash, unique, evalt)
 from toolz import groupby, map
 
 from unification import reify, unify, isvar, var  # noqa
@@ -271,21 +271,18 @@ class EarlyGoalError(Exception):
     """
 
 
-def goalexpand(goalt):
-    """ Expand a goal tuple until it can no longer be expanded
-
-    >>> from logpy.core import var, membero, goalexpand
-    >>> from logpy.util import pprint
-    >>> x = var('x')
-    >>> goal = (membero, x, (1, 2, 3))
-    >>> print(pprint(goalexpand(goal)))
-    (lany, (eq, ~x, 1), (eq, ~x, 2), (eq, ~x, 3))
+def find_fixed_point(f, arg):
     """
-    tmp = goalt
-    while isinstance(tmp, tuple) and len(tmp) >= 1 and not callable(tmp):
-        goalt = tmp
-        tmp = goalt[0](*goalt[1:])
-    return goalt
+    Repeatedly calls f until a fixed point is reached.
+
+    This may not terminate, but should if you apply some eventually-idempotent
+    simplification operation like evalt.
+    """
+    last, cur = object(), arg
+    while last != cur:
+        last = cur
+        cur = f(cur)
+    return cur
 
 
 def goaleval(goal):
@@ -299,8 +296,5 @@ def goaleval(goal):
     if callable(goal):  # goal is already a function like eq(x, 1)
         return goal
     if isinstance(goal, tuple):  # goal is not yet evaluated like (eq, x, 1)
-        egoal = goalexpand(goal)
-        # from logpy.util import pprint
-        # print(pprint(egoal))
-        return egoal[0](*egoal[1:])
+        return find_fixed_point(evalt, goal)
     raise TypeError("Expected either function or tuple")

@@ -5,7 +5,7 @@ from pytest import raises
 from unification import var
 
 from logpy.core import (run, membero, fail, eq, conde, goaleval, lany,
-                        lallgreedy, lanyseq, goalexpand, earlyorder,
+                        lallgreedy, lanyseq, earlyorder,
                         EarlyGoalError, lall, earlysafe, lallfirst, condeseq)
 from logpy.util import evalt
 
@@ -146,17 +146,6 @@ def test_goaleval():
     with raises(EarlyGoalError):
         goaleval((membero, x, y))
     assert callable(goaleval((lallgreedy, (eq, x, 2))))
-
-
-def test_goalexpand():
-    def growing_goal(*args):
-        if len(args) < 10:
-            return (growing_goal, 1) + tuple(args)
-        else:
-            return lambda s: (1, )
-
-    g = (growing_goal, 2)
-    assert goalexpand(g) == (growing_goal, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2)
 
 
 def test_lany_is_early_safe():
