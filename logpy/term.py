@@ -1,5 +1,7 @@
+from unification import unify, reify
+from unification.core import _unify, _reify
+
 from .dispatch import dispatch
-from .unification import unify, reify, _reify, _unify
 
 
 @dispatch((tuple, list))

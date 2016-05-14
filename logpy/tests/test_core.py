@@ -1,6 +1,8 @@
 import itertools
+
 import pytest
 from pytest import raises
+from unification import var
 
 from logpy.core import (run, membero, fail, eq, conde, goaleval, lany,
                         lallgreedy, lanyseq, goalexpand, earlyorder,
@@ -8,7 +10,6 @@ from logpy.core import (run, membero, fail, eq, conde, goaleval, lany,
 from logpy.util import transitive_get as walk
 from logpy.util import deep_transitive_get as walkstar
 from logpy.util import evalt
-from logpy.variable import var
 
 w, x, y, z = 'wxyz'
 

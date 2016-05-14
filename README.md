@@ -98,50 +98,10 @@ LogPy depends on functions, tuples, dicts, and generators.  There are almost no 
 Extending LogPy to other Types
 ------------------------------
 
-LogPy uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) to
-support pattern matching on user defined types.  (Also see [unification (wikipedia)](http://en.wikipedia.org/wiki/Unification_%28computer_science%29) and [logpy source](https://github.com/logpy/logpy/blob/master/logpy/unification.py#L60-L107))
-
-~~~~~~~~~~~~Python
-from logpy import unify, var
-from logpy.dispatch import dispatch
-
-class Account(object):
-    def __init__(self, name, amount):
-        self.name = name
-        self.amount = amount
-    def __str__(self):
-        return "%s: $%d" % (self.name, self.account)
-
-
-@dispatch(Account, Account, dict)
-def _unify(u, v, s):
-    """ Unify accounts by unifying a tuple of their type, name and amount """
-    uu = (type(u), u.name, u.amount)
-    vv = (type(v), v.name, v.amount)
-
-    return unify(uu, vv, s)
-
-
->>> x = var('x')
-
->>> unify(Account('Alice', 100), Account(x, 100), {})
-{x: 'Alice'}
-
->>> unify(Account('Alice', 100), Account(x, 200), {})
-False
-~~~~~~~~~~~~
-
-
-Alternatively just decorate your classes with the `@unifiable` class decorator
-
-~~~~~~~~~~~~Python
-from logpy import unifiable
-
-@unifiable
-class Account(object):
-    ...
-~~~~~~~~~~~~
-
+LogPy uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) and the [unification library](https://github.com/mrocklin/unification) to
+support pattern matching on user defined types.  Also see [unification (wikipedia)](http://en.wikipedia.org/wiki/Unification_%28computer_science%29).
+Types which can be unified can be used for logic programming. See the [project examples](https://github.com/mrocklin/unification#examples) for how
+to extend the collection of unifiable types to your use case.
 
 Install
 -------
@@ -163,10 +123,11 @@ Run tests with tox
 Dependencies
 ------------
 
-``LogPy`` supports Python 2.6+ and Python 3.2+ with a common codebase.
+``LogPy`` supports Python 2.7+ and Python 3.3+ with a common codebase.
 It is pure Python and requires no dependencies beyond the standard
-library, [`toolz`](http://github.com/pytoolz/toolz/) and
-[`multipledispatch`](http://github.com/mrocklin/multipledispatch/).
+library, [`toolz`](http://github.com/pytoolz/toolz/),
+[`multipledispatch`](http://github.com/mrocklin/multipledispatch/), and
+[`unification`](http://github.com/mrocklin/unification/).
 
 It is, in short, a light weight dependency.
 
