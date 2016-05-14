@@ -29,19 +29,18 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from logpy.core import (isvar, assoc, unify,
-                        conde, var, eq, fail, goaleval, lallgreedy, EarlyGoalError,
-                        condeseq, goaleval)
-from .goals import heado, permuteq, conso, tailo
+from logpy.core import (isvar, unify, conde, var, eq, fail, lallgreedy,
+                        EarlyGoalError, condeseq, goaleval)
+from .goals import permuteq
 from .facts import Relation
 from logpy import core
 from .util import groupsizes, index
 from .util import transitive_get as walk
 from .term import term, arguments, operator
 
-
 associative = Relation('associative')
 commutative = Relation('commutative')
+
 
 def assocunify(u, v, s, eq=core.eq, n=None):
     """ Associative Unification
@@ -55,7 +54,7 @@ def assocunify(u, v, s, eq=core.eq, n=None):
     if not uop and not vop:
         res = unify(u, v, s)
         if res is not False:
-            return (res,)  # TODO: iterate through all possibilities
+            return (res, )  # TODO: iterate through all possibilities
 
     if uop and vop:
         s = unify(uop, vop, s)
@@ -75,17 +74,19 @@ def assocunify(u, v, s, eq=core.eq, n=None):
         op, tail = vop, vargs
         b = u
 
-    ns = [n] if n else range(2, len(tail)+1)
+    ns = [n] if n else range(2, len(tail) + 1)
     knowns = (build(op, x) for n in ns for x in assocsized(op, tail, n))
 
     goal = condeseq([(core.eq, b, k)] for k in knowns)
     return goaleval(goal)(s)
+
 
 def assocsized(op, tail, n):
     """ All associative combinations of x in n groups """
     gsizess = groupsizes(len(tail), n)
     partitions = (groupsizes_to_partition(*gsizes) for gsizes in gsizess)
     return (makeops(op, partition(tail, part)) for part in partitions)
+
 
 def makeops(op, lists):
     """ Construct operations from an op and parition lists
@@ -96,6 +97,7 @@ def makeops(op, lists):
     """
     return tuple(l[0] if len(l) == 1 else build(op, l) for l in lists)
 
+
 def partition(tup, part):
     """ Partition a tuple
 
@@ -104,6 +106,7 @@ def partition(tup, part):
     [('a', 'b'), ('e', 'd', 'c')]
     """
     return [index(tup, ind) for ind in part]
+
 
 def groupsizes_to_partition(*gsizes):
     """
@@ -121,6 +124,7 @@ def groupsizes_to_partition(*gsizes):
         part.append(l)
     return part
 
+
 def eq_assoc(u, v, eq=core.eq, n=None):
     """ Goal for associative equality
 
@@ -137,18 +141,16 @@ def eq_assoc(u, v, eq=core.eq, n=None):
     uop, _ = op_args(u)
     vop, _ = op_args(v)
     if uop and vop:
-        return conde([(core.eq, u, v)],
-                     [(eq, uop, vop), (associative, uop),
-                      lambda s: assocunify(u, v, s, eq, n)])
+        return conde([(core.eq, u, v)], [(eq, uop, vop), (associative, uop),
+                                         lambda s: assocunify(u, v, s, eq, n)])
 
     if uop or vop:
 
         if vop:
             uop, vop = vop, uop
             v, u = u, v
-        return conde([(core.eq, u, v)],
-                     [(associative, uop),
-                      lambda s: assocunify(u, v, s, eq, n)])
+        return conde([(core.eq, u, v)], [(associative, uop),
+                                         lambda s: assocunify(u, v, s, eq, n)])
 
     return (core.eq, u, v)
 
@@ -178,10 +180,10 @@ def eq_comm(u, v, eq=None):
     if vop and not uop:
         uop, uargs = vop, vargs
         v, u = u, v
-    return (conde, ((core.eq, u, v),),
-                   ((commutative, uop),
-                    (buildo, uop, vtail, v),
-                    (permuteq, uargs, vtail, eq)))
+    return (conde, ((core.eq, u, v), ),
+            ((commutative, uop), (buildo, uop, vtail, v),
+             (permuteq, uargs, vtail, eq)))
+
 
 def buildo(op, args, obj):
     """ obj is composed of op on args
@@ -201,6 +203,7 @@ def buildo(op, args, obj):
             raise EarlyGoalError()
     raise EarlyGoalError()
 
+
 def build(op, args):
     try:
         return term(op, args)
@@ -216,6 +219,7 @@ def op_args(x):
         return operator(x), arguments(x)
     except NotImplementedError:
         return None, None
+
 
 def eq_assoccomm(u, v):
     """ Associative/Commutative eq
@@ -249,9 +253,9 @@ def eq_assoccomm(u, v):
         return fail
     if uop and vop and uop != vop:
         return fail
-    if uop and not (uop,) in associative.facts:
+    if uop and not (uop, ) in associative.facts:
         return (eq, u, v)
-    if vop and not (vop,) in associative.facts:
+    if vop and not (vop, ) in associative.facts:
         return (eq, u, v)
 
     if uop and vop:

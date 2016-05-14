@@ -14,7 +14,7 @@ def operator(seq):
 
 @dispatch(object, (tuple, list))
 def term(op, args):
-    return (op,) + tuple(args)
+    return (op, ) + tuple(args)
 
 
 def unifiable_with_term(cls):

@@ -1,3 +1,4 @@
+# flake8: noqa
 """
 LogPy is a Python library for logic and relational programming.
 """

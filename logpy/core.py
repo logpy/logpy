@@ -1,22 +1,24 @@
 import itertools as it
 from functools import partial
-from .util import transitive_get as walk
-from .util import deep_transitive_get as walkstar
-from .util import (dicthash, interleave, take, evalt, index, multihash, unique)
-from toolz import assoc, groupby, map
+from .util import (dicthash, interleave, take, multihash, unique)
+from toolz import groupby, map
 
-from .variable import var, isvar
+from .variable import var  # noqa
+from .variable import isvar
 from .unification import reify, unify
-
 
 #########
 # Goals #
 #########
 
+
 def fail(s):
     return ()
+
+
 def success(s):
-    return (s,)
+    return (s, )
+
 
 def eq(u, v):
     """ Goal such that u == v
@@ -24,21 +26,25 @@ def eq(u, v):
     See also:
         unify
     """
+
     def goal_eq(s):
         result = unify(u, v, s)
         if result is not False:
             yield result
+
     return goal_eq
+
 
 def membero(x, coll):
     """ Goal such that x is an item of coll """
     if not isvar(coll):
-        return (lany,) + tuple((eq, x, item) for item in coll)
+        return (lany, ) + tuple((eq, x, item) for item in coll)
     raise EarlyGoalError()
 
 ################################
 # Logical combination of goals #
 ################################
+
 
 def lall(*goals):
     """ Logical all with goal reordering to avoid EarlyGoalErrors
@@ -52,7 +58,8 @@ def lall(*goals):
     >>> run(0, x, lall(membero(x, (1,2,3)), membero(x, (2,3,4))))
     (2, 3)
     """
-    return (lallgreedy,) + tuple(earlyorder(*goals))
+    return (lallgreedy, ) + tuple(earlyorder(*goals))
+
 
 def lallgreedy(*goals):
     """ Logical all that greedily evaluates each goals in the order provided.
@@ -65,7 +72,7 @@ def lallgreedy(*goals):
     >>> x, y = var('x'), var('y')
     >>> run(0, x, lallgreedy((eq, y, set([1]))), (membero, x, y))
     (1,)
-    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, set([1]))))  # doctest: +SKIP
+    >>> run(0, x, lallgreedy((membero, x, y), (eq, y, {1})))  # doctest: +SKIP
     Traceback (most recent call last):
       ...
     logpy.core.EarlyGoalError
@@ -74,13 +81,16 @@ def lallgreedy(*goals):
         return success
     if len(goals) == 1:
         return goals[0]
+
     def allgoal(s):
         g = goaleval(reify(goals[0], s))
-        return unique(interleave(
-                        goaleval(reify((lallgreedy,) + tuple(goals[1:]), ss))(ss)
-                        for ss in g(s)),
-                      key=dicthash)
+        return unique(
+            interleave(goaleval(reify(
+                (lallgreedy, ) + tuple(goals[1:]), ss))(ss) for ss in g(s)),
+            key=dicthash)
+
     return allgoal
+
 
 def lallfirst(*goals):
     """ Logical all - Run goals one at a time
@@ -97,19 +107,23 @@ def lallfirst(*goals):
         return success
     if len(goals) == 1:
         return goals[0]
+
     def allgoal(s):
         for i, g in enumerate(goals):
             try:
                 goal = goaleval(reify(g, s))
             except EarlyGoalError:
                 continue
-            other_goals = tuple(goals[:i] + goals[i+1:])
-            return unique(interleave(goaleval(
-                reify((lallfirst,) + other_goals, ss))(ss)
-                for ss in goal(s)), key=dicthash)
+            other_goals = tuple(goals[:i] + goals[i + 1:])
+            return unique(
+                interleave(goaleval(reify(
+                    (lallfirst, ) + other_goals, ss))(ss) for ss in goal(s)),
+                key=dicthash)
         else:
             raise EarlyGoalError()
+
     return allgoal
+
 
 def lany(*goals):
     """ Logical any
@@ -124,6 +138,7 @@ def lany(*goals):
         return goals[0]
     return lanyseq(goals)
 
+
 def earlysafe(goal):
     """ Call goal be evaluated without raising an EarlyGoalError """
     try:
@@ -131,6 +146,7 @@ def earlysafe(goal):
         return True
     except EarlyGoalError:
         return False
+
 
 def earlyorder(*goals):
     """ Reorder goals to avoid EarlyGoalErrors
@@ -145,14 +161,15 @@ def earlyorder(*goals):
         return ()
     groups = groupby(earlysafe, goals)
     good = groups.get(True, [])
-    bad  = groups.get(False, [])
+    bad = groups.get(False, [])
 
     if not good:
         raise EarlyGoalError()
     elif not bad:
         return tuple(good)
     else:
-        return tuple(good) + ((lall,) + tuple(bad),)
+        return tuple(good) + ((lall, ) + tuple(bad), )
+
 
 def conde(*goalseqs):
     """ Logical cond
@@ -166,7 +183,7 @@ def conde(*goalseqs):
         lall - logical all
         lany - logical any
     """
-    return (lany, ) + tuple((lall,) + tuple(gs) for gs in goalseqs)
+    return (lany, ) + tuple((lall, ) + tuple(gs) for gs in goalseqs)
 
 
 def lanyseq(goals):
@@ -175,8 +192,10 @@ def lanyseq(goals):
     Note:  If using lanyseq with a generator you must call lanyseq, not include
     it in a tuple
     """
+
     def anygoal(s):
         anygoal.goals, local_goals = it.tee(anygoal.goals)
+
         def f(goals):
             for goal in goals:
                 try:
@@ -184,19 +203,26 @@ def lanyseq(goals):
                 except EarlyGoalError:
                     pass
 
-        return unique(interleave(f(local_goals), [EarlyGoalError]),
-                      key=dicthash)
+        return unique(
+            interleave(
+                f(local_goals), [EarlyGoalError]),
+            key=dicthash)
+
     anygoal.goals = goals
 
     return anygoal
 
+
 def condeseq(goalseqs):
-    """ Like conde but supports generic (possibly infinite) iterator of goals"""
-    return (lanyseq, ((lall,) + tuple(gs) for gs in goalseqs))
+    """
+    Like conde but supports generic (possibly infinite) iterator of goals
+    """
+    return (lanyseq, ((lall, ) + tuple(gs) for gs in goalseqs))
 
 ########################
 # User level execution #
 ########################
+
 
 def run(n, x, *goals):
     """ Run a logic program.  Obtain n solutions to satisfy goals.
@@ -218,6 +244,7 @@ def run(n, x, *goals):
 ###################
 # Goal Evaluation #
 ###################
+
 
 class EarlyGoalError(Exception):
     """ A Goal has been constructed prematurely
@@ -245,6 +272,7 @@ class EarlyGoalError(Exception):
         earlyorder
     """
 
+
 def goalexpand(goalt):
     """ Expand a goal tuple until it can no longer be expanded
 
@@ -270,9 +298,9 @@ def goaleval(goal):
     See also:
        goalexpand
     """
-    if callable(goal):          # goal is already a function like eq(x, 1)
+    if callable(goal):  # goal is already a function like eq(x, 1)
         return goal
-    if isinstance(goal, tuple): # goal is not yet evaluated like (eq, x, 1)
+    if isinstance(goal, tuple):  # goal is not yet evaluated like (eq, x, 1)
         egoal = goalexpand(goal)
         # from logpy.util import pprint
         # print(pprint(egoal))
