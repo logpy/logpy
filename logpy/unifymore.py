@@ -144,9 +144,9 @@ def unify_object(u, v, s):
 
 def unify_object_slots(u, v, s):
     return unify(
-        tuple(getattr(u, a)
-              for a in u.__slots__), tuple(getattr(v, a)
-                                           for a in v.__slots__), s)
+        tuple(getattr(u, a) for a in u.__slots__),
+        tuple(getattr(v, a) for a in v.__slots__),
+        s)
 
 
 def unify_object_attrs(u, v, s, attrs):
@@ -177,8 +177,10 @@ def unify_object_attrs(u, v, s, attrs):
 
     attrs contains the list of attributes which participate in reificiation
     """
-    return unify([getattr(u, a) for a in attrs], [getattr(v, a)
-                                                  for a in attrs], s)
+    return unify(
+        tuple(getattr(u, a) for a in attrs),
+        tuple(getattr(v, a) for a in attrs),
+        s)
 
 # Registration
 
