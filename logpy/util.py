@@ -10,39 +10,6 @@ def hashable(x):
         return False
 
 
-def transitive_get(key, d):
-    """ Transitive dict.get
-
-    >>> from logpy.util import transitive_get
-    >>> d = {1: 2, 2: 3, 3: 4}
-    >>> d.get(1)
-    2
-    >>> transitive_get(1, d)
-    4
-    """
-    while hashable(key) and key in d:
-        key = d[key]
-    return key
-
-
-def deep_transitive_get(key, d):
-    """ Transitive get that propagates within tuples
-
-    >>> from logpy.util import transitive_get, deep_transitive_get
-    >>> d = {1: (2, 3), 2: 12, 3: 13}
-    >>> transitive_get(1, d)
-    (2, 3)
-    >>> deep_transitive_get(1, d)
-    (12, 13)
-    """
-
-    key = transitive_get(key, d)
-    if isinstance(key, tuple):
-        return tuple(map(lambda k: deep_transitive_get(k, d), key))
-    else:
-        return key
-
-
 def dicthash(d):
     return hash(frozenset(d.items()))
 

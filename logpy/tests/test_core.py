@@ -7,25 +7,9 @@ from unification import var
 from logpy.core import (run, membero, fail, eq, conde, goaleval, lany,
                         lallgreedy, lanyseq, goalexpand, earlyorder,
                         EarlyGoalError, lall, earlysafe, lallfirst, condeseq)
-from logpy.util import transitive_get as walk
-from logpy.util import deep_transitive_get as walkstar
 from logpy.util import evalt
 
 w, x, y, z = 'wxyz'
-
-
-def test_walk():
-    s = {1: 2, 2: 3}
-    assert walk(2, s) == 3
-    assert walk(1, s) == 3
-    assert walk(4, s) == 4
-
-
-def test_deep_walk():
-    """ Page 30 of Byrd thesis """
-    s = {z: 6, y: 5, x: (y, z)}
-    assert walk(x, s) == (y, z)
-    assert walkstar(x, s) == (5, 6)
 
 
 def test_eq():

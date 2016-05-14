@@ -29,13 +29,15 @@ be used in the computer algebra systems SymPy and Theano.
 ((3, 2),)
 """
 
-from logpy.core import (isvar, unify, conde, var, eq, fail, lallgreedy,
-                        EarlyGoalError, condeseq, goaleval)
+from unification.utils import transitive_get as walk
+
+
+from .core import (isvar, unify, conde, var, eq, fail, lallgreedy,
+                   EarlyGoalError, condeseq, goaleval)
 from .goals import permuteq
 from .facts import Relation
 from logpy import core
 from .util import groupsizes, index
-from .util import transitive_get as walk
 from .term import term, arguments, operator
 
 associative = Relation('associative')
