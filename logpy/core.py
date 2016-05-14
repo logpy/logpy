@@ -114,8 +114,9 @@ def lallfirst(*goals):
                 continue
             other_goals = tuple(goals[:i] + goals[i + 1:])
             return unique(
-                interleave(goaleval(reify(
-                    (lallfirst, ) + other_goals, ss))(ss) for ss in goal(s)),
+                interleave(
+                    goaleval(reify((lallfirst, ) + other_goals, ss))(ss)
+                    for ss in goal(s)),
                 key=dicthash)
         else:
             raise EarlyGoalError()
@@ -175,7 +176,7 @@ def conde(*goalseqs):
     Goal constructor to provides logical AND and OR
 
     conde((A, B, C), (D, E)) means (A and B and C) or (D and E)
-    Equivalent to the (A, B, C); (D, E) in Prolog.
+    Equivalent to the (A, B, C); (D, E) syntax in Prolog.
 
     See Also:
         lall - logical all
@@ -186,9 +187,6 @@ def conde(*goalseqs):
 
 def lanyseq(goals):
     """ Logical any with possibly infinite number of goals
-
-    Note:  If using lanyseq with a generator you must call lanyseq, not include
-    it in a tuple
     """
 
     def anygoal(s):
@@ -203,7 +201,8 @@ def lanyseq(goals):
 
         return unique(
             interleave(
-                f(local_goals), [EarlyGoalError]),
+                f(local_goals),
+                pass_exceptions=[EarlyGoalError]),
             key=dicthash)
 
     anygoal.goals = goals

@@ -1,4 +1,4 @@
-import itertools
+from itertools import count
 
 import pytest
 from pytest import raises
@@ -72,7 +72,7 @@ def test_condeseq():
     assert set(run(0, x, condeseq(([eq(x, 2)], [eq(x, 3)])))) == {2, 3}
     assert set(run(0, x, condeseq([[eq(x, 2), eq(x, 3)]]))) == set()
 
-    goals = ([eq(x, i)] for i in itertools.count())  # infinite number of goals
+    goals = ([eq(x, i)] for i in count())  # infinite number of goals
     assert run(1, x, condeseq(goals)) == (0, )
     assert run(1, x, condeseq(goals)) == (1, )
 
@@ -114,6 +114,11 @@ def test_lanyseq():
     g = lanyseq(((eq, x, i) for i in range(3)))
     assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
     assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
+
+    # Test lanyseq with an infinite number of goals.
+    assert set(run(3, x, lanyseq(((eq, x, i) for i in count())))) == {0, 1, 2}
+    assert set(run(3, x, (lanyseq, ((eq, x, i) for i in count())))) == \
+           {0, 1, 2}
 
 
 def test_membero_can_be_reused():

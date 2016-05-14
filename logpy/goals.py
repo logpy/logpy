@@ -75,8 +75,10 @@ def permuteq(a, b, eq2=eq):
                 pass
             if len(c) == 1:
                 return (eq2, c[0], d[0])
-            return condeseq((((eq2, c[i], d[0]), (permuteq, c[0:i] + c[
-                i + 1:], d[1:], eq2)) for i in range(len(c))))
+            return condeseq(
+                ((eq2, c[i], d[0]), (permuteq, c[0:i] + c[i + 1:], d[1:], eq2))
+                for i in range(len(c))
+            )
 
     if isvar(a) and isvar(b):
         raise EarlyGoalError()
