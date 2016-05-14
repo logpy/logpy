@@ -11,21 +11,26 @@ from toolz import assoc
 # Reification #
 ###############
 
+
 @dispatch(Iterator, dict)
 def _reify(t, s):
     return map(partial(reify, s=s), t)
+
 
 @dispatch(tuple, dict)
 def _reify(t, s):
     return tuple(reify(iter(t), s))
 
+
 @dispatch(list, dict)
 def _reify(t, s):
     return list(reify(iter(t), s))
 
+
 @dispatch(dict, dict)
 def _reify(d, s):
     return dict((k, reify(v, s)) for k, v in d.items())
+
 
 @dispatch(object, dict)
 def _reify(o, s):
@@ -55,6 +60,7 @@ def reify(e, s):
 ###############
 
 seq = tuple, list, Iterator
+
 
 @dispatch(seq, seq, dict)
 def _unify(u, v, s):

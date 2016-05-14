@@ -5,11 +5,13 @@ from .dispatch import dispatch
 _global_logic_variables = set()
 _glv = _global_logic_variables
 
+
 class Var(object):
     """ Logic Variable """
     __slots__ = ('token', )
 
     _id = 1
+
     def __init__(self, token=None):
         if token is None:
             token = "_%s" % Var._id
@@ -18,6 +20,7 @@ class Var(object):
 
     def __str__(self):
         return "~" + str(self.token)
+
     __repr__ = __str__
 
     def __eq__(self, other):
@@ -25,6 +28,7 @@ class Var(object):
 
     def __hash__(self):
         return hash((type(self), self.token))
+
 
 var = lambda *args: Var(*args)
 vars = lambda n: [var() for i in range(n)]

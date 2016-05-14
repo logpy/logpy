@@ -3,24 +3,31 @@ from logpy.arith import lt, gt, lte, gte, add, sub, mul, mod, div
 
 x = var('x')
 y = var('y')
+
+
 def results(g):
     return list(g({}))
+
 
 def test_lt():
     assert results(lt(1, 2))
     assert not results(lt(2, 1))
     assert not results(lt(2, 2))
 
+
 def test_gt():
     assert results(gt(2, 1))
     assert not results(gt(1, 2))
     assert not results(gt(2, 2))
 
+
 def test_lte():
     assert results(lte(2, 2))
 
+
 def test_gte():
     assert results(gte(2, 2))
+
 
 def test_add():
     assert results(add(1, 2, 3))
@@ -31,6 +38,7 @@ def test_add():
     assert results(add(1, x, 3)) == [{x: 2}]
     assert results(add(x, 2, 3)) == [{x: 1}]
 
+
 def test_sub():
     assert results(sub(3, 2, 1))
     assert not results(sub(4, 2, 1))
@@ -38,6 +46,7 @@ def test_sub():
     assert results(sub(3, 2, x)) == [{x: 1}]
     assert results(sub(3, x, 1)) == [{x: 2}]
     assert results(sub(x, 2, 1)) == [{x: 3}]
+
 
 def test_mul():
     assert results(mul(2, 3, 6))
@@ -49,21 +58,22 @@ def test_mul():
 
     assert mul.__name__ == 'mul'
 
+
 def test_mod():
     assert results(mod(5, 3, 2))
+
 
 def test_div():
     assert results(div(6, 2, 3))
     assert not results(div(6, 2, 2))
     assert results(div(6, 2, x)) == [{x: 3}]
 
+
 def test_complex():
     from logpy import run, membero
     numbers = tuple(range(10))
-    results = set(run(0, x, (sub, y, x, 1),
-                            (membero, y, numbers),
-                            (mod, y, 2, 0),
-                            (membero, x, numbers)))
+    results = set(run(0, x, (sub, y, x, 1), (membero, y, numbers), (
+        mod, y, 2, 0), (membero, x, numbers)))
     expected = set((1, 3, 5, 7))
     print(results)
     assert results == expected

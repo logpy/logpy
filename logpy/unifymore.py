@@ -98,17 +98,18 @@ def reify_object_attrs(o, s, attrs):
     """
     obj = object.__new__(type(o))
     d = dict(zip(attrs, [getattr(o, attr) for attr in attrs]))
-    d2 = reify(d, s)                             # reified attr dict
+    d2 = reify(d, s)  # reified attr dict
     if d2 == d:
         return o
 
-    obj.__dict__.update(o.__dict__)                   # old dict
-    obj.__dict__.update(d2)                           # update w/ reified vals
+    obj.__dict__.update(o.__dict__)  # old dict
+    obj.__dict__.update(d2)  # update w/ reified vals
     return obj
 
 #########
 # Unify #
 #########
+
 
 @dispatch(slice, slice, dict)
 def _unify(u, v, s):
@@ -143,9 +144,9 @@ def unify_object(u, v, s):
 
 def unify_object_slots(u, v, s):
     return unify(
-        tuple(getattr(u, a) for a in u.__slots__),
-        tuple(getattr(v, a) for a in v.__slots__),
-        s)
+        tuple(getattr(u, a)
+              for a in u.__slots__), tuple(getattr(v, a)
+                                           for a in v.__slots__), s)
 
 
 def unify_object_attrs(u, v, s, attrs):
@@ -176,15 +177,14 @@ def unify_object_attrs(u, v, s, attrs):
 
     attrs contains the list of attributes which participate in reificiation
     """
-    return unify([getattr(u, a) for a in attrs],
-                 [getattr(v, a) for a in attrs],
-                 s)
-
+    return unify([getattr(u, a) for a in attrs], [getattr(v, a)
+                                                  for a in attrs], s)
 
 # Registration
 
+
 def register_reify_object_attrs(cls, attrs):
-    _reify.add((cls,), partial(reify_object_attrs, attrs=attrs))
+    _reify.add((cls, ), partial(reify_object_attrs, attrs=attrs))
 
 
 def register_unify_object(cls):

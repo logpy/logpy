@@ -1,11 +1,13 @@
 from logpy.core import (isvar, var, run, membero, eq, EarlyGoalError, lany)
 
+
 def gt(x, y):
     """ x > y """
     if not isvar(x) and not isvar(y):
         return eq(x > y, True)
     else:
         raise EarlyGoalError()
+
 
 def lt(x, y):
     """ x > y """
@@ -14,20 +16,25 @@ def lt(x, y):
     else:
         raise EarlyGoalError()
 
+
 def lor(*goalconsts):
     """ Logical or for goal constructors
 
     >>> from logpy.arith import lor, eq, gt
     >>> gte = lor(eq, gt)  # greater than or equal to is `eq or gt`
     """
+
     def goal(*args):
         return lany(*[gc(*args) for gc in goalconsts])
+
     return goal
+
 
 gte = lor(gt, eq)
 lte = lor(lt, eq)
 
 import operator
+
 
 def binop(op, revop=None):
     """ Transform binary operator into goal
@@ -50,8 +57,10 @@ def binop(op, revop=None):
         if not isvar(x) and not isvar(z) and revop:
             return eq(y, revop(z, x))
         raise EarlyGoalError()
+
     goal.__name__ = op.__name__
     return goal
+
 
 add = binop(operator.add, operator.sub)
 add.__doc__ = """ x + y == z """
@@ -60,9 +69,11 @@ mul.__doc__ = """ x * y == z """
 mod = binop(operator.mod)
 mod.__doc__ = """ x % y == z """
 
+
 def sub(x, y, z):
     """ x - y == z """
     return add(y, z, x)
+
 
 def div(x, y, z):
     """ x / y == z """

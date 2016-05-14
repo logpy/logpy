@@ -1,12 +1,14 @@
 import itertools as it
 from toolz.compatibility import range, map, iteritems
 
+
 def hashable(x):
     try:
         hash(x)
         return True
     except TypeError:
         return False
+
 
 def transitive_get(key, d):
     """ Transitive dict.get
@@ -21,6 +23,7 @@ def transitive_get(key, d):
     while hashable(key) and key in d:
         key = d[key]
     return key
+
 
 def deep_transitive_get(key, d):
     """ Transitive get that propagates within tuples
@@ -39,8 +42,10 @@ def deep_transitive_get(key, d):
     else:
         return key
 
+
 def dicthash(d):
     return hash(frozenset(d.items()))
+
 
 def multihash(x):
     try:
@@ -54,6 +59,7 @@ def multihash(x):
             return hash((x.start, x.stop, x.step))
         raise TypeError('Hashing not covered for ' + str(x))
 
+
 def unique(seq, key=lambda x: x):
     seen = set()
     for item in seq:
@@ -61,8 +67,9 @@ def unique(seq, key=lambda x: x):
             if key(item) not in seen:
                 seen.add(key(item))
                 yield item
-        except TypeError:   # item probably isn't hashable
-            yield item      # Just return it and hope for the best
+        except TypeError:  # item probably isn't hashable
+            yield item  # Just return it and hope for the best
+
 
 def interleave(seqs, pass_exceptions=()):
     iters = map(iter, seqs)
@@ -72,9 +79,10 @@ def interleave(seqs, pass_exceptions=()):
             try:
                 yield next(itr)
                 newiters.append(itr)
-            except (StopIteration,) + tuple(pass_exceptions):
+            except (StopIteration, ) + tuple(pass_exceptions):
                 pass
         iters = newiters
+
 
 def take(n, seq):
     if n is None:
@@ -100,9 +108,10 @@ def evalt(t):
     else:
         return t
 
+
 def intersection(*seqs):
-    return (item for item in seqs[0]
-                 if all(item in seq for seq in seqs[1:]))
+    return (item for item in seqs[0] if all(item in seq for seq in seqs[1:]))
+
 
 def groupsizes(total, len):
     """ Groups of length len that add up to total
@@ -112,11 +121,12 @@ def groupsizes(total, len):
     ((1, 3), (2, 2), (3, 1))
     """
     if len == 1:
-        yield (total,)
+        yield (total, )
     else:
         for i in range(1, total - len + 1 + 1):
             for perm in groupsizes(total - i, len - 1):
-                yield (i,) + perm
+                yield (i, ) + perm
+
 
 def pprint(g):
     """ Pretty print a tree of goals """
@@ -127,6 +137,7 @@ def pprint(g):
     if isinstance(g, tuple):
         return "(" + ', '.join(map(pprint, g)) + ")"
     return str(g)
+
 
 def index(tup, ind):
     """ Fancy indexing with tuples """

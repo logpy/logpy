@@ -6,11 +6,12 @@ from toolz import merge
 
 class Relation(object):
     _id = 0
+
     def __init__(self, name=None):
         self.facts = set()
         self.index = dict()
         if not name:
-            name = "_%d"%Relation._id
+            name = "_%d" % Relation._id
             Relation._id += 1
         self.name = name
 
@@ -51,11 +52,12 @@ class Relation(object):
         >>> list(r(x, 42, y)({}))
         []
         """
+
         def goal(substitution):
             args2 = reify(args, substitution)
             subsets = [self.index[key] for key in enumerate(args)
-                                       if  key in self.index]
-            if subsets:     # we are able to reduce the pool early
+                       if key in self.index]
+            if subsets:  # we are able to reduce the pool early
                 facts = intersection(*sorted(subsets, key=len))
             else:
                 facts = self.facts
@@ -69,6 +71,7 @@ class Relation(object):
 
     def __str__(self):
         return "Rel: " + self.name
+
     __repr__ = __str__
 
 
@@ -86,6 +89,7 @@ def fact(rel, *args):
     """
     rel.add_fact(*args)
 
+
 def facts(rel, *lists):
     """ Declare several facts
 
@@ -100,4 +104,3 @@ def facts(rel, *lists):
     """
     for l in lists:
         fact(rel, *l)
-

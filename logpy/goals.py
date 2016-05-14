@@ -1,7 +1,8 @@
-from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany, lallgreedy,
-                   lall, fail, success)
+from .core import (var, isvar, eq, EarlyGoalError, conde, condeseq, lany,
+                   lallgreedy, lall, fail, success)
 from .util import unique
 import itertools as it
+
 
 def heado(x, coll):
     """ x is the head of coll
@@ -17,6 +18,7 @@ def heado(x, coll):
     else:
         return fail
 
+
 def tailo(x, coll):
     """ x is the tail of coll
 
@@ -31,6 +33,7 @@ def tailo(x, coll):
     else:
         return fail
 
+
 def conso(h, t, l):
     """ Logical cons -- l[0], l[1:] == h, t """
     if isinstance(l, tuple):
@@ -39,9 +42,10 @@ def conso(h, t, l):
         else:
             return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
     elif isinstance(t, tuple):
-        return eq((h,) + t, l)
+        return eq((h, ) + t, l)
     else:
         raise EarlyGoalError()
+
 
 def permuteq(a, b, eq2=eq):
     """ Equality under permutation
@@ -68,9 +72,8 @@ def permuteq(a, b, eq2=eq):
                 pass
             if len(c) == 1:
                 return (eq2, c[0], d[0])
-            return condeseq((
-                   ((eq2, c[i], d[0]), (permuteq, c[0:i] + c[i+1:], d[1:], eq2))
-                        for i in range(len(c))))
+            return condeseq((((eq2, c[i], d[0]), (permuteq, c[0:i] + c[
+                i + 1:], d[1:], eq2)) for i in range(len(c))))
 
     if isvar(a) and isvar(b):
         raise EarlyGoalError()
@@ -83,6 +86,7 @@ def permuteq(a, b, eq2=eq):
 
         return (condeseq, ([eq(c, perm)]
                            for perm in unique(it.permutations(d, len(d)))))
+
 
 def seteq(a, b, eq2=eq):
     """ Set Equality
@@ -122,6 +126,7 @@ def goalify(func):
     >>> print([result.__name__ for result in results])
     ['int', 'str']
     """
+
     def funco(inputs, out):
         if isvar(inputs):
             raise EarlyGoalError()
@@ -130,7 +135,9 @@ def goalify(func):
                 return (eq, func(*inputs), out)
             else:
                 return (eq, func(inputs), out)
+
     return funco
+
 
 typo = goalify(type)
 isinstanceo = goalify(isinstance)
@@ -145,4 +152,5 @@ def appendo(l, s, ls):
     """
     a, d, res = [var() for i in range(3)]
     return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
-                  (lall, (conso, a, d, l), (conso, a, res, ls), (appendo, d, s, res)))
+            (lall, (conso, a, d, l), (conso, a, res, ls),
+             (appendo, d, s, res)))

@@ -1,22 +1,25 @@
-from logpy.unifymore import (unify_object, reify_object,
-        reify_object_attrs, reify_object_slots, unify_object_attrs, unifiable)
+from logpy.unifymore import (unify_object, reify_object, reify_object_attrs,
+                             reify_object_slots, unify_object_attrs, unifiable)
 from logpy import var, run, eq
 from logpy.unification import unify, reify, _unify, _reify
 from logpy import variables
 
+
 class Foo(object):
-        def __init__(self, a, b):
-            self.a = a
-            self.b = b
-        def __eq__(self, other):
-            return (self.a, self.b) == (other.a, other.b)
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __eq__(self, other):
+        return (self.a, self.b) == (other.a, other.b)
 
 
 class Bar(object):
-        def __init__(self, c):
-            self.c = c
-        def __eq__(self, other):
-            return self.c == other.c
+    def __init__(self, c):
+        self.c = c
+
+    def __eq__(self, other):
+        return self.c == other.c
 
 
 def test_run_objects_with_context_manager():
@@ -26,8 +29,8 @@ def test_run_objects_with_context_manager():
     _reify.add((Foo, dict), reify_object)
     with variables(1234):
         assert unify_object(f, g, {})
-        assert run(1, 1234, (eq, f, g)) == (2,)
-        assert run(1, Foo(1234, 1234), (eq, f, g)) == (Foo(2, 2),)
+        assert run(1, 1234, (eq, f, g)) == (2, )
+        assert run(1, Foo(1234, 1234), (eq, f, g)) == (Foo(2, 2), )
 
 
 def test_unify_object():
@@ -53,8 +56,11 @@ def test_objects_full():
     _reify.add((Bar, dict), reify_object)
 
     assert unify_object(Foo(1, Bar(2)), Foo(1, Bar(var(3))), {}) == {var(3): 2}
-    assert reify(Foo(var('a'), Bar(Foo(var('b'), 3))),
-                 {var('a'): 1, var('b'): 2}) == Foo(1, Bar(Foo(2, 3)))
+    assert reify(
+        Foo(
+            var('a'), Bar(Foo(
+                var('b'), 3))), {var('a'): 1,
+                                 var('b'): 2}) == Foo(1, Bar(Foo(2, 3)))
 
 
 def test_list_1():
@@ -64,10 +70,10 @@ def test_list_1():
     x = var('x')
     y = var('y')
     rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, [y])))
-    assert rval == ((1, 2),)
+    assert rval == ((1, 2), )
 
     rval = run(0, (x, y), (eq, Foo(1, [2]), Foo(x, y)))
-    assert rval == ((1, [2]),)
+    assert rval == ((1, [2]), )
 
 
 def test_unify_slice():
@@ -97,13 +103,15 @@ def test_reify_object_attrs():
     f, g = Foo(1, 2), Foo(x, y)
     s = {x: 1, y: 2}
     assert reify_object_attrs(g, s, ['a', 'b']) == f
-    assert reify_object_attrs(g, s, ['a']) ==  Foo(1, y)
-    assert reify_object_attrs(g, s, ['b']) ==  Foo(x, 2)
+    assert reify_object_attrs(g, s, ['a']) == Foo(1, y)
+    assert reify_object_attrs(g, s, ['b']) == Foo(x, 2)
     assert reify_object_attrs(g, s, []) is g
 
 
 def test_unify_isinstance_list():
-    class Foo2(Foo): pass
+    class Foo2(Foo):
+        pass
+
     x = var('x')
     y = var('y')
     f, g = Foo2(1, 2), Foo2(x, y)
@@ -136,6 +144,7 @@ def test_unifiable():
 @unifiable
 class Aslot(object):
     __slots__ = 'a', 'b'
+
     def __init__(self, a, b):
         self.a = a
         self.b = b
@@ -154,10 +163,11 @@ def test_unifiable():
     assert unify(f, g, {}) == {x: 2}
     assert reify(g, {x: 2}) == f
 
+
 def test_reify_object_slots():
     x, y, z = var('x'), var('y'), var('z')
     f, g = Aslot(1, 2), Aslot(x, y)
     assert reify_object_slots(g, {x: 1, y: 2}) == f
-    assert reify_object_slots(g, {x: 1}) ==  Aslot(1, y)
-    assert reify_object_slots(g, {y: 2}) ==  Aslot(x, 2)
+    assert reify_object_slots(g, {x: 1}) == Aslot(1, y)
+    assert reify_object_slots(g, {y: 2}) == Aslot(x, 2)
     assert reify_object_slots(g, {}) is g
