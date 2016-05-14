@@ -2,10 +2,9 @@ import itertools
 import pytest
 from pytest import raises
 
-from logpy.core import (run, membero, fail, eq,
-                        conde, goaleval, lany, lallgreedy, lanyseq, goalexpand,
-                        earlyorder, EarlyGoalError, lall, earlysafe, lallfirst,
-                        condeseq)
+from logpy.core import (run, membero, fail, eq, conde, goaleval, lany,
+                        lallgreedy, lanyseq, goalexpand, earlyorder,
+                        EarlyGoalError, lall, earlysafe, lallfirst, condeseq)
 from logpy.util import transitive_get as walk
 from logpy.util import deep_transitive_get as walkstar
 from logpy.util import evalt
