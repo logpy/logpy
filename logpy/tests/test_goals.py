@@ -1,8 +1,8 @@
-from unification import unify
+from unification import unify, var
 
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
                          isinstanceo, permuteq, LCons, membero)
-from logpy.core import var, run, eq, goaleval
+from logpy.core import run, eq, goaleval
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
@@ -60,14 +60,12 @@ def test_membero():
 
 
 def test_membero_can_be_reused():
-    x = var('x')
     g = membero(x, (0, 1, 2))
     assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
     assert list(goaleval(g)({})) == [{x: 0}, {x: 1}, {x: 2}]
 
 
 def test_uneval_membero():
-    x, y = var('x'), var('y')
     assert set(run(100, x,
                    (membero, y, ((1, 2, 3), (4, 5, 6))),
                    (membero, x, y))) == \
