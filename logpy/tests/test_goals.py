@@ -1,4 +1,5 @@
 from pytest import raises
+from unification import unify
 
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
                          isinstanceo, permuteq, LCons)
@@ -39,6 +40,14 @@ def test_conso():
     assert list(run(1, y, conso(1, x, y))[0]) == [1]
     assert list(run(1, y, conso(1, x, y), conso(2, z, x))[0]) == [1, 2]
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
+
+
+def test_lcons():
+    assert unify(LCons(1, ()), (x, )) == {x: 1}
+    assert unify(LCons(1, (x, )), (x, y)) == {x: 1, y: 1}
+    assert unify((x, y), LCons(1, (x, ))) == {x: 1, y: 1}
+    assert unify(LCons(x, y), ()) == False
+    assert list(LCons(1, LCons(2, x))) == [1, 2]
 
 
 def test_seteq():

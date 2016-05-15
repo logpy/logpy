@@ -203,7 +203,7 @@ class LCons(object):
 def _lcons_unify(lcons, t, s):
     if len(t) == 0:
         return False
-    return unify((lcons.head, lcons.tail), (t[0], t[1:]))
+    return unify((lcons.head, lcons.tail), (t[0], t[1:]), s)
 
 
 @unify.register((list, tuple), LCons, dict)
