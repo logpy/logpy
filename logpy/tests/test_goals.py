@@ -1,9 +1,8 @@
-from pytest import raises
 from unification import unify
 
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
                          isinstanceo, permuteq, LCons)
-from logpy.core import var, run, eq, EarlyGoalError, goaleval, membero
+from logpy.core import var, run, eq, goaleval, membero
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
@@ -16,16 +15,16 @@ def test_heado():
     assert results(heado(x, (1, 2, 3))) == ({x: 1}, )
     assert results(heado(1, (x, 2, 3))) == ({x: 1}, )
     assert results(heado(x, ())) == ()
-    with raises(EarlyGoalError):
-        heado(x, y)
+
+    assert run(0, x, (heado, x, z), (conso, 1, y, z)) == (1, )
 
 
 def test_tailo():
     assert results((tailo, x, (1, 2, 3))) == ({x: (2, 3)}, )
     assert results((tailo, x, (1, ))) == ({x: ()}, )
     assert results((tailo, x, ())) == ()
-    with raises(EarlyGoalError):
-        tailo(x, y)
+
+    assert run(0, y, (tailo, y, z), (conso, x, (1, 2), z)) == ((1, 2), )
 
 
 def test_conso():

@@ -2,7 +2,7 @@ from itertools import permutations
 
 from unification import var, isvar, unify
 # TODO: we should be able to register new reification processes without
-# importing private methods. :-(
+# importing private methods.
 from unification.core import _reify
 from unification.more import unifiable, reify_object
 
@@ -11,44 +11,42 @@ from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
 from .util import unique
 
 
-def heado(x, coll):
-    """ x is the head of coll
+def heado(head, coll):
+    """ head is the head of coll
 
     See also:
         tailo
         conso
     """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[0])
+    if isinstance(coll, (tuple, list)):
+        return (fail if len(coll) == 0 else (eq, head, coll[0]))
     else:
-        return fail
+        tail = var()
+        return (eq, LCons(head, tail), coll)
 
 
-def tailo(x, coll):
-    """ x is the tail of coll
+def tailo(tail, coll):
+    """ tail is the tail of coll
 
     See also:
         heado
         conso
     """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[1:])
+    if isinstance(coll, (tuple, list)):
+        return (fail if len(coll) == 0 else (eq, tail, coll[1:]))
     else:
-        return fail
+        head = var()
+        return (eq, LCons(head, tail), coll)
 
 
 def conso(h, t, l):
     """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
+    if isinstance(l, (tuple, list)):
         if len(l) == 0:
             return fail
         else:
             return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
+    elif isinstance(t, (tuple, list)):
         return eq((h, ) + t, l)
     else:
         return (eq, LCons(h, t), l)
