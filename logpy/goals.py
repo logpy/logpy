@@ -1,3 +1,4 @@
+import collections
 from itertools import permutations
 
 from unification import var, isvar, unify
@@ -178,7 +179,7 @@ class LCons(object):
 
     def __iter__(self):
         yield self.head
-        if hasattr(self.tail, '__iter__'):
+        if isinstance(self.tail, collections.Iterable):
             for x in self.tail:
                 yield x
 
