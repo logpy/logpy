@@ -1,53 +1,56 @@
+import collections
 from itertools import permutations
 
-from unification import var, isvar
+from unification import var, isvar, unify
+# TODO: we should be able to register new reification processes without
+# importing private methods.
+from unification.core import _reify
+from unification.more import unifiable, reify_object
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
                    fail, success)
 from .util import unique
 
 
-def heado(x, coll):
-    """ x is the head of coll
+def heado(head, coll):
+    """ head is the head of coll
 
     See also:
         tailo
         conso
     """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[0])
+    if isinstance(coll, (tuple, list)):
+        return (fail if len(coll) == 0 else (eq, head, coll[0]))
     else:
-        return fail
+        tail = var()
+        return (eq, LCons(head, tail), coll)
 
 
-def tailo(x, coll):
-    """ x is the tail of coll
+def tailo(tail, coll):
+    """ tail is the tail of coll
 
     See also:
         heado
         conso
     """
-    if not isinstance(coll, tuple):
-        raise EarlyGoalError()
-    if isinstance(coll, tuple) and len(coll) >= 1:
-        return (eq, x, coll[1:])
+    if isinstance(coll, (tuple, list)):
+        return (fail if len(coll) == 0 else (eq, tail, coll[1:]))
     else:
-        return fail
+        head = var()
+        return (eq, LCons(head, tail), coll)
 
 
 def conso(h, t, l):
     """ Logical cons -- l[0], l[1:] == h, t """
-    if isinstance(l, tuple):
+    if isinstance(l, (tuple, list)):
         if len(l) == 0:
             return fail
         else:
             return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
+    elif isinstance(t, (tuple, list)):
         return eq((h, ) + t, l)
     else:
-        raise EarlyGoalError()
+        return (eq, LCons(h, t), l)
 
 
 def permuteq(a, b, eq2=eq):
@@ -155,7 +158,64 @@ def appendo(l, s, ls):
     See Byrd thesis pg. 247
     https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf
     """
+    if all(map(isvar, (l, s, ls))):
+        raise EarlyGoalError()
     a, d, res = [var() for i in range(3)]
     return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
             (lall, (conso, a, d, l), (conso, a, res, ls),
              (appendo, d, s, res)))
+
+
+@unifiable
+class LCons(object):
+    __slots__ = 'head', 'tail'
+
+    def __init__(self, head, tail):
+        self.head = head
+        self.tail = tail
+
+    def __repr__(self):
+        return 'LCons(%r, %r)' % (self.head, self.tail)
+
+    def __iter__(self):
+        yield self.head
+        if isinstance(self.tail, collections.Iterable):
+            for x in self.tail:
+                yield x
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, LCons) and
+            self.head == other.head and
+            self.tail == other.tail)
+
+    def as_tuple(self):
+        tail = self.tail
+        if isinstance(tail, LCons):
+            tail = self.tail.as_tuple()
+        elif isvar(tail):
+            raise EarlyGoalError()
+        return (self.head, ) + tail
+
+
+@unify.register(LCons, (list, tuple), dict)
+def _lcons_unify(lcons, t, s):
+    if len(t) == 0:
+        return False
+    return unify((lcons.head, lcons.tail), (t[0], t[1:]), s)
+
+
+@unify.register((list, tuple), LCons, dict)
+def _lcons_runify(t, lcons, s):
+    return _lcons_unify(lcons, t, s)
+
+
+@_reify.register(LCons, dict)
+def reify_lcons(lcons, s):
+    ret = reify_object(lcons, s)
+    try:
+        # Simplify to a tuple once we've reified, if possible.
+        ret = ret.as_tuple()
+    except (TypeError, EarlyGoalError):
+        pass
+    return ret
