@@ -4,7 +4,8 @@ import pytest
 from pytest import raises
 from unification import var
 
-from logpy.core import (run, membero, fail, eq, conde, goaleval, lany,
+from logpy.goals import membero
+from logpy.core import (run, fail, eq, conde, goaleval, lany,
                         lallgreedy, lanyseq, earlyorder,
                         EarlyGoalError, lall, earlysafe, lallfirst, condeseq)
 from logpy.util import evalt

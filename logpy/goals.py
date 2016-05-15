@@ -147,6 +147,13 @@ def goalify(func):
     return funco
 
 
+def membero(x, coll):
+    """ Goal such that x is an item of coll """
+    if not isvar(coll):
+        return (lany, ) + tuple((eq, x, item) for item in coll)
+    raise EarlyGoalError()
+
+
 typo = goalify(type)
 isinstanceo = goalify(isinstance)
 

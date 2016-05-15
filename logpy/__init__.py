@@ -3,10 +3,11 @@
 LogPy is a Python library for logic and relational programming.
 """
 
-from unification import unify, reify, unifiable, var, isvar, vars, variables, Var
+from unification import (unify, reify, unifiable, var, isvar, vars, variables,
+                         Var)
 
-from .core import run, eq, conde, membero
-from .goals import seteq, permuteq, goalify
+from .core import run, eq, conde, lall, lany
+from .goals import seteq, permuteq, goalify, membero
 from .facts import Relation, fact, facts
 from .term import arguments, operator, term, unifiable_with_term
 

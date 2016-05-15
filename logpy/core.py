@@ -33,12 +33,6 @@ def eq(u, v):
     return goal_eq
 
 
-def membero(x, coll):
-    """ Goal such that x is an item of coll """
-    if not isvar(coll):
-        return (lany, ) + tuple((eq, x, item) for item in coll)
-    raise EarlyGoalError()
-
 ################################
 # Logical combination of goals #
 ################################
@@ -51,7 +45,7 @@ def lall(*goals):
         EarlyGoalError
         earlyorder
 
-    >>> from logpy.core import lall, membero
+    >>> from logpy import lall, membero
     >>> x = var('x')
     >>> run(0, x, lall(membero(x, (1,2,3)), membero(x, (2,3,4))))
     (2, 3)
@@ -66,7 +60,7 @@ def lallgreedy(*goals):
     goals is incorrect. It is faster than lall, but should be used
     with care.
 
-    >>> from logpy.core import lallgreedy, eq, run
+    >>> from logpy import eq, run, membero
     >>> x, y = var('x'), var('y')
     >>> run(0, x, lallgreedy((eq, y, set([1]))), (membero, x, y))
     (1,)
@@ -93,7 +87,7 @@ def lallgreedy(*goals):
 def lallfirst(*goals):
     """ Logical all - Run goals one at a time
 
-    >>> from logpy.core import lallfirst, membero
+    >>> from logpy import membero
     >>> x = var('x')
     >>> g = lallfirst(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
@@ -127,7 +121,7 @@ def lallfirst(*goals):
 def lany(*goals):
     """ Logical any
 
-    >>> from logpy.core import lany, membero
+    >>> from logpy import lany, membero
     >>> x = var('x')
     >>> g = lany(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))

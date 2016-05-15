@@ -1,8 +1,8 @@
 from unification import unify
 
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
-                         isinstanceo, permuteq, LCons)
-from logpy.core import var, run, eq, goaleval, membero
+                         isinstanceo, permuteq, LCons, membero)
+from logpy.core import var, run, eq, goaleval
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
