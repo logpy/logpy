@@ -1,6 +1,10 @@
 from itertools import permutations
 
-from unification import var, isvar
+from unification import var, isvar, unify
+# TODO: we should be able to register new reification processes without
+# importing private methods. :-(
+from unification.core import _reify
+from unification.more import unifiable, reify_object
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
                    fail, success)
@@ -47,7 +51,7 @@ def conso(h, t, l):
     elif isinstance(t, tuple):
         return eq((h, ) + t, l)
     else:
-        raise EarlyGoalError()
+        return (eq, LCons(h, t), l)
 
 
 def permuteq(a, b, eq2=eq):
@@ -155,7 +159,58 @@ def appendo(l, s, ls):
     See Byrd thesis pg. 247
     https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf
     """
+    if all(map(isvar, (l, s, ls))):
+        raise EarlyGoalError()
     a, d, res = [var() for i in range(3)]
     return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
             (lall, (conso, a, d, l), (conso, a, res, ls),
              (appendo, d, s, res)))
+
+
+@unifiable
+class LCons(object):
+    __slots__ = 'head', 'tail'
+
+    def __init__(self, head, tail):
+        self.head = head
+        self.tail = tail
+
+    def __repr__(self):
+        return 'LCons(%r, %r)' % (self.head, self.tail)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, LCons) and
+            self.head == other.head and
+            self.tail == other.tail)
+
+    def as_tuple(self):
+        tail = self.tail
+        if isinstance(tail, LCons):
+            tail = self.tail.as_tuple()
+        elif isvar(tail):
+            raise EarlyGoalError()
+        return (self.head, ) + tail
+
+
+@unify.register(LCons, (list, tuple), dict)
+def _lcons_unify(lcons, t, s):
+    if len(t) == 0:
+        return False
+    return unify((lcons.head, lcons.tail), (t[0], t[1:]))
+
+
+@unify.register((list, tuple), LCons, dict)
+def _lcons_runify(t, lcons, s):
+    return _lcons_unify(lcons, t, s)
+
+
+@_reify.register(LCons, dict)
+def reify_lcons(lcons, s):
+    ret = reify_object(lcons, s)
+    try:
+        # Simplify to a tuple once we've reified, if possible.
+        ret = ret.as_tuple()
+    except (TypeError, EarlyGoalError):
+        pass
+    return ret

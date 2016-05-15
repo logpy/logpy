@@ -1,7 +1,7 @@
 from pytest import raises
 
 from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
-                         isinstanceo, permuteq)
+                         isinstanceo, permuteq, LCons)
 from logpy.core import var, run, eq, EarlyGoalError, goaleval, membero
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
@@ -34,6 +34,7 @@ def test_conso():
     assert results(conso(1, (2, 3), x)) == ({x: (1, 2, 3)}, )
     assert results(conso(x, y, (1, 2, 3))) == ({x: 1, y: (2, 3)}, )
     assert results(conso(x, (2, 3), y)) == ({y: (x, 2, 3)}, )
+    assert run(1, y, conso(1, x, y)) == (LCons(1, x), )
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
 
 
@@ -90,7 +91,6 @@ def test_appendo2():
     for t in [tuple(range(i)) for i in range(5)]:
         for xi, yi in run(0, (x, y), appendo(x, y, t)):
             assert xi + yi == t
-
-        for xi, yi, zi in run(0, (x, y, z), appendo(x, y, w),
-                              appendo(w, z, t)):
+        results = run(0, (x, y, z), (appendo, x, y, w), (appendo, w, z, t))
+        for xi, yi, zi in results:
             assert xi + yi + zi == t
