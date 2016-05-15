@@ -178,6 +178,12 @@ class LCons(object):
     def __repr__(self):
         return 'LCons(%r, %r)' % (self.head, self.tail)
 
+    def __iter__(self):
+        yield self.head
+        if hasattr(self.tail, '__iter__'):
+            for x in self.tail:
+                yield x
+
     def __eq__(self, other):
         return (
             isinstance(other, LCons) and

@@ -34,7 +34,10 @@ def test_conso():
     assert results(conso(1, (2, 3), x)) == ({x: (1, 2, 3)}, )
     assert results(conso(x, y, (1, 2, 3))) == ({x: 1, y: (2, 3)}, )
     assert results(conso(x, (2, 3), y)) == ({y: (x, 2, 3)}, )
+
     assert run(1, y, conso(1, x, y)) == (LCons(1, x), )
+    assert list(run(1, y, conso(1, x, y))[0]) == [1]
+    assert list(run(1, y, conso(1, x, y), conso(2, z, x))[0]) == [1, 2]
     # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
 
 
