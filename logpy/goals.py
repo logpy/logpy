@@ -48,9 +48,19 @@ def conso(h, t, l):
         else:
             return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
     elif isinstance(t, (tuple, list)):
-        return eq((h, ) + t, l)
+        return eq((h, ) + tuple(t), l)
     else:
-        return (eq, LCons(h, t), l)
+        return (
+            lall,
+
+            # The definition of conso. This means that l can be unified with
+            # an LCons object (head + tail).
+            (eq, LCons(h, t), l),
+
+            # A "type declaration" for the tail. This means that the first goal
+            # found will simplify to a list with no extra unbound variables.
+            (lany, (eq, t, ()), (eq, t, LCons(var(), var())))
+        )
 
 
 def permuteq(a, b, eq2=eq):
