@@ -11,11 +11,11 @@ from unification import reify, unify, isvar, var  # noqa
 
 
 def fail(s):
-    return ()
+    return iter(())
 
 
 def success(s):
-    return (s, )
+    return iter((s, ))
 
 
 def eq(u, v):

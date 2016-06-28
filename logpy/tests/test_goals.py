@@ -90,6 +90,7 @@ def test_seteq():
 
 
 def test_permuteq():
+    assert results(permuteq((1, 2), (2, 1)))
     assert results(permuteq((1, 2, 2), (2, 1, 2)))
     assert not results(permuteq((1, 2), (2, 1, 2)))
     assert not results(permuteq((1, 2, 3), (2, 1, 2)))
