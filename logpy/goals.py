@@ -135,7 +135,7 @@ def seteq(a, b, eq2=eq):
         return permuteq(a, ts(b), eq2)
 
 
-def goalify(func):
+def goalify(func, name=None):
     """ Convert Python function into LogPy goal
 
     >>> from logpy import run, goalify, var, membero
@@ -157,9 +157,14 @@ def goalify(func):
             raise EarlyGoalError()
         else:
             if isinstance(inputs, (tuple, list)):
+                if any(map(isvar, inputs)):
+                    raise EarlyGoalError()
                 return (eq, func(*inputs), out)
             else:
                 return (eq, func(inputs), out)
+
+    name = name or (func.__name__ + 'o')
+    funco.__name__ = name
 
     return funco
 
@@ -171,8 +176,9 @@ def membero(x, coll):
     raise EarlyGoalError()
 
 
-typo = goalify(type)
-isinstanceo = goalify(isinstance)
+typo = goalify(type, name='typo')
+isinstanceo = goalify(isinstance, name='isinstanceo')
+not_equalo = goalify(operator.ne, name='not_equalo')
 
 
 def appendo(l, s, ls):
