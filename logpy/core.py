@@ -210,6 +210,14 @@ def condeseq(goalseqs):
     """
     return (lanyseq, ((lall, ) + tuple(gs) for gs in goalseqs))
 
+
+def everyg(predicate, coll):
+    """
+    Asserts that predicate applies to all elements of coll.
+    """
+    return (lall, ) + tuple((predicate, x) for x in coll)
+
+
 ########################
 # User level execution #
 ########################

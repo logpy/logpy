@@ -35,12 +35,14 @@ def unique(seq, key=lambda x: x):
         try:
             k = key(item)
         except TypeError:
-            yield item  # Just yield it and hope for the best, since we can't
-                        # efficiently check if we've seen it before.
+            # Just yield it and hope for the best, since we can't efficiently
+            # check if we've seen it before.
+            yield item
             continue
         if not isinstance(k, Hashable):
-            yield item  # Just yield it and hope for the best, since we can't
-                        # efficiently check if we've seen it before.
+            # Just yield it and hope for the best, since we can't efficiently
+            # check if we've seen it before.
+            yield item
         elif k not in seen:
             seen.add(key(item))
             yield item
