@@ -2,8 +2,6 @@
 Based off
 https://github.com/holtchesley/embedded-logic/blob/master/logpy/sudoku.ipynb
 """
-import pytest
-
 from logpy import run, var
 from logpy.core import everyg
 from logpy.goals import permuteq
