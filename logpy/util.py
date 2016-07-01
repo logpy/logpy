@@ -1,4 +1,6 @@
 import itertools as it
+from collections import Hashable
+
 from toolz.compatibility import range, map
 
 
@@ -31,11 +33,19 @@ def unique(seq, key=lambda x: x):
     seen = set()
     for item in seq:
         try:
-            if key(item) not in seen:
-                seen.add(key(item))
-                yield item
-        except TypeError:  # item probably isn't hashable
-            yield item  # Just return it and hope for the best
+            k = key(item)
+        except TypeError:
+            # Just yield it and hope for the best, since we can't efficiently
+            # check if we've seen it before.
+            yield item
+            continue
+        if not isinstance(k, Hashable):
+            # Just yield it and hope for the best, since we can't efficiently
+            # check if we've seen it before.
+            yield item
+        elif k not in seen:
+            seen.add(key(item))
+            yield item
 
 
 def interleave(seqs, pass_exceptions=()):

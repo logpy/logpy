@@ -1,4 +1,5 @@
 import collections
+import operator
 from itertools import permutations
 
 from unification import var, isvar, unify
@@ -78,19 +79,25 @@ def permuteq(a, b, eq2=eq):
     if isinstance(a, tuple) and isinstance(b, tuple):
         if len(a) != len(b):
             return fail
-        elif set(a) == set(b) and len(set(a)) == len(a):
+        elif collections.Counter(a) == collections.Counter(b):
             return success
         else:
-            c, d = a, b
-            try:
-                c, d = tuple(sorted(c)), tuple(sorted(d))
-            except:
-                pass
+            c, d = list(a), list(b)
+            for x in list(c):
+                # TODO: This is quadratic in the number items in the sequence.
+                # Need something like a multiset. Maybe use
+                # collections.Counter?
+                try:
+                    d.remove(x)
+                    c.remove(x)
+                except ValueError:
+                    pass
+            c, d = tuple(c), tuple(d)
             if len(c) == 1:
                 return (eq2, c[0], d[0])
             return condeseq(
-                ((eq2, c[i], d[0]), (permuteq, c[0:i] + c[i + 1:], d[1:], eq2))
-                for i in range(len(c))
+                ((eq2, x, d[0]), (permuteq, c[0:i] + c[i + 1:], d[1:], eq2))
+                for i, x in enumerate(c)
             )
 
     if isvar(a) and isvar(b):
@@ -128,7 +135,7 @@ def seteq(a, b, eq2=eq):
         return permuteq(a, ts(b), eq2)
 
 
-def goalify(func):
+def goalify(func, name=None):
     """ Convert Python function into LogPy goal
 
     >>> from logpy import run, goalify, var, membero
@@ -150,9 +157,14 @@ def goalify(func):
             raise EarlyGoalError()
         else:
             if isinstance(inputs, (tuple, list)):
+                if any(map(isvar, inputs)):
+                    raise EarlyGoalError()
                 return (eq, func(*inputs), out)
             else:
                 return (eq, func(inputs), out)
+
+    name = name or (func.__name__ + 'o')
+    funco.__name__ = name
 
     return funco
 
@@ -164,8 +176,9 @@ def membero(x, coll):
     raise EarlyGoalError()
 
 
-typo = goalify(type)
-isinstanceo = goalify(isinstance)
+typo = goalify(type, name='typo')
+isinstanceo = goalify(isinstance, name='isinstanceo')
+not_equalo = goalify(operator.ne, name='not_equalo')
 
 
 def appendo(l, s, ls):

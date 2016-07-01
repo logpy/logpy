@@ -11,11 +11,11 @@ from unification import reify, unify, isvar, var  # noqa
 
 
 def fail(s):
-    return ()
+    return iter(())
 
 
 def success(s):
-    return (s, )
+    return iter((s, ))
 
 
 def eq(u, v):
@@ -209,6 +209,14 @@ def condeseq(goalseqs):
     Like conde but supports generic (possibly infinite) iterator of goals
     """
     return (lanyseq, ((lall, ) + tuple(gs) for gs in goalseqs))
+
+
+def everyg(predicate, coll):
+    """
+    Asserts that predicate applies to all elements of coll.
+    """
+    return (lall, ) + tuple((predicate, x) for x in coll)
+
 
 ########################
 # User level execution #
