@@ -1,7 +1,7 @@
 from os.path import exists
 from setuptools import setup
 
-setup(name='logic',
+setup(name='kanren',
       version='0.2.2',
       description='Logic Programming in python',
       url='http://github.com/logpy/logpy',
