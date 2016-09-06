@@ -1,7 +1,8 @@
 # flake8: noqa
 """
-LogPy is a Python library for logic and relational programming.
+kanren is a Python library for logic and relational programming.
 """
+from __future__ import absolute_import
 
 from unification import (unify, reify, unifiable, var, isvar, vars, variables,
                          Var)

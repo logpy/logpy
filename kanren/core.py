@@ -3,7 +3,7 @@ from functools import partial
 from .util import (dicthash, interleave, take, multihash, unique, evalt)
 from toolz import groupby, map
 
-from unification import reify, unify, isvar, var  # noqa
+from unification import reify, unify, var  # noqa
 
 #########
 # Goals #
@@ -45,7 +45,7 @@ def lall(*goals):
         EarlyGoalError
         earlyorder
 
-    >>> from logpy import lall, membero
+    >>> from kanren import lall, membero
     >>> x = var('x')
     >>> run(0, x, lall(membero(x, (1,2,3)), membero(x, (2,3,4))))
     (2, 3)
@@ -60,14 +60,14 @@ def lallgreedy(*goals):
     goals is incorrect. It is faster than lall, but should be used
     with care.
 
-    >>> from logpy import eq, run, membero
+    >>> from kanren import eq, run, membero
     >>> x, y = var('x'), var('y')
     >>> run(0, x, lallgreedy((eq, y, set([1]))), (membero, x, y))
     (1,)
     >>> run(0, x, lallgreedy((membero, x, y), (eq, y, {1})))  # doctest: +SKIP
     Traceback (most recent call last):
       ...
-    logpy.core.EarlyGoalError
+    kanren.core.EarlyGoalError
     """
     if not goals:
         return success
@@ -87,7 +87,7 @@ def lallgreedy(*goals):
 def lallfirst(*goals):
     """ Logical all - Run goals one at a time
 
-    >>> from logpy import membero
+    >>> from kanren import membero
     >>> x = var('x')
     >>> g = lallfirst(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
@@ -121,7 +121,7 @@ def lallfirst(*goals):
 def lany(*goals):
     """ Logical any
 
-    >>> from logpy import lany, membero
+    >>> from kanren import lany, membero
     >>> x = var('x')
     >>> g = lany(membero(x, (1,2,3)), membero(x, (2,3,4)))
     >>> tuple(g({}))
@@ -232,7 +232,7 @@ def run(n, x, *goals):
     x     - Output variable
     goals - a sequence of goals.  All must be true
 
-    >>> from logpy import run, var, eq
+    >>> from kanren import run, var, eq
     >>> x = var()
     >>> run(1, x, eq(x, 1))
     (1,)
@@ -250,7 +250,7 @@ class EarlyGoalError(Exception):
 
     Consider the following case
 
-    >>> from logpy import run, eq, membero, var
+    >>> from kanren import run, eq, membero, var
     >>> x, coll = var(), var()
     >>> run(0, x, (membero, x, coll), (eq, coll, (1, 2, 3))) # doctest: +SKIP
 

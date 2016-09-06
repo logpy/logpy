@@ -1,11 +1,11 @@
-LogPy's Types and Common Functions
+kanren's Types and Common Functions
 ----------------------------------
 
-The design of LogPy/miniKanren is simple.  It manipulates only a few types with only a few important functions.
+The design of kanren/miniKanren is simple.  It manipulates only a few types with only a few important functions.
 
 ### Terms
 
-Terms can be 
+Terms can be
 
 *   constants like `123` or `'cat'`
 *   logical variables which we denote with a tilde like `~x`
@@ -21,8 +21,8 @@ Unify is a function that takes two terms, `u` and `v`, and returns a substitutio
 
 Examples that unify
 
-|       u           |       v           |        s          | 
-|:-----------------:|:-----------------:|:-----------------:| 
+|       u           |       v           |        s          |
+|:-----------------:|:-----------------:|:-----------------:|
 | 123               | 123               | {}                |
 | 'cat'             | 'cat'             | {}                |
 | (1, 2)            | (1, 2)            | {}                |
@@ -59,7 +59,7 @@ Reify is the opposite of unify.  `reify` transforms a term with logic variables 
 
 ### Goals and Goal Constructors
 
-A *goal* is a function from one substitution to a stream of substitutions.  
+A *goal* is a function from one substitution to a stream of substitutions.
 
     goal :: substitution -> [substitutions]
 
@@ -85,7 +85,7 @@ Remember *goals* are functions from one substitution to a stream of substitution
 
 ### Goal Combinators
 
-After this point LogPy is just a library to manage streams of substitutions.  
+After this point kanren is just a library to manage streams of substitutions.
 
 For example if we know both that `membero(x, (1, 2, 3))` and `membero(x, (2, 3, 4))` then we could do something like the following:
 
@@ -97,7 +97,7 @@ For example if we know both that `membero(x, (1, 2, 3))` and `membero(x, (2, 3, 
     {~x: 2}
     {~x: 3}
 
-Logic programs can have many goals in complex hierarchies.  Writing explicit for loops would quickly become tedious.  Instead we provide functions that conglomerate goals logically.  
+Logic programs can have many goals in complex hierarchies.  Writing explicit for loops would quickly become tedious.  Instead we provide functions that conglomerate goals logically.
 
     combinator :: [goals] -> goal
 
@@ -108,7 +108,7 @@ Two important logical goal combinators are logical all `lall` and logical any `l
     ...     print s
     {~x: 2}
     {~x: 3}
-    
+
     >>> g = lany(g1, g2)
     >>> for s in g({}):
     ...     print s
@@ -120,7 +120,7 @@ Two important logical goal combinators are logical all `lall` and logical any `l
 
 ### Laziness
 
-Goals produce a stream of substitutions.  This stream is computed lazily, returning values only as they are needed.  LogPy depends on standard Python generators to maintain the necessary state and control flow.
+Goals produce a stream of substitutions.  This stream is computed lazily, returning values only as they are needed.  kanren depends on standard Python generators to maintain the necessary state and control flow.
 
     >>> stream = g({})
     >>> stream
@@ -141,7 +141,7 @@ Traditionally programs are run with the `run` function
 
 ### Conclusion
 
-These are all the fundamental concepts that exist in LogPy.  To summarize
+These are all the fundamental concepts that exist in kanren.  To summarize
 
 *   Term: a constant, variable, or tree of terms
 *   Substitution: a dictionary mapping variables to terms

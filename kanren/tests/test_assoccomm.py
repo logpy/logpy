@@ -1,11 +1,16 @@
+from __future__ import absolute_import
+
 import pytest
 
-from logpy.core import var, run, goaleval
-from logpy.facts import fact
-from logpy.assoccomm import (associative, commutative, groupsizes_to_partition,
-                             assocunify, eq_comm, eq_assoc, eq_assoccomm,
-                             assocsized, buildo, op_args)
-from logpy.dispatch import dispatch
+from unification import reify, var, variables
+
+from ..core import run, goaleval
+from ..facts import fact
+from ..assoccomm import (associative, commutative,
+                         groupsizes_to_partition, assocunify, eq_comm,
+                         eq_assoc, eq_assoccomm, assocsized, buildo,
+                         op_args)
+from ..dispatch import dispatch
 
 a = 'assoc_op'
 c = 'comm_op'
@@ -130,8 +135,6 @@ def test_assocsized():
 
 
 def test_objects():
-    from logpy import variables, reify
-
     fact(commutative, Add)
     fact(associative, Add)
     assert tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(3, 1, 2)))({}))

@@ -1,10 +1,14 @@
 """
 Based off
-https://github.com/holtchesley/embedded-logic/blob/master/logpy/sudoku.ipynb
+https://github.com/holtchesley/embedded-logic/blob/master/kanren/sudoku.ipynb
 """
-from logpy import run, var
-from logpy.core import everyg
-from logpy.goals import permuteq
+from __future__ import absolute_import
+
+from unification import var
+
+from .. import run
+from ..core import everyg
+from ..goals import permuteq
 
 
 DIGITS = tuple(range(1, 10))

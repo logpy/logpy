@@ -1,7 +1,7 @@
 from account import Account
-from logpy import unifiable, run, var, eq, membero, variables
-from logpy.core import lall
-from logpy.arith import add, gt, sub
+from kanren import unifiable, run, var, eq, membero, variables
+from kanren.core import lall
+from kanren.arith import add, gt, sub
 
 unifiable(Account)  # Register Account class
 
@@ -9,7 +9,7 @@ accounts = (Account('Adam', 'Smith', 1, 20),
             Account('Carl', 'Marx', 2, 3),
             Account('John', 'Rockefeller', 3, 1000))
 
-# variables are arbitrary Python objects, not LogPy Var objects
+# variables are arbitrary Python objects, not kanren Var objects
 first = 'FIRST'
 last = 'LAST'
 ident = -1111

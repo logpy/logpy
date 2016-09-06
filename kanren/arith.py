@@ -1,6 +1,8 @@
 import operator
 
-from logpy.core import (isvar, eq, EarlyGoalError, lany)
+from unification import isvar
+
+from .core import (eq, EarlyGoalError, lany)
 
 
 def gt(x, y):
@@ -22,7 +24,7 @@ def lt(x, y):
 def lor(*goalconsts):
     """ Logical or for goal constructors
 
-    >>> from logpy.arith import lor, eq, gt
+    >>> from kanren.arith import lor, eq, gt
     >>> gte = lor(eq, gt)  # greater than or equal to is `eq or gt`
     """
 
@@ -39,11 +41,11 @@ lte = lor(lt, eq)
 def binop(op, revop=None):
     """ Transform binary operator into goal
 
-    >>> from logpy.arith import binop
+    >>> from kanren.arith import binop
     >>> import operator
     >>> add = binop(operator.add, operator.sub)
 
-    >>> from logpy import var, run
+    >>> from kanren import var, run
     >>> x = var('x')
     >>> next(add(1, 2, x)({}))
     {~x: 3}

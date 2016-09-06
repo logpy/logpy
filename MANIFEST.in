@@ -1,4 +1,4 @@
-recursive-include logpy *.py
+recursive-include kanren *.py
 recursive-include doc *.md
 
 include setup.py

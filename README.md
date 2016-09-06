@@ -1,4 +1,4 @@
-LogPy
+kanren
 =====
 
 [![](https://travis-ci.org/logpy/logpy.png)](https://travis-ci.org/logpy/logpy)
@@ -8,10 +8,10 @@ Logic Programming in Python
 Examples
 --------
 
-LogPy enables the expression of relations and the search for values which satisfy them.  The following code is the "Hello, world!" of logic programming.  It asks for `1` number, `x`, such that `x == 5`
+kanren enables the expression of relations and the search for values which satisfy them.  The following code is the "Hello, world!" of logic programming.  It asks for `1` number, `x`, such that `x == 5`
 
 ~~~~~~~~~~~Python
->>> from logpy import run, eq, membero, var, conde
+>>> from kanren import run, eq, membero, var, conde
 >>> x = var()
 >>> run(1, x, eq(x, 5))
 (5,)
@@ -27,7 +27,7 @@ following code asks for a number x such that `x == z` and `z == 3`
 (3,)
 ~~~~~~~~~~~
 
-LogPy uses [unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29), an advanced form of pattern matching, to match within expression trees.
+kanren uses [unification](http://en.wikipedia.org/wiki/Unification_%28computer_science%29), an advanced form of pattern matching, to match within expression trees.
 The following code asks for a number, x, such that `(1, 2) == (1, x)` holds.
 
 ~~~~~~~~~~~Python
@@ -50,13 +50,13 @@ such that x is a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
 
 ### Representing Knowledge
 
-LogPy stores data as facts that state relationships between terms.
+kanren stores data as facts that state relationships between terms.
 
 The following code creates a parent relationship and uses it to state
 facts about who is a parent of whom within the Simpsons family.
 
 ~~~~~~~~~~~Python
->>> from logpy import Relation, facts
+>>> from kanren import Relation, facts
 >>> parent = Relation()
 >>> facts(parent, ("Homer", "Bart"),
 ...               ("Homer", "Lisa"),
@@ -92,13 +92,13 @@ We can express the grandfather relationship separately.  In this example we use 
 Data Structures
 ---------------
 
-LogPy depends on functions, tuples, dicts, and generators.  There are almost no new data structures/classes in LogPy so it should be simple to integrate into preexisting code.
+kanren depends on functions, tuples, dicts, and generators.  There are almost no new data structures/classes in kanren so it should be simple to integrate into preexisting code.
 
 
-Extending LogPy to other Types
+Extending kanren to other Types
 ------------------------------
 
-LogPy uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) and the [unification library](https://github.com/mrocklin/unification) to
+kanren uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) and the [unification library](https://github.com/mrocklin/unification) to
 support pattern matching on user defined types.  Also see [unification (wikipedia)](http://en.wikipedia.org/wiki/Unification_%28computer_science%29).
 Types which can be unified can be used for logic programming. See the [project examples](https://github.com/mrocklin/unification#examples) for how
 to extend the collection of unifiable types to your use case.
@@ -123,7 +123,7 @@ Run tests with tox
 Dependencies
 ------------
 
-``LogPy`` supports Python 2.7+ and Python 3.3+ with a common codebase.
+``kanren`` supports Python 2.7+ and Python 3.3+ with a common codebase.
 It is pure Python and requires no dependencies beyond the standard
 library, [`toolz`](http://github.com/pytoolz/toolz/),
 [`multipledispatch`](http://github.com/mrocklin/multipledispatch/), and
@@ -144,7 +144,7 @@ New BSD license. See LICENSE.txt
 Motivation
 ----------
 
-Logic programming is a general programming paradigm.  This implementation however came about specifically to serve as an algorithmic core for Computer Algebra Systems in Python and for the automated generation and optimization of numeric software.  Domain specific languages, code generation, and compilers have recently been a hot topic in the Scientific Python community.  LogPy aims to be a low-level core for these projects.
+Logic programming is a general programming paradigm.  This implementation however came about specifically to serve as an algorithmic core for Computer Algebra Systems in Python and for the automated generation and optimization of numeric software.  Domain specific languages, code generation, and compilers have recently been a hot topic in the Scientific Python community.  kanren aims to be a low-level core for these projects.
 
 References
 ----------

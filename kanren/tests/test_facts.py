@@ -1,5 +1,9 @@
-from logpy.facts import Relation, fact, facts
-from logpy.core import var, run, conde
+from __future__ import absolute_import
+
+from unification import var
+
+from ..core import run, conde
+from ..facts import Relation, fact, facts
 
 
 def test_relation():

@@ -1,14 +1,16 @@
+from __future__ import absolute_import
+
 from itertools import count
 
 import pytest
 from pytest import raises
 from unification import var
 
-from logpy.goals import membero
-from logpy.core import (run, fail, eq, conde, goaleval, lany,
-                        lallgreedy, lanyseq, earlyorder,
-                        EarlyGoalError, lall, earlysafe, lallfirst, condeseq)
-from logpy.util import evalt
+from ..goals import membero
+from ..core import (run, fail, eq, conde, goaleval, lany, lallgreedy,
+                    lanyseq, earlyorder, EarlyGoalError, lall, earlysafe,
+                    lallfirst, condeseq)
+from ..util import evalt
 
 w, x, y, z = 'wxyz'
 

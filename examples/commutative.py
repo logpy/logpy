@@ -1,6 +1,6 @@
-from logpy import run, var, fact
-from logpy.assoccomm import eq_assoccomm as eq
-from logpy.assoccomm import commutative, associative
+from kanren import run, var, fact
+from kanren.assoccomm import eq_assoccomm as eq
+from kanren.assoccomm import commutative, associative
 
 # Define some dummy Operationss
 add = 'add'

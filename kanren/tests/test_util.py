@@ -1,5 +1,5 @@
-from logpy.util import (take, unique, interleave, intersection, groupsizes,
-                        dicthash, hashable, multihash)
+from ..util import (take, unique, interleave, intersection, groupsizes,
+                    dicthash, hashable, multihash)
 
 
 def test_hashable():
