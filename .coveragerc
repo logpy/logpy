@@ -1,7 +1,7 @@
 [run]
 branch = True
 omit =
-    logpy/tests/*
+    kanren/tests/*
 [report]
 exclude_lines =
     pragma: no cover

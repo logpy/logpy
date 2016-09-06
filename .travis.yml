@@ -11,8 +11,8 @@ install:
     - pip install -r requirements.txt
 script:
     - git rev-parse HEAD
-    - py.test --cov=logpy -vv logpy
-    - flake8 logpy
+    - py.test --cov=kanren -vv kanren
+    - flake8 kanren
 after_success:
     - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then
         pip install coveralls --use-mirrors;
