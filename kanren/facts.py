@@ -38,7 +38,7 @@ class Relation(object):
         *args: the goal to evaluate. This consists of vars and values to
                match facts against.
 
-        >>> from logpy.facts import Relation
+        >>> from kanren.facts import Relation
         >>> from unification import var
         >>>
         >>> x, y = var('x'), var('y')
@@ -78,7 +78,7 @@ class Relation(object):
 def fact(rel, *args):
     """ Declare a fact
 
-    >>> from logpy import fact, Relation, var, run
+    >>> from kanren import fact, Relation, var, run
     >>> parent = Relation()
     >>> fact(parent, "Homer", "Bart")
     >>> fact(parent, "Homer", "Lisa")
@@ -93,7 +93,7 @@ def fact(rel, *args):
 def facts(rel, *lists):
     """ Declare several facts
 
-    >>> from logpy import fact, Relation, var, run
+    >>> from kanren import fact, Relation, var, run
     >>> parent = Relation()
     >>> facts(parent,  ("Homer", "Bart"),
     ...                ("Homer", "Lisa"))

@@ -1,5 +1,7 @@
-from logpy import var
-from logpy.arith import lt, gt, lte, gte, add, sub, mul, mod, div
+from unification import var
+
+from .. import run, membero
+from ..arith import lt, gt, lte, gte, add, sub, mul, mod, div
 
 x = var('x')
 y = var('y')
@@ -70,7 +72,6 @@ def test_div():
 
 
 def test_complex():
-    from logpy import run, membero
     numbers = tuple(range(10))
     results = set(run(0, x, (sub, y, x, 1), (membero, y, numbers), (
         mod, y, 2, 0), (membero, x, numbers)))

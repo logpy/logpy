@@ -1,6 +1,6 @@
 """ Example using SymPy to construct a prime number goal """
 
-from logpy.core import (isvar, success, fail, assoc, goaleval, var, run,
+from kanren.core import (isvar, success, fail, assoc, goaleval, var, run,
         membero, condeseq, eq)
 from sympy.ntheory.generate import prime, isprime
 import itertools as it

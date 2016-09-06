@@ -68,7 +68,7 @@ def permuteq(a, b, eq2=eq):
     """ Equality under permutation
 
     For example (1, 2, 2) equates to (2, 1, 2) under permutation
-    >>> from logpy import var, run, permuteq
+    >>> from kanren import var, run, permuteq
     >>> x = var()
     >>> run(0, x, permuteq(x, (1, 2)))
     ((1, 2), (2, 1))
@@ -118,7 +118,7 @@ def seteq(a, b, eq2=eq):
 
     For example (1, 2, 3) set equates to (2, 1, 3)
 
-    >>> from logpy import var, run, seteq
+    >>> from kanren import var, run, seteq
     >>> x = var()
     >>> run(0, x, seteq(x, (1, 2)))
     ((1, 2), (2, 1))
@@ -136,9 +136,9 @@ def seteq(a, b, eq2=eq):
 
 
 def goalify(func, name=None):
-    """ Convert Python function into LogPy goal
+    """ Convert Python function into kanren goal
 
-    >>> from logpy import run, goalify, var, membero
+    >>> from kanren import run, goalify, var, membero
     >>> typo = goalify(type)
     >>> x = var('x')
     >>> run(0, x, membero(x, (1, 'cat', 'hat', 2)), (typo, x, str))

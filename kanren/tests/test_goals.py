@@ -1,8 +1,10 @@
+from __future__ import absolute_import
+
 from unification import unify, var
 
-from logpy.goals import (tailo, heado, appendo, seteq, conso, typo,
-                         isinstanceo, permuteq, LCons, membero)
-from logpy.core import run, eq, goaleval
+from ..goals import (tailo, heado, appendo, seteq, conso, typo,
+                          isinstanceo, permuteq, LCons, membero)
+from ..core import run, eq, goaleval
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 

@@ -72,7 +72,7 @@ def take(n, seq):
 def evalt(t):
     """ Evaluate tuple if unevaluated
 
-    >>> from logpy.util import evalt
+    >>> from kanren.util import evalt
     >>> add = lambda x, y: x + y
     >>> evalt((add, 2, 3))
     5
@@ -93,7 +93,7 @@ def intersection(*seqs):
 def groupsizes(total, len):
     """ Groups of length len that add up to total
 
-    >>> from logpy.util import groupsizes
+    >>> from kanren.util import groupsizes
     >>> tuple(groupsizes(4, 2))
     ((1, 3), (2, 2), (3, 1))
     """
