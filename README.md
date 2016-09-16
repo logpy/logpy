@@ -48,6 +48,28 @@ such that x is a member of `(1, 2, 3)` and that x is a member of `(2, 3, 4)`.
 (2, 3)
 ~~~~~~~~~~~
 
+### Logic Variables
+
+As in the above examples, `z = var()` creates a logic variable. You may also, optionally, pass a token name for a variable to aid in debugging:
+
+~~~~~~~~~~~Python
+>>> z = var('test')
+>>> z
+~test
+~~~~~~~~~~~
+
+Lastly, you may also use `vars()` with an integer parameter to create multiple logic variables at once:
+
+~~~~~~~~~~~Python
+>>> a, b, c = vars(3)
+>>> a
+~_1
+>>> b
+~_2
+>>> c
+~_3
+~~~~~~~~~~~
+
 ### Representing Knowledge
 
 kanren stores data as facts that state relationships between terms.
@@ -98,17 +120,15 @@ kanren depends on functions, tuples, dicts, and generators.  There are almost no
 Extending kanren to other Types
 ------------------------------
 
-kanren uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) and the [unification library](https://github.com/mrocklin/unification) to
-support pattern matching on user defined types.  Also see [unification (wikipedia)](http://en.wikipedia.org/wiki/Unification_%28computer_science%29).
-Types which can be unified can be used for logic programming. See the [project examples](https://github.com/mrocklin/unification#examples) for how
-to extend the collection of unifiable types to your use case.
+kanren uses [Multiple Dispatch](http://github.com/mrocklin/multipledispatch/) and the [unification library](https://github.com/mrocklin/unification) to support pattern matching on user defined types.  Also see [unification (wikipedia)](http://en.wikipedia.org/wiki/Unification_%28computer_science%29).
+Types which can be unified can be used for logic programming. See the [project examples](https://github.com/mrocklin/unification#examples) for how to extend the collection of unifiable types to your use case.
 
 Install
 -------
 
 With `pip` or `easy_install`
 
-    pip install logic
+    pip install kanren
 
 From source
 
