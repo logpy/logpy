@@ -9,14 +9,12 @@ accounts = (Account('Adam', 'Smith', 1, 20),
             Account('Carl', 'Marx', 2, 3),
             Account('John', 'Rockefeller', 3, 1000))
 
-# variables are arbitrary Python objects, not kanren Var objects
-first = 'FIRST'
-last = 'LAST'
-ident = -1111
-balance = -2222
-newbalance = -3333
-vars = {first, last, ident, balance, newbalance}
-
+# optional name strings are helpful for debugging
+first = var('first')
+last = var('last')
+ident = var('ident')
+balance = var('balance')
+newbalance = var('newbalance')
 
 # Describe a couple of transformations on accounts
 source = Account(first, last, ident, balance)
@@ -33,6 +31,8 @@ tax_the_rich = lall((membero, source, accounts),
                     (gt, balance, 100),
                     (sub, balance, 10, newbalance))
 
-with variables(*vars):
-    print run(0, target, tax_the_rich)
-    print run(0, target, theorist_bonus)
+print "Take $10 from anyone with more than $100"
+print run(0, target, tax_the_rich)
+
+print "Give $10 to theorists"
+print run(0, target, theorist_bonus)
