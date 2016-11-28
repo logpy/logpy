@@ -31,18 +31,18 @@ facts(mother, ('Carmela', 'Michael'),
 
 q = var()
 
-print run(0, q, father('Vito', q))          # Vito is the father of who?
+print((run(0, q, father('Vito', q))))          # Vito is the father of who?
 # ('Sonny', 'Michael', 'Fredo')
 
 
-print run(0, q, father(q, 'Michael'))       # Who is the father of Michael?
+print((run(0, q, father(q, 'Michael'))))       # Who is the father of Michael?
 # ('Vito',)
 
 def parent(p, child):
     return conde([father(p, child)], [mother(p, child)])
 
 
-print run(0, q, parent(q, 'Michael'))       # Who is a parent of Michael?
+print((run(0, q, parent(q, 'Michael'))))       # Who is a parent of Michael?
 # ('Vito', 'Carmela')
 
 def grandparent(gparent, child):
@@ -50,11 +50,11 @@ def grandparent(gparent, child):
     return conde((parent(gparent, p), parent(p, child)))
 
 
-print run(0, q, grandparent(q, 'Anthony'))  # Who is a grandparent of Anthony?
+print((run(0, q, grandparent(q, 'Anthony'))))  # Who is a grandparent of Anthony?
 # ('Vito', 'Carmela')
 
 
-print run(0, q, grandparent('Vito', q))     # Vito is a grandparent of whom?
+print((run(0, q, grandparent('Vito', q))))     # Vito is a grandparent of whom?
 # ('Vicent', 'Anthony', 'Kathryn', 'Mary', 'Frank', 'Santino', 'Francesca')
 
 def sibling(a, b):
@@ -63,5 +63,5 @@ def sibling(a, b):
 
 # All spouses
 x, y, z = var(), var(), var()
-print run(0, (x, y), (father, x, z), (mother, y, z))
+print((run(0, (x, y), (father, x, z), (mother, y, z))))
 # (('Vito', 'Carmela'), ('Sonny', 'Sandra'), ('Michael', 'Kay'))
