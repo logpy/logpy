@@ -31,8 +31,8 @@ tax_the_rich = lall((membero, source, accounts),
                     (gt, balance, 100),
                     (sub, balance, 10, newbalance))
 
-print "Take $10 from anyone with more than $100"
-print run(0, target, tax_the_rich)
+print("Take $10 from anyone with more than $100")
+print((run(0, target, tax_the_rich)))
 
-print "Give $10 to theorists"
-print run(0, target, theorist_bonus)
+print("Give $10 to theorists")
+print((run(0, target, theorist_bonus)))

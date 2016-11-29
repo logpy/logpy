@@ -13,9 +13,9 @@ def primo(x):
         return success if isprime(x) else fail
 
 x = var()
-print set(run(0, x, (membero, x, (20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)),
-                    (primo, x)))
+print((set(run(0, x, (membero, x, (20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)),
+                    (primo, x)))))
 # set([29, 33])
 
-print run(5, x, primo(x))
+print((run(5, x, primo(x))))
 # (2, 3, 5, 7, 11)

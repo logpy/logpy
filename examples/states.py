@@ -30,20 +30,20 @@ for L in adjlist:                   # ['CA', 'OR', 'NV', 'AZ']
 x = var()
 y = var()
 
-print run(0, x, adjacent('CA', 'NY')) # is California adjacent to New York?
+print((run(0, x, adjacent('CA', 'NY')))) # is California adjacent to New York?
 # ()
 
-print run(0, x, adjacent('CA', x))    # all states next to California
+print((run(0, x, adjacent('CA', x))))    # all states next to California
 # ('OR', 'NV', 'AZ')
 
-print run(0, x, adjacent('TX', x),    # all coastal states next to Texas
-                coastal(x))
+print((run(0, x, adjacent('TX', x),    # all coastal states next to Texas
+                coastal(x))))
 # ('LA',)
 
-print run(5, x, coastal(y),           # five states that border a coastal state
-                adjacent(x, y))
+print((run(5, x, coastal(y),           # five states that border a coastal state
+                adjacent(x, y))))
 # ('VT', 'AL', 'WV', 'DE', 'MA')
 
-print run(0, x, adjacent('TN', x),    # all states adjacent to Tennessee
-                adjacent('FL', x))    #        and adjacent to Florida
+print((run(0, x, adjacent('TN', x),    # all states adjacent to Tennessee
+                adjacent('FL', x))))    #        and adjacent to Florida
 # ('GA', 'AL')
