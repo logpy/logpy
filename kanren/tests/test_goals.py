@@ -4,7 +4,7 @@ from unification import unify, var
 
 from ..goals import (tailo, heado, appendo, seteq, conso, typo,
                           isinstanceo, permuteq, LCons, membero)
-from ..core import run, eq, goaleval
+from ..core import run, eq, goaleval, lall, lallgreedy
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
@@ -135,3 +135,34 @@ def test_appendo2():
         results = run(0, (x, y, z), (appendo, x, y, w), (appendo, w, z, t))
         for xi, yi, zi in results:
             assert xi + yi + zi == t
+
+
+def test_goal_ordering():
+    # Regression test for https://github.com/logpy/logpy/issues/58
+
+    def lefto(q, p, lst):
+        return membero((q, p), zip(lst, lst[1:]))
+
+    vals = var()
+
+    # Verify the solution can be computed when we specify the execution
+    # ordering.
+    rules_greedy = (
+        lallgreedy,
+        (eq, (var(), var()), vals),
+        (lefto, 'green', 'white', vals),
+    )
+
+    solution, = run(1, vals, rules_greedy)
+    assert solution == ('green', 'white')
+
+    # Verify that attempting to compute the "safe" order does not itself cause
+    # the evaluation to fail.
+    rules_greedy = (
+        lall,
+        (eq, (var(), var()), vals),
+        (lefto, 'green', 'white', vals),
+    )
+
+    solution, = run(1, vals, rules_greedy)
+    assert solution == ('green', 'white')
