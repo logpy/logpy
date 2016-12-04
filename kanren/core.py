@@ -297,5 +297,8 @@ def goaleval(goal):
     if callable(goal):  # goal is already a function like eq(x, 1)
         return goal
     if isinstance(goal, tuple):  # goal is not yet evaluated like (eq, x, 1)
-        return find_fixed_point(evalt, goal)
+        try:
+            return find_fixed_point(evalt, goal)
+        except Exception as e:
+            raise EarlyGoalError(e)
     raise TypeError("Expected either function or tuple")
