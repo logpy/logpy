@@ -4,7 +4,7 @@ from unification import unify, var
 
 from ..goals import (tailo, heado, appendo, seteq, conso, typo,
                           isinstanceo, permuteq, LCons, membero)
-from ..core import run, eq, goaleval, lall
+from ..core import run, eq, goaleval, lall, lallgreedy
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
@@ -144,11 +144,25 @@ def test_goal_ordering():
         return membero((q, p), zip(lst, lst[1:]))
 
     vals = var()
-    rules = (
+
+    # Verify the solution can be computed when we specify the execution
+    # ordering.
+    rules_greedy = (
+        lallgreedy,
+        (eq, (var(), var()), vals),
+        (lefto, 'green', 'white', vals),
+    )
+
+    solution, = run(1, vals, rules_greedy)
+    assert solution == ('green', 'white')
+
+    # Verify that attempting to compute the "safe" order does not itself cause
+    # the evaluation to fail.
+    rules_greedy = (
         lall,
         (eq, (var(), var()), vals),
         (lefto, 'green', 'white', vals),
     )
 
-    solution, = run(1, vals, rules)
+    solution, = run(1, vals, rules_greedy)
     assert solution == ('green', 'white')
