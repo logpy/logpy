@@ -2,7 +2,7 @@ from os.path import exists
 from setuptools import setup
 
 setup(name='kanren',
-      version='0.2.2',
+      version='0.2.3',
       description='Logic Programming in python',
       url='http://github.com/logpy/logpy',
       author='Matthew Rocklin',
