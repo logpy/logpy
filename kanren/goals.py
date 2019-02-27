@@ -41,15 +41,23 @@ def tailo(tail, coll):
         return (eq, LCons(head, tail), coll)
 
 
-def conso(h, t, l):
-    """ Logical cons -- l[0], l[1:] == h, t """
+def conso(h, t, l, base_type=tuple):
+    """ Logical cons -- l[0], l[1:] == h, t
+
+    Parameters
+    ==========
+    base_type: type
+        The empty collection type to use when all terms are logic variables.
+    """
     if isinstance(l, (tuple, list)):
         if len(l) == 0:
             return fail
         else:
             return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, (tuple, list)):
-        return eq((h, ) + tuple(t), l)
+    elif isinstance(t, tuple):
+        return eq(type(t)((h,)) + t, l)
+    elif isinstance(t, list):
+        return eq(type(t)([h]) + t, l)
     else:
         return (
             lall,
@@ -60,7 +68,7 @@ def conso(h, t, l):
 
             # A "type declaration" for the tail. This means that the first goal
             # found will simplify to a list with no extra unbound variables.
-            (lany, (eq, t, ()), (eq, t, LCons(var(), var())))
+            (lany, (eq, t, base_type()), (eq, t, LCons(var(), var())))
         )
 
 
@@ -181,17 +189,22 @@ isinstanceo = goalify(isinstance, name='isinstanceo')
 not_equalo = goalify(operator.ne, name='not_equalo')
 
 
-def appendo(l, s, ls):
+def appendo(l, s, ls, base_type=tuple):
     """
     Goal that ls = l + s.
 
     See Byrd thesis pg. 247
     https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf
+
+    Parameters
+    ==========
+    base_type: type
+        The empty collection type to use when all terms are logic variables.
     """
     if all(map(isvar, (l, s, ls))):
         raise EarlyGoalError()
     a, d, res = [var() for i in range(3)]
-    return (lany, (lallgreedy, (eq, l, ()), (eq, s, ls)),
+    return (lany, (lallgreedy, (eq, l, base_type()), (eq, s, ls)),
             (lall, (conso, a, d, l), (conso, a, res, ls),
              (appendo, d, s, res)))
 
