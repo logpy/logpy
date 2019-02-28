@@ -120,11 +120,11 @@ def groupsizes_to_partition(*gsizes):
     idx = 0
     part = []
     for gs in gsizes:
-        l = []
+        l_ = []
         for i in range(gs):
-            l.append(idx)
+            l_.append(idx)
             idx += 1
-        part.append(l)
+        part.append(l_)
     return part
 
 
