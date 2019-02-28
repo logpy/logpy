@@ -40,10 +40,10 @@ def test_conso():
     # Confirm that custom types are preserved.
     class mytuple(tuple):
         def __repr__(self):
-            return 'mytuple' + super().__repr__()
+            return 'mytuple' + super(mytuple, self).__repr__()
 
         def __add__(self, other):
-            return type(self)(super().__add__(other))
+            return type(self)(super(mytuple, self).__add__(other))
 
     assert type(results(conso(x, mytuple((2, 3)), y))[0][y]) == mytuple
 
