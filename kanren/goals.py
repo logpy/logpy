@@ -2,15 +2,12 @@ import collections
 import operator
 from itertools import permutations
 
-from unification import var, isvar, unify
-# TODO: we should be able to register new reification processes without
-# importing private methods.
-from unification.core import _reify
-from unification.more import unifiable, reify_object
+from unification import isvar, var
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
                    fail, success)
 from .util import unique
+from .cons import cons
 
 
 def heado(head, coll):
@@ -20,11 +17,7 @@ def heado(head, coll):
         tailo
         conso
     """
-    if isinstance(coll, (tuple, list)):
-        return (fail if len(coll) == 0 else (eq, head, coll[0]))
-    else:
-        tail = var()
-        return (eq, LCons(head, tail), coll)
+    return (eq, cons(head, var()), coll)
 
 
 def tailo(tail, coll):
@@ -34,42 +27,21 @@ def tailo(tail, coll):
         heado
         conso
     """
-    if isinstance(coll, (tuple, list)):
-        return (fail if len(coll) == 0 else (eq, tail, coll[1:]))
-    else:
-        head = var()
-        return (eq, LCons(head, tail), coll)
+    return (eq, cons(var(), tail), coll)
 
 
-def conso(h, t, l, base_type=tuple):
-    """ Logical cons -- l[0], l[1:] == h, t
-
-    Parameters
-    ==========
-    base_type: type
-        The empty collection type to use when all terms are logic variables.
+def conso(h, t, l):
+    """ cons h + t == l
     """
-    if isinstance(l, (tuple, list)):
-        if len(l) == 0:
-            return fail
-        else:
-            return (conde, [(eq, h, l[0]), (eq, t, l[1:])])
-    elif isinstance(t, tuple):
-        return eq(type(t)((h,)) + t, l)
-    elif isinstance(t, list):
-        return eq(type(t)([h]) + t, l)
-    else:
-        return (
-            lall,
+    return (eq, cons(h, t), l)
 
-            # The definition of conso. This means that l can be unified with
-            # an LCons object (head + tail).
-            (eq, LCons(h, t), l),
 
-            # A "type declaration" for the tail. This means that the first goal
-            # found will simplify to a list with no extra unbound variables.
-            (lany, (eq, t, base_type()), (eq, t, LCons(var(), var())))
-        )
+def listo(l):
+    c, d = var(), var()
+    return (conde,
+            [(eq, None, l), success],
+            [(conso, c, d, l),
+             (listo, d)])
 
 
 def permuteq(a, b, eq2=eq):
@@ -207,58 +179,3 @@ def appendo(l, s, ls, base_type=tuple):
     return (lany, (lallgreedy, (eq, l, base_type()), (eq, s, ls)),
             (lall, (conso, a, d, l), (conso, a, res, ls),
              (appendo, d, s, res)))
-
-
-@unifiable
-class LCons(object):
-    __slots__ = 'head', 'tail'
-
-    def __init__(self, head, tail):
-        self.head = head
-        self.tail = tail
-
-    def __repr__(self):
-        return 'LCons(%r, %r)' % (self.head, self.tail)
-
-    def __iter__(self):
-        yield self.head
-        if isinstance(self.tail, collections.Iterable):
-            for x in self.tail:
-                yield x
-
-    def __eq__(self, other):
-        return (
-            isinstance(other, LCons) and
-            self.head == other.head and
-            self.tail == other.tail)
-
-    def as_tuple(self):
-        tail = self.tail
-        if isinstance(tail, LCons):
-            tail = self.tail.as_tuple()
-        elif isvar(tail):
-            raise EarlyGoalError()
-        return (self.head, ) + tail
-
-
-@unify.register(LCons, (list, tuple), dict)
-def _lcons_unify(lcons, t, s):
-    if len(t) == 0:
-        return False
-    return unify((lcons.head, lcons.tail), (t[0], t[1:]), s)
-
-
-@unify.register((list, tuple), LCons, dict)
-def _lcons_runify(t, lcons, s):
-    return _lcons_unify(lcons, t, s)
-
-
-@_reify.register(LCons, dict)
-def reify_lcons(lcons, s):
-    ret = reify_object(lcons, s)
-    try:
-        # Simplify to a tuple once we've reified, if possible.
-        ret = ret.as_tuple()
-    except (TypeError, EarlyGoalError):
-        pass
-    return ret
