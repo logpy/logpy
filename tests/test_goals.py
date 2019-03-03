@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 
-from unification import unify, var, isvar
+from unification import var, isvar
 
 from kanren.goals import (tailo, heado, appendo, seteq, conso, typo,
-                          isinstanceo, permuteq, LCons, membero)
+                          listo, isinstanceo, permuteq, membero)
 from kanren.core import run, eq, goaleval, lall, lallgreedy, EarlyGoalError
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
@@ -14,16 +14,16 @@ def results(g, s={}):
 
 
 def test_heado():
-    assert results(heado(x, (1, 2, 3))) == ({x: 1}, )
-    assert results(heado(1, (x, 2, 3))) == ({x: 1}, )
+    assert (x, 1) in results(heado(x, (1, 2, 3)))[0].items()
+    assert (x, 1) in results(heado(1, (x, 2, 3)))[0].items()
     assert results(heado(x, ())) == ()
 
     assert run(0, x, (heado, x, z), (conso, 1, y, z)) == (1, )
 
 
 def test_tailo():
-    assert results((tailo, x, (1, 2, 3))) == ({x: (2, 3)}, )
-    assert results((tailo, x, (1, ))) == ({x: ()}, )
+    assert (x, (2, 3)) in results((tailo, x, (1, 2, 3)))[0].items()
+    assert (x, ()) in results((tailo, x, (1, )))[0].items()
     assert results((tailo, x, ())) == ()
 
     assert run(0, y, (tailo, y, z), (conso, x, (1, 2), z)) == ((1, 2), )
@@ -39,30 +39,20 @@ def test_conso():
 
     # Confirm that custom types are preserved.
     class mytuple(tuple):
-        def __repr__(self):
-            return 'mytuple' + super(mytuple, self).__repr__()
-
         def __add__(self, other):
             return type(self)(super(mytuple, self).__add__(other))
 
     assert type(results(conso(x, mytuple((2, 3)), y))[0][y]) == mytuple
 
-    # Verify that the first goal that's found does not contain unbound logic
-    # variables.
-    assert run(1, y, conso(1, x, y))[0] == (1, )
-    # But (potentially infinitely many goals _are_ generated).
-    assert isinstance(run(2, y, conso(1, x, y))[1], LCons)
 
-    assert run(1, y, conso(1, x, y), conso(2, z, x))[0] == (1, 2)
-    # assert tuple(conde((conso(x, y, z), (membero, x, z)))({}))
+def test_listo():
+    assert run(1, y, conso(1, x, y), listo(y))[0] == [1]
+    assert run(1, y, conso(1, x, y), conso(2, z, x), listo(y))[0] == [1, 2]
 
-
-def test_lcons():
-    assert unify(LCons(1, ()), (x, )) == {x: 1}
-    assert unify(LCons(1, (x, )), (x, y)) == {x: 1, y: 1}
-    assert unify((x, y), LCons(1, (x, ))) == {x: 1, y: 1}
-    assert unify(LCons(x, y), ()) == False
-    assert list(LCons(1, LCons(2, x))) == [1, 2]
+    # Make sure that the remaining results end in logic variables
+    res_2 = run(2, y, conso(1, x, y), conso(2, z, x), listo(y))[1]
+    assert res_2[:2] == [1, 2]
+    assert isvar(res_2[-1])
 
 
 def test_membero():
