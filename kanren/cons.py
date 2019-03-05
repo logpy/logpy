@@ -1,46 +1,12 @@
 from functools import reduce
-
 from itertools import chain
-
+from operator import length_hint
 from collections import OrderedDict
-
-try:
-    from operator import length_hint
-except ImportError:
-    def length_hint(obj, default=0):
-        """Return an estimate of the number of items in obj.
-        From https://www.python.org/dev/peps/pep-0424/
-        """
-        try:
-            return len(obj)
-        except TypeError:
-            try:
-                get_hint = type(obj).__length_hint__
-            except AttributeError:
-                return default
-            try:
-                hint = get_hint(obj)
-            except TypeError:
-                return default
-            if hint is NotImplemented:
-                return default
-            if not isinstance(hint, int):
-                raise TypeError("Length hint must be an integer, not %r" %
-                                type(hint))
-            if hint < 0:
-                raise ValueError("__length_hint__() should return >= 0")
-            return hint
-
-try:
-    from collections.abc import Iterator
-except ImportError:
-    from collections import Iterator
+from collections.abc import Iterator
 
 from multipledispatch import dispatch
 
 from toolz import drop, last
-
-from six import add_metaclass
 
 from unification.core import unify, _unify, reify, _reify
 
@@ -58,8 +24,7 @@ class ConsType(type):
         return is_cons(o)
 
 
-@add_metaclass(ConsType)
-class ConsPair(object):
+class ConsPair(metaclass=ConsType):
     """An object representing cons pairs.
 
     These objects, and the class constructor alias `cons`, serve as a sort of
