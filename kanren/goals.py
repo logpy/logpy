@@ -3,11 +3,12 @@ import operator
 from itertools import permutations
 
 from unification import isvar, var, reify, unify
+from unification.utils import transitive_get as walk
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
-                   fail, success)
+                   lanyseq, fail, success)
 from .util import unique
-from .cons import cons, is_null
+from .cons import cons, car, cdr, is_null
 
 
 def heado(head, coll):
@@ -203,3 +204,74 @@ def appendo(l, s, ls, base_type=tuple):
     return (lany, (lallgreedy, (eq, l, base_type()), (eq, s, ls)),
             (lall, (conso, a, d, l), (conso, a, res, ls),
              (appendo, d, s, res)))
+
+
+def collect(s, f_lists=None):
+    """A function that produces suggestions (for condp) based on the values of
+    partially reified terms.
+
+    This goal takes a list of suggestion function, variable pairs lists and
+    evaluates them at their current, partially reified variable values
+    (i.e. `f(walk(x, s))` for pair `(f, x)`).  Each evaluated function should
+    return `None`, a string label in a corresponding condp clause, or the
+    string "use-maybe".
+
+    Each list of suggestion functions is evaluated in order, their output
+    is concatenated, and, if the output contains a "use-maybe" string, the
+    next list of suggestion functions is evaluated.
+
+    Parameters
+    ==========
+    s: dict
+        miniKanren state/replacements dictionary.
+    funcs: list or tuple (optional)
+        A collection of function + variable pair collections (e.g.
+        `[[(f0, x0), ...], ..., [(f, x), ...]]`).
+    """
+    if isinstance(f_lists, (tuple, list)):
+        # TODO: Would be cool if this was lazily evaluated, no?
+        # Seems like this whole thing would have to become a generator
+        # function, though.
+        ulos = ()
+        # ((f0, x0), ...), ((f, x), ...)
+        for f_list in f_lists:
+            f, args = car(f_list), cdr(f_list)
+            _ulos = f(*(walk(a, s) for a in args))
+            ulos += _ulos
+            if "use-maybe" not in _ulos:
+                return ulos
+    else:
+        return tuple()
+
+
+def condp(branch_mappings):
+    """A goal generator that produces a conde-like relation driven by
+    suggestions potentially derived from partial miniKanren state values.
+
+    BOSKIN, BENJAMIN STRAHAN, WEIXI MA, DAVID THRANE CHRISTIANSEN, and DANIEL
+    P. FRIEDMAN. n.d. “A Surprisingly Competitive Conditional Operator.”
+
+    Example
+    =======
+    >>> run(0, var('q'), # doctest: +SKIP
+            (condp,
+             {'BASE': ((lambda x: 'BASE' if x ...,), (eq, var('q'), 1))}))
+
+    Parameters
+    ==========
+    branch_mappings: dict
+        Maps from string labels--for each branch in a conde-like goal--to a
+        pair containing a collection of suggestion functions and a collection
+        of goals.
+    """
+    def _condp(s):
+        res = tuple()
+        for key, (sugs, goals) in branch_mappings.items():
+            los = collect(s, sugs)
+
+            if key in los:
+                res += ((lall,) + goals,)
+
+        yield from lanyseq(res)(s)
+
+    return _condp

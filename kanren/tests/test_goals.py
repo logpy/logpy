@@ -1,10 +1,14 @@
 from __future__ import absolute_import
 
+from collections import OrderedDict
+
 from unification import var, isvar
 
 from kanren.goals import (tailo, heado, appendo, seteq, conso, typo,
-                          nullo, itero, isinstanceo, permuteq, membero)
-from kanren.core import run, eq, goaleval, lall, lallgreedy
+                          nullo, itero, isinstanceo, permuteq, membero, condp)
+from kanren.core import run, eq, goaleval, lall, lallgreedy, conde
+from kanren.cons import is_null, is_cons, car, cons
+
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
@@ -172,3 +176,101 @@ def test_goal_ordering():
 
     solution, = run(1, vals, rules_greedy)
     assert solution == ('green', 'white')
+
+
+def test_conp():
+    """Test `condp` using the example from “A Surprisingly Competitive
+    Conditional Operator.”
+
+    BOSKIN, BENJAMIN STRAHAN, WEIXI MA, DAVID THRANE CHRISTIANSEN, and DANIEL
+    P. FRIEDMAN. n.d. “A Surprisingly Competitive Conditional Operator.”
+    """
+    def _ls_keys(ls):
+        if isvar(ls):
+            return ('use-maybe',)
+        elif is_null(ls):
+            return ('BASE',)
+        elif is_cons(ls):
+            return ('KEEP', 'SWAP')
+        else:
+            return ()
+
+    def _o_keys(o):
+        if isvar(o):
+            return ('BASE', 'KEEP', 'SWAP')
+        elif is_null(o):
+            return ('BASE',)
+        elif is_cons(o):
+            if isvar(car(o)) or 'novel' == car(o):
+                return ('KEEP', 'SWAP')
+            else:
+                return ('KEEP',)
+        else:
+            return ()
+
+    def swap_somep(ls, o):
+        a, d, res = var(), var(), var()
+        res = (condp,
+               OrderedDict([
+                   ('BASE', (
+                       # suggestion function and variable collections
+                       ((_ls_keys, ls),
+                        (_o_keys, o)),
+                       # branch goals
+                       ((nullo, ls),
+                        (nullo, o))
+                   )),
+                   ('KEEP', (
+                       ((_ls_keys, ls),
+                        (_o_keys, o)),
+                       ((eq, cons(a, d), ls),
+                        (eq, cons(a, res), o),
+                        (swap_somep, d, res))
+                   )),
+                   ('SWAP', (
+                       ((_ls_keys, ls),
+                        (_o_keys, o)),
+                       ((eq, cons(a, d), ls),
+                        (eq, cons('novel', res), o),
+                        (swap_somep, d, res))
+                   ))
+               ]))
+        return res
+
+    def swap_someo(ls, o):
+        """The original `conde` version.
+        """
+        a, d, res = var(), var(), var()
+        return (conde,
+                [(nullo, ls),
+                 (nullo, o)],
+                [(eq, cons(a, d), ls),
+                 (eq, cons(a, res), o),
+                 (swap_someo, d, res)],
+                [(eq, cons(a, d), ls),
+                 (eq, cons('novel', res), o),
+                 (swap_someo, d, res)])
+
+    q, r = var('q'), var('r')
+    # conde_res = run(0, [q, r],
+    #                 (swap_someo, q, ['novel', r]))
+
+    condp_res = run(0, [q, r],
+                    (swap_somep, q, ['novel', r]))
+
+    assert len(condp_res) == 4
+    assert condp_res[0][0][0] == 'novel'
+    assert isvar(condp_res[0][0][1])
+    assert isvar(condp_res[0][1])
+
+    assert isvar(condp_res[1][0][0])
+    assert isvar(condp_res[1][0][1])
+    assert isvar(condp_res[1][1])
+
+    assert condp_res[2][0][0] == 'novel'
+    assert isvar(condp_res[2][0][1])
+    assert condp_res[2][1] == 'novel'
+
+    assert isvar(condp_res[3][0][0])
+    assert isvar(condp_res[3][0][1])
+    assert condp_res[3][1] == 'novel'
