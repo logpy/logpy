@@ -76,6 +76,7 @@ class ConsPair(object):
         ConsPair(car_1, car_2, car_3, cdr) ==
             ConsPair(car_1, ConsPair(car_2, ConsPair(car_3, cdr)))
     """
+    __slots__ = ['car', 'cdr']
 
     def __new__(cls, *parts):
         if len(parts) > 2:
