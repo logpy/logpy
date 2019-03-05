@@ -143,7 +143,7 @@ Run tests with tox
 Dependencies
 ------------
 
-``kanren`` supports Python 2.7+ and Python 3.3+ with a common codebase.
+``kanren`` supports 3.5+.
 It is pure Python and requires no dependencies beyond the standard
 library, [`toolz`](http://github.com/pytoolz/toolz/),
 [`multipledispatch`](http://github.com/mrocklin/multipledispatch/), and
