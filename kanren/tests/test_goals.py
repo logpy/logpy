@@ -37,6 +37,16 @@ def test_conso():
     assert results(conso(x, y, (1, 2, 3))) == ({x: 1, y: (2, 3)}, )
     assert results(conso(x, (2, 3), y)) == ({y: (x, 2, 3)}, )
 
+    # Confirm that custom types are preserved.
+    class mytuple(tuple):
+        def __repr__(self):
+            return 'mytuple' + super(mytuple, self).__repr__()
+
+        def __add__(self, other):
+            return type(self)(super(mytuple, self).__add__(other))
+
+    assert type(results(conso(x, mytuple((2, 3)), y))[0][y]) == mytuple
+
     # Verify that the first goal that's found does not contain unbound logic
     # variables.
     assert run(1, y, conso(1, x, y))[0] == (1, )

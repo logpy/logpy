@@ -10,6 +10,10 @@ setup(name='kanren',
       license='BSD',
       packages=['kanren'],
       install_requires=open('requirements.txt').read().split('\n'),
+      tests_require=[
+          'pytest'
+          'sympy'
+      ],
       long_description=open('README.md').read() if exists("README.md") else "",
       zip_safe=False,
       classifiers=["Development Status :: 5 - Production/Stable",
