@@ -1,8 +1,8 @@
-from itertools import chain
 from functools import reduce
+from itertools import chain, cycle
 from collections import Iterable, OrderedDict
 
-from kanren.cons import cons, ConsPair, car, cdr, is_cons
+from kanren.cons import cons, ConsPair, car, cdr, is_cons, is_null
 
 
 def assert_all_equal(*tests):
@@ -88,3 +88,17 @@ def test_is_cons():
     assert not is_cons(OrderedDict({}))
     assert not is_cons(())
     assert not is_cons([])
+
+
+def test_is_null():
+    assert is_null(None)
+    assert is_null([])
+    assert is_null(tuple())
+    assert is_null(OrderedDict())
+    assert is_null(iter([]))
+    assert not is_null(object)
+    assert not is_null([1])
+    assert not is_null((1,))
+    assert not is_null(OrderedDict([(1, 2)]))
+    assert not is_null(iter([1]))
+    assert not is_null(cycle([5]))
