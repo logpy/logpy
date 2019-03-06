@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from unification import var, isvar
 
 from kanren.goals import (tailo, heado, appendo, seteq, conso, typo,
-                          listo, isinstanceo, permuteq, membero)
+                          nullo, itero, isinstanceo, permuteq, membero)
 from kanren.core import run, eq, goaleval, lall, lallgreedy, EarlyGoalError
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
@@ -45,12 +45,18 @@ def test_conso():
     assert type(results(conso(x, mytuple((2, 3)), y))[0][y]) == mytuple
 
 
-def test_listo():
-    assert run(1, y, conso(1, x, y), listo(y))[0] == [1]
-    assert run(1, y, conso(1, x, y), conso(2, z, x), listo(y))[0] == [1, 2]
+def test_nullo_itero():
+    assert isvar(run(0, y, nullo([]))[0])
+    assert isvar(run(0, y, nullo(None))[0])
+    assert run(0, y, nullo(y))[0] is None
+    assert run(0, y, (conso, var(), y, [1]), nullo(y))[0] == []
+    assert run(0, y, (conso, var(), y, (1,)), nullo(y))[0] == ()
+
+    assert run(1, y, conso(1, x, y), itero(y))[0] == [1]
+    assert run(1, y, conso(1, x, y), conso(2, z, x), itero(y))[0] == [1, 2]
 
     # Make sure that the remaining results end in logic variables
-    res_2 = run(2, y, conso(1, x, y), conso(2, z, x), listo(y))[1]
+    res_2 = run(2, y, conso(1, x, y), conso(2, z, x), itero(y))[1]
     assert res_2[:2] == [1, 2]
     assert isvar(res_2[-1])
 

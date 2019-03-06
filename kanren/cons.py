@@ -172,11 +172,42 @@ def is_cons(a):
     `cons_merge` implementation, since any such implementation implies that
     `cons` can construct that type.
     """
-    return (type(a) == ConsPair or
+    return (issubclass(type(a), ConsPair) or
             (any(isinstance(a, d)
                  for _, d in cons_merge.funcs.keys()
                  if d not in (object, ConsPair)) and
              length_hint(a, 0) > 0))
+
+
+def is_null(a):
+    """Check if an object is a "Lisp-like" null.
+
+    A "Lisp-like" null object is one that can be used as a `cdr` to produce a
+    non-`ConsPair` collection (e.g. `None`, `[]`, `()`, `OrderedDict`, etc.)
+
+    It's important that this function be used when considering an arbitrary
+    object as the terminating `cdr` for a given collection (e.g. when unifying
+    `cons` objects); otherwise, fixed choices for the terminating `cdr`, such
+    as `None` or `[]`, will severely limit the applicability of the
+    decomposition.
+
+    Also, for relevant collections with no concrete length information, `None`
+    is returned, and it signifies the uncertainty of the negative assertion.
+    """
+    if a is None:
+        return True
+    elif any(isinstance(a, d)
+             for d, in cdr.funcs.keys()
+             if not issubclass(d, (ConsPair, type(None)))):
+        lhint = length_hint(a, -1)
+        if lhint == 0:
+            return True
+        elif lhint > 0:
+            return False
+        else:
+            return None
+    else:
+        return False
 
 
 # Unfortunately, `multipledispatch` doesn't use `isinstance` on the arguments,

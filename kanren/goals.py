@@ -2,12 +2,12 @@ import collections
 import operator
 from itertools import permutations
 
-from unification import isvar, var
+from unification import isvar, var, reify, unify
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
                    fail, success)
 from .util import unique
-from .cons import cons
+from .cons import cons, is_null
 
 
 def heado(head, coll):
@@ -36,12 +36,36 @@ def conso(h, t, l):
     return (eq, cons(h, t), l)
 
 
-def listo(l):
+def nullo(l):
+    """A relation asserting that a term is a "Lisp-like" null.
+
+    For un-unified logic variables, it unifies with `None`.
+
+    See `is_null`.
+    """
+    def _nullo(s):
+        _s = reify(l, s)
+        if isvar(_s):
+            yield unify(_s, None, s)
+        elif is_null(_s):
+            yield s
+
+    return _nullo
+
+
+def itero(l):
+    """A relation asserting that a term is an iterable type.
+
+    This is a generic version of the standard `listo` that accounts for
+    different iterable types supported by `cons` in Python.
+
+    See `nullo`
+    """
     c, d = var(), var()
     return (conde,
-            [(eq, None, l), success],
+            [(nullo, l), success],
             [(conso, c, d, l),
-             (listo, d)])
+             (itero, d)])
 
 
 def permuteq(a, b, eq2=eq):
