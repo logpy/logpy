@@ -6,11 +6,11 @@ import pytest
 from pytest import raises
 from unification import var
 
-from ..goals import membero
-from ..core import (run, fail, eq, conde, goaleval, lany, lallgreedy,
+from kanren.goals import membero
+from kanren.core import (run, fail, eq, conde, goaleval, lany, lallgreedy,
                     lanyseq, earlyorder, EarlyGoalError, lall, earlysafe,
                     lallfirst, condeseq)
-from ..util import evalt
+from kanren.util import evalt
 
 w, x, y, z = 'wxyz'
 
@@ -129,6 +129,23 @@ def test_goaleval():
     with raises(EarlyGoalError):
         goaleval((membero, x, y))
     assert callable(goaleval((lallgreedy, (eq, x, 2))))
+
+
+def test_lall_errors():
+    """Make sure we report the originating exception when it isn't just an
+    `EarlyGoalError`.
+    """
+
+    class SomeException(Exception):
+        pass
+
+    def bad_relation():
+        def _bad_relation():
+            raise SomeException("some exception")
+        return (lall, (_bad_relation,))
+
+    with raises(SomeException):
+        run(0, var(), (bad_relation,))
 
 
 def test_lany_is_early_safe():

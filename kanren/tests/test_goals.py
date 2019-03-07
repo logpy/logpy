@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
-from unification import unify, var
+from unification import unify, var, isvar
 
-from ..goals import (tailo, heado, appendo, seteq, conso, typo,
+from kanren.goals import (tailo, heado, appendo, seteq, conso, typo,
                           isinstanceo, permuteq, LCons, membero)
-from ..core import run, eq, goaleval, lall, lallgreedy
+from kanren.core import run, eq, goaleval, lall, lallgreedy, EarlyGoalError
 
 x, y, z, w = var('x'), var('y'), var('z'), var('w')
 
@@ -151,6 +151,8 @@ def test_goal_ordering():
     # Regression test for https://github.com/logpy/logpy/issues/58
 
     def lefto(q, p, lst):
+        if isvar(lst):
+            raise EarlyGoalError()
         return membero((q, p), zip(lst, lst[1:]))
 
     vals = var()
