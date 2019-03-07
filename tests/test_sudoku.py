@@ -6,9 +6,9 @@ from __future__ import absolute_import
 
 from unification import var
 
-from .. import run
-from ..core import everyg
-from ..goals import permuteq
+from kanren import run
+from kanren.core import everyg
+from kanren.goals import permuteq
 
 
 DIGITS = tuple(range(1, 10))

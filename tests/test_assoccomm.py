@@ -4,19 +4,64 @@ import pytest
 
 from unification import reify, var, variables
 
-from ..core import run, goaleval
-from ..facts import fact
-from ..assoccomm import (associative, commutative,
-                         groupsizes_to_partition, assocunify, eq_comm,
-                         eq_assoc, eq_assoccomm, assocsized, buildo,
-                         op_args)
-from ..dispatch import dispatch
+from kanren.core import run, goaleval
+from kanren.facts import fact
+from kanren.assoccomm import (associative, commutative,
+                              groupsizes_to_partition, assocunify, eq_comm,
+                              eq_assoc, eq_assoccomm, assocsized, buildo,
+                              op_args)
+from kanren.dispatch import dispatch
 
 a = 'assoc_op'
 c = 'comm_op'
 x, y = var('x'), var('y')
 fact(associative, a)
 fact(commutative, c)
+
+
+class Node(object):
+    def __init__(self, op, args):
+        self.op = op
+        self.args = args
+
+    def __eq__(self, other):
+        return (type(self) == type(other) and self.op == other.op and
+                self.args == other.args)
+
+    def __hash__(self):
+        return hash((type(self), self.op, self.args))
+
+    def __str__(self):
+        return '%s(%s)' % (self.op.name, ', '.join(map(str, self.args)))
+
+    __repr__ = __str__
+
+
+class Operator(object):
+    def __init__(self, name):
+        self.name = name
+
+
+Add = Operator('add')
+Mul = Operator('mul')
+
+add = lambda *args: Node(Add, args)
+mul = lambda *args: Node(Mul, args)
+
+
+@dispatch(Operator, (tuple, list))
+def term(op, args):
+    return Node(op, args)
+
+
+@dispatch(Node)
+def arguments(n):
+    return n.args
+
+
+@dispatch(Node)
+def operator(n):
+    return n.op
 
 
 def results(g, s={}):
@@ -77,10 +122,10 @@ def test_eq_assoccomm():
 def test_expr():
     add = 'add'
     mul = 'mul'
-    fact(commutative, Add)
-    fact(associative, Add)
-    fact(commutative, Mul)
-    fact(associative, Mul)
+    fact(commutative, add)
+    fact(associative, add)
+    fact(commutative, mul)
+    fact(associative, mul)
 
     x, y = var('x'), var('y')
 
@@ -174,51 +219,6 @@ def test_buildo():
         buildo(x, (1, 2, 3), ('add', 1, 2, 3)), {}) == ({x: 'add'}, )
     assert results(
         buildo('add', x, ('add', 1, 2, 3)), {}) == ({x: (1, 2, 3)}, )
-
-
-class Node(object):
-    def __init__(self, op, args):
-        self.op = op
-        self.args = args
-
-    def __eq__(self, other):
-        return (type(self) == type(other) and self.op == other.op and
-                self.args == other.args)
-
-    def __hash__(self):
-        return hash((type(self), self.op, self.args))
-
-    def __str__(self):
-        return '%s(%s)' % (self.op.name, ', '.join(map(str, self.args)))
-
-    __repr__ = __str__
-
-
-class Operator(object):
-    def __init__(self, name):
-        self.name = name
-
-
-Add = Operator('add')
-Mul = Operator('mul')
-
-add = lambda *args: Node(Add, args)
-mul = lambda *args: Node(Mul, args)
-
-
-@dispatch(Operator, (tuple, list))
-def term(op, args):
-    return Node(op, args)
-
-
-@dispatch(Node)
-def arguments(n):
-    return n.args
-
-
-@dispatch(Node)
-def operator(n):
-    return n.op
 
 
 def test_op_args():

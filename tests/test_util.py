@@ -1,5 +1,5 @@
-from ..util import (take, unique, interleave, intersection, groupsizes,
-                    dicthash, hashable, multihash)
+from kanren.util import (take, unique, interleave, intersection, groupsizes,
+                         dicthash, hashable, multihash)
 
 
 def test_hashable():
