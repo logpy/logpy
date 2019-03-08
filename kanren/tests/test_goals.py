@@ -4,9 +4,10 @@ from collections import OrderedDict
 
 from unification import var, isvar
 
-from kanren.goals import (tailo, heado, appendo, seteq, conso, typo,
-                          nullo, itero, isinstanceo, permuteq, membero, condp)
-from kanren.core import run, eq, goaleval, lall, lallgreedy, conde
+from kanren.goals import (tailo, heado, appendo, seteq, conso, typo, nullo,
+                          itero, isinstanceo, permuteq, membero, condp,
+                          condpseq)
+from kanren.core import (run, eq, goaleval, lall, lallgreedy, conde)
 from kanren.cons import is_null, is_cons, car, cons
 
 
@@ -178,7 +179,7 @@ def test_goal_ordering():
     assert solution == ('green', 'white')
 
 
-def test_conp():
+def test_condp():
     """Test `condp` using the example from “A Surprisingly Competitive
     Conditional Operator.”
 
@@ -211,30 +212,17 @@ def test_conp():
     def swap_somep(ls, o):
         a, d, res = var(), var(), var()
         res = (condp,
-               OrderedDict([
-                   ('BASE', (
-                       # suggestion function and variable collections
-                       ((_ls_keys, ls),
-                        (_o_keys, o)),
-                       # branch goals
-                       ((nullo, ls),
-                        (nullo, o))
-                   )),
-                   ('KEEP', (
-                       ((_ls_keys, ls),
-                        (_o_keys, o)),
-                       ((eq, cons(a, d), ls),
-                        (eq, cons(a, res), o),
-                        (swap_somep, d, res))
-                   )),
-                   ('SWAP', (
-                       ((_ls_keys, ls),
-                        (_o_keys, o)),
-                       ((eq, cons(a, d), ls),
-                        (eq, cons('novel', res), o),
-                        (swap_somep, d, res))
-                   ))
-               ]))
+               # suggestion function and variable collections
+               ((_ls_keys, ls),
+                (_o_keys, o)),
+               # branch goals
+               [('BASE', ((nullo, ls), (nullo, o))),
+                ('KEEP', ((eq, cons(a, d), ls),
+                          (eq, cons(a, res), o),
+                          (swap_somep, d, res))),
+                ('SWAP', ((eq, cons(a, d), ls),
+                          (eq, cons('novel', res), o),
+                          (swap_somep, d, res)))])
         return res
 
     def swap_someo(ls, o):
@@ -252,11 +240,8 @@ def test_conp():
                  (swap_someo, d, res)])
 
     q, r = var('q'), var('r')
-    # conde_res = run(0, [q, r],
-    #                 (swap_someo, q, ['novel', r]))
 
-    condp_res = run(0, [q, r],
-                    (swap_somep, q, ['novel', r]))
+    condp_res = run(0, [q, r], (swap_somep, q, ['novel', r]))
 
     assert len(condp_res) == 4
     assert condp_res[0][0][0] == 'novel'
@@ -274,3 +259,29 @@ def test_conp():
     assert isvar(condp_res[3][0][0])
     assert isvar(condp_res[3][0][1])
     assert condp_res[3][1] == 'novel'
+
+
+def test_condpseq():
+
+    def base_sug(a_branches):
+        if a_branches['BRANCH1'] == 1:
+            return ('BRANCH3',)
+        else:
+            return ('BRANCH2', 'BRANCH3',)
+
+    def test_rel(a):
+        return (condpseq,
+                OrderedDict([
+                    ('BRANCH1',
+                     (None, (eq, a, 1))),
+                    ('BRANCH2',
+                     ((base_sug, a), (eq, a, 2))),
+                    ('BRANCH3',
+                     (None, (eq, a, 3)))
+                ]))
+
+    q = var('q')
+
+    res = run(0, [q], test_rel(q))
+
+    assert res == ([1], [3])

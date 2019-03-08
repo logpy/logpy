@@ -1,13 +1,13 @@
 import collections
 import operator
-from itertools import permutations
+from itertools import permutations, tee
 
 from unification import isvar, var, reify, unify
 from unification.utils import transitive_get as walk
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
-                   lanyseq, fail, success)
-from .util import unique
+                   lanyseq, fail, success, goaleval)
+from .util import unique, interleave, dicthash
 from .cons import cons, car, cdr, is_null
 
 
@@ -224,7 +224,7 @@ def collect(s, f_lists=None):
     ==========
     s: dict
         miniKanren state/replacements dictionary.
-    funcs: list or tuple (optional)
+    f_lists: list or tuple (optional)
         A collection of function + variable pair collections (e.g.
         `[[(f0, x0), ...], ..., [(f, x), ...]]`).
     """
@@ -240,38 +240,125 @@ def collect(s, f_lists=None):
             ulos += _ulos
             if "use-maybe" not in _ulos:
                 return ulos
+        return ulos
     else:
-        return tuple()
+        return ()
 
 
-def condp(branch_mappings):
+def condp(global_sugs, branches):
     """A goal generator that produces a conde-like relation driven by
     suggestions potentially derived from partial miniKanren state values.
 
     BOSKIN, BENJAMIN STRAHAN, WEIXI MA, DAVID THRANE CHRISTIANSEN, and DANIEL
     P. FRIEDMAN. n.d. “A Surprisingly Competitive Conditional Operator.”
 
-    Example
-    =======
-    >>> run(0, var('q'), # doctest: +SKIP
-            (condp,
-             {'BASE': ((lambda x: 'BASE' if x ...,), (eq, var('q'), 1))}))
-
     Parameters
     ==========
-    branch_mappings: dict
-        Maps from string labels--for each branch in a conde-like goal--to a
-        pair containing a collection of suggestion functions and a collection
-        of goals.
+    global_sugs: `tuple`
+        A tuple containing tuples of suggestion functions and their
+        logic variable arguments.  Each suggestion function is evaluated
+        using the reified versions of its corresponding logic variables (i.e.
+        their "projected" values).  Each suggestion function is expected to
+        return a tuple of branch labels corresponding to the keys in
+        `branch_mappings`.
+    branches: `Sequence` or `Mapping`
+        Sequence or mapping of string labels--for each branch in a conde-like
+        goal--to a tuple of goals pairs.
     """
-    def _condp(s):
-        res = tuple()
-        for key, (sugs, goals) in branch_mappings.items():
-            los = collect(s, sugs)
+    if isinstance(branches, collections.abc.Mapping):
+        branches = branches.items()
 
-            if key in los:
-                res += ((lall,) + goals,)
+    def _condp(s):
+        global_los = collect(s, global_sugs)
+        res = tuple((lall,) + g for k, g in branches
+                    if k in global_los)
 
         yield from lanyseq(res)(s)
 
     return _condp
+
+
+def collectseq(branch_s, f_lists=None):
+    """A version of `collect` that takes a dict of branches-to-states.
+
+    Parameters
+    ==========
+    branch_s: dict
+        Branch labels to miniKanren state/replacements dictionaries.
+    f_lists: list or tuple (optional)
+        A collection of function + variable pair collections (e.g.
+        `[[(f0, x0), ...], ..., [(f, x), ...]]`).
+    """
+    if isinstance(f_lists, (tuple, list)):
+        ulos = ()
+        for f_list in f_lists:
+            f, args = f_list
+            _ulos = f({k: reify(args, s)
+                       for k, s in branch_s.items()})
+            ulos += _ulos
+            if "use-maybe" not in _ulos:
+                return ulos
+        return ulos
+    else:
+        return ()
+
+
+def condpseq(branches):
+    """An experimental version of `condp` that passes branch-state-reified
+    maps to branch-specific suggestion functions.
+
+    In other words, each branch-specific suggestion function is passed a `dict`
+    with branch-label keys and the its function arguments reified against the
+    state resulting from said branch.
+
+    NOTE: Only previously evaluated branches will show up in these `dict`s, so
+    branch order will determine the information available to each suggestion
+    function.
+
+    Parameters
+    ==========
+    branches: `OrderedDict`
+        Ordered map or a sequence of tuples mapping string labels--for each
+        branch in a conde-like goal--to a tuple starting with a single
+        suggestion function followed by the branch goals.
+    """
+    if isinstance(branches, dict):
+        branches = branches.items()
+
+    def _condpseq(s, __bm=branches):
+        __bm, local_items = tee(__bm)
+
+        # Provide each branch-specific suggestion function a
+        # copy of the state after the preceding branches goals have
+        # been evaluated.
+        def f(items):
+            los = set()
+            branch_s = {}
+            for k, goals_branch_sugs in local_items:
+                # Branch suggestions can be `None` and all branch
+                # goals will be added.
+                branch_sugs = car(goals_branch_sugs)
+                goals = cdr(goals_branch_sugs)
+
+                if branch_sugs:
+                    # We only expect one suggestion function per-branch.
+                    branch_sugs = (branch_sugs,)
+                    los |= set(collectseq(branch_s or {k: s}, branch_sugs))
+
+                if branch_sugs is None or k in los:
+                    try:
+                        a, b = tee(goaleval(lall(*goals))(s))
+                        branch_s[k] = next(a)
+                        yield b
+                    except EarlyGoalError:
+                        pass
+
+                branch_s.setdefault(k, None)
+
+        return unique(
+            interleave(
+                f(local_items),
+                pass_exceptions=[EarlyGoalError]),
+            key=dicthash)
+
+    return _condpseq
