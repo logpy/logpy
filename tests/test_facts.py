@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 from unification import var
 
-from ..core import run, conde
-from ..facts import Relation, fact, facts
+from kanren.core import run, conde
+from kanren.facts import Relation, fact, facts
 
 
 def test_relation():

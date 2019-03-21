@@ -1,7 +1,7 @@
 from unification import var
 
-from .. import run, membero
-from ..arith import lt, gt, lte, gte, add, sub, mul, mod, div
+from kanren import run, membero
+from kanren.arith import lt, gt, lte, gte, add, sub, mul, mod, div
 
 x = var('x')
 y = var('y')
@@ -76,5 +76,4 @@ def test_complex():
     results = set(run(0, x, (sub, y, x, 1), (membero, y, numbers), (
         mod, y, 2, 0), (membero, x, numbers)))
     expected = set((1, 3, 5, 7))
-    print(results)
     assert results == expected

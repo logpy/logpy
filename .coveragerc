@@ -1,7 +1,7 @@
 [run]
 branch = True
 omit =
-    kanren/tests/*
+    tests/*
 [report]
 exclude_lines =
     pragma: no cover

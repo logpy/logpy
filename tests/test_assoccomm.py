@@ -4,19 +4,64 @@ import pytest
 
 from unification import reify, var, variables
 
-from ..core import run, goaleval
-from ..facts import fact
-from ..assoccomm import (associative, commutative,
-                         groupsizes_to_partition, assocunify, eq_comm,
-                         eq_assoc, eq_assoccomm, assocsized, buildo,
-                         op_args)
-from ..dispatch import dispatch
+from kanren.core import run, goaleval
+from kanren.facts import fact
+from kanren.assoccomm import (associative, commutative,
+                              groupsizes_to_partition, assocunify, eq_comm,
+                              eq_assoc, eq_assoccomm, assocsized, buildo,
+                              op_args)
+from kanren.dispatch import dispatch
 
 a = 'assoc_op'
 c = 'comm_op'
 x, y = var('x'), var('y')
 fact(associative, a)
 fact(commutative, c)
+
+
+class Node(object):
+    def __init__(self, op, args):
+        self.op = op
+        self.args = args
+
+    def __eq__(self, other):
+        return (type(self) == type(other) and self.op == other.op and
+                self.args == other.args)
+
+    def __hash__(self):
+        return hash((type(self), self.op, self.args))
+
+    def __str__(self):
+        return '%s(%s)' % (self.op.name, ', '.join(map(str, self.args)))
+
+    __repr__ = __str__
+
+
+class Operator(object):
+    def __init__(self, name):
+        self.name = name
+
+
+Add = Operator('add')
+Mul = Operator('mul')
+
+add = lambda *args: Node(Add, args)
+mul = lambda *args: Node(Mul, args)
+
+
+@dispatch(Operator, (tuple, list))
+def term(op, args):
+    return Node(op, args)
+
+
+@dispatch(Node)
+def arguments(n):
+    return n.args
+
+
+@dispatch(Node)
+def operator(n):
+    return n.op
 
 
 def results(g, s={}):
@@ -77,10 +122,10 @@ def test_eq_assoccomm():
 def test_expr():
     add = 'add'
     mul = 'mul'
-    fact(commutative, Add)
-    fact(associative, Add)
-    fact(commutative, Mul)
-    fact(associative, Mul)
+    fact(commutative, add)
+    fact(associative, add)
+    fact(commutative, mul)
+    fact(associative, mul)
 
     x, y = var('x'), var('y')
 
@@ -142,7 +187,6 @@ def test_objects():
 
     x = var('x')
 
-    print(tuple(goaleval(eq_assoccomm(add(1, 2, 3), add(1, 2, x)))({})))
     assert reify(x, tuple(goaleval(eq_assoccomm(
         add(1, 2, 3), add(1, 2, x)))({}))[0]) == 3
 
@@ -152,7 +196,6 @@ def test_objects():
     v = add(1, 2, 3)
     with variables(v):
         x = add(5, 6)
-        print(reify(v, next(goaleval(eq_assoccomm(v, x))({}))))
         assert reify(v, next(goaleval(eq_assoccomm(v, x))({}))) == x
 
 
@@ -162,7 +205,6 @@ def test_deep_associativity():
     expr1 = (a, 1, 2, (a, x, 5, 6))
     expr2 = (a, (a, 1, 2), 3, 4, 5, 6)
     result = ({x: (a, 3, 4)})
-    print(tuple(assocunify(expr1, expr2, {})))
     assert tuple(assocunify(expr1, expr2, {})) == result
 
 
@@ -176,53 +218,7 @@ def test_buildo():
         buildo('add', x, ('add', 1, 2, 3)), {}) == ({x: (1, 2, 3)}, )
 
 
-class Node(object):
-    def __init__(self, op, args):
-        self.op = op
-        self.args = args
-
-    def __eq__(self, other):
-        return (type(self) == type(other) and self.op == other.op and
-                self.args == other.args)
-
-    def __hash__(self):
-        return hash((type(self), self.op, self.args))
-
-    def __str__(self):
-        return '%s(%s)' % (self.op.name, ', '.join(map(str, self.args)))
-
-    __repr__ = __str__
-
-
-class Operator(object):
-    def __init__(self, name):
-        self.name = name
-
-
-Add = Operator('add')
-Mul = Operator('mul')
-
-add = lambda *args: Node(Add, args)
-mul = lambda *args: Node(Mul, args)
-
-
-@dispatch(Operator, (tuple, list))
-def term(op, args):
-    return Node(op, args)
-
-
-@dispatch(Node)
-def arguments(n):
-    return n.args
-
-
-@dispatch(Node)
-def operator(n):
-    return n.op
-
-
 def test_op_args():
-    print(op_args(add(1, 2, 3)))
     assert op_args(add(1, 2, 3)) == (Add, (1, 2, 3))
     assert op_args('foo') == (None, None)
 
@@ -230,12 +226,11 @@ def test_op_args():
 def test_buildo_object():
     x = var('x')
     assert results(buildo(Add, (1, 2, 3), x), {}) == \
-            ({x: add(1, 2, 3)}, )
-    print(results(buildo(x, (1, 2, 3), add(1, 2, 3)), {}))
+        ({x: add(1, 2, 3)}, )
     assert results(buildo(x, (1, 2, 3), add(1, 2, 3)), {}) == \
-            ({x: Add}, )
+        ({x: Add}, )
     assert results(buildo(Add, x, add(1, 2, 3)), {}) == \
-            ({x: (1, 2, 3)}, )
+        ({x: (1, 2, 3)}, )
 
 
 def test_eq_comm_object():
@@ -245,9 +240,7 @@ def test_eq_comm_object():
 
     assert run(0, x, eq_comm(add(1, 2, 3), add(3, 1, x))) == (2, )
 
-    print(set(run(0, x, eq_comm(add(1, 2), x))))
     assert set(run(0, x, eq_comm(add(1, 2), x))) == set((add(1, 2), add(2, 1)))
 
-    print(set(run(0, x, eq_assoccomm(add(1, 2, 3), add(1, x)))))
     assert set(run(0, x, eq_assoccomm(add(1, 2, 3), add(1, x)))) == \
-            set((add(2, 3), add(3, 2)))
+        set((add(2, 3), add(3, 2)))

@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 from unification import var, unify
 
-from ..term import term, operator, arguments, unifiable_with_term
-from ..dispatch import dispatch
+from kanren.term import term, operator, arguments, unifiable_with_term
+from kanren.dispatch import dispatch
 
 
 def test_arguments():
