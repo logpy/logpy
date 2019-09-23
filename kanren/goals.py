@@ -1,13 +1,15 @@
 import collections
 import operator
+
 from itertools import permutations
 
+from cons import cons
+from cons.core import ConsNull
 from unification import isvar, var, reify, unify
 
 from .core import (eq, EarlyGoalError, conde, condeseq, lany, lallgreedy, lall,
                    fail, success)
 from .util import unique
-from .cons import cons, is_null
 
 
 def heado(head, coll):
@@ -40,14 +42,12 @@ def nullo(l):
     """A relation asserting that a term is a "Lisp-like" null.
 
     For un-unified logic variables, it unifies with `None`.
-
-    See `is_null`.
     """
     def _nullo(s):
         _s = reify(l, s)
         if isvar(_s):
             yield unify(_s, None, s)
-        elif is_null(_s):
+        elif isinstance(_s, ConsNull):
             yield s
 
     return _nullo
