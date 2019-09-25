@@ -1,6 +1,8 @@
-import collections
 import operator
+import collections
+
 from itertools import permutations
+from collections.abc import Sequence
 
 from unification import isvar, var, reify, unify
 
@@ -17,7 +19,7 @@ def heado(head, coll):
         tailo
         conso
     """
-    return (eq, cons(head, var()), coll)
+    return eq(cons(head, var()), coll)
 
 
 def tailo(tail, coll):
@@ -27,13 +29,13 @@ def tailo(tail, coll):
         heado
         conso
     """
-    return (eq, cons(var(), tail), coll)
+    return eq(cons(var(), tail), coll)
 
 
 def conso(h, t, l):
     """ cons h + t == l
     """
-    return (eq, cons(h, t), l)
+    return eq(cons(h, t), l)
 
 
 def nullo(l):
@@ -80,7 +82,7 @@ def permuteq(a, b, eq2=eq):
     >>> run(0, x, permuteq((2, 1, x), (2, 1, 2)))
     (2,)
     """
-    if isinstance(a, tuple) and isinstance(b, tuple):
+    if isinstance(a, Sequence) and isinstance(b, Sequence):
         if len(a) != len(b):
             return fail
         elif collections.Counter(a) == collections.Counter(b):
@@ -96,21 +98,24 @@ def permuteq(a, b, eq2=eq):
                     c.remove(x)
                 except ValueError:
                     pass
-            c, d = tuple(c), tuple(d)
+
             if len(c) == 1:
                 return (eq2, c[0], d[0])
             return condeseq(
                 ((eq2, x, d[0]), (permuteq, c[0:i] + c[i + 1:], d[1:], eq2))
                 for i, x in enumerate(c)
             )
+    elif not (isinstance(a, Sequence) or isinstance(b, Sequence)):
+        raise ValueError(
+            'Neither a nor b is a Sequence: {}, {}'.format(type(a), type(b)))
 
     if isvar(a) and isvar(b):
         raise EarlyGoalError()
 
     if isvar(a) or isvar(b):
-        if isinstance(b, tuple):
+        if isinstance(b, Sequence):
             c, d = a, b
-        elif isinstance(a, tuple):
+        elif isinstance(a, Sequence):
             c, d = b, a
 
         return (condeseq, ([eq(c, perm)]
