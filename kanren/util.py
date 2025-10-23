@@ -1,5 +1,5 @@
 import itertools as it
-from collections import Hashable
+from collections.abc import Hashable
 
 from toolz.compatibility import range, map
 
