@@ -1,3 +1,3 @@
 toolz
 multipledispatch
-unification
+unification>=0.3.1
