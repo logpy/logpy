@@ -1,6 +1,7 @@
 from functools import reduce
 from itertools import chain, cycle
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 
 from kanren.cons import cons, ConsPair, car, cdr, is_cons, is_null
 
